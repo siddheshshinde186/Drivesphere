@@ -1,0 +1,63 @@
+# ===================================================================
+# DriveSphere .gitignore
+# ===================================================================
+
+# Environment Variables & Secrets
+.env
+*.env
+!.env.example
+
+# Maven Build Output
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Compiled Java Classes
+*.class
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Log files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & Editor specific files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+bin/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Node / Frontend dependencies (if future tooling added)
+node_modules/
+dist/
+.cache/
