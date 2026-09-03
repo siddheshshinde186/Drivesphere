@@ -3,6 +3,7 @@ package com.drivesphere.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,9 +24,11 @@ public class CorsConfig implements WebMvcConfigurer {
     private String allowedOrigins;
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        String[] origins = Arrays.stream(allowedOrigins.split(","))
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
+        String originsConfig = allowedOrigins != null ? allowedOrigins : "";
+        String[] origins = Arrays.stream(originsConfig.split(","))
                 .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
                 .toArray(String[]::new);
 
         registry.addMapping("/**")
@@ -37,10 +40,13 @@ public class CorsConfig implements WebMvcConfigurer {
     }
 
     @Bean
+    @NonNull
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+        String originsConfig = allowedOrigins != null ? allowedOrigins : "";
+        List<String> origins = Arrays.stream(originsConfig.split(","))
                 .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
                 .toList();
 
         configuration.setAllowedOrigins(origins);

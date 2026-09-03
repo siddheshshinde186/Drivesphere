@@ -4,6 +4,7 @@ import com.drivesphere.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -17,30 +18,45 @@ import java.util.List;
 
 /**
  * Global Exception Handler intercepting exceptions across controllers
- * and serializing standardized ErrorResponse payloads.
+ * and serializing standardized ErrorResponse payloads with strict null-safety.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponse> handleApiException(ApiException ex, HttpServletRequest request) {
+    @NonNull
+    public ResponseEntity<ErrorResponse> handleApiException(@NonNull ApiException ex, @NonNull HttpServletRequest request) {
+        HttpStatus status = ex.getStatus() != null ? ex.getStatus() : HttpStatus.BAD_REQUEST;
+        String message = ex.getMessage() != null ? ex.getMessage() : "API error occurred";
+        String path = request.getRequestURI() != null ? request.getRequestURI() : "";
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .success(false)
-                .status(ex.getStatus().value())
-                .error(ex.getStatus().getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .message(message)
+                .path(path)
                 .timestamp(Instant.now())
                 .build();
-        return new ResponseEntity<>(errorResponse, ex.getStatus());
+
+        return ResponseEntity.status(status).body(errorResponse);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
+    @NonNull
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(@NonNull MethodArgumentNotValidException ex, @NonNull HttpServletRequest request) {
         List<String> details = new ArrayList<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            details.add(error.getField() + ": " + error.getDefaultMessage());
+        if (ex.getBindingResult() != null) {
+            for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+                if (error != null) {
+                    String field = error.getField();
+                    String defaultMessage = error.getDefaultMessage() != null ? error.getDefaultMessage() : "Invalid value";
+                    details.add(field + ": " + defaultMessage);
+                }
+            }
         }
+
+        String path = request.getRequestURI() != null ? request.getRequestURI() : "";
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .success(false)
@@ -48,48 +64,64 @@ public class GlobalExceptionHandler {
                 .error("Validation Failed")
                 .message("Invalid input arguments provided")
                 .details(details)
-                .path(request.getRequestURI())
+                .path(path)
                 .timestamp(Instant.now())
                 .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
+    @NonNull
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(@NonNull BadCredentialsException ex, @NonNull HttpServletRequest request) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "Invalid email or password credentials";
+        String path = request.getRequestURI() != null ? request.getRequestURI() : "";
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .success(false)
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .error("Unauthorized")
-                .message("Invalid email or password credentials")
-                .path(request.getRequestURI())
+                .message(message)
+                .path(path)
                 .timestamp(Instant.now())
                 .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+    @NonNull
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(@NonNull AccessDeniedException ex, @NonNull HttpServletRequest request) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "You do not have permission to access this resource";
+        String path = request.getRequestURI() != null ? request.getRequestURI() : "";
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .success(false)
                 .status(HttpStatus.FORBIDDEN.value())
                 .error("Forbidden")
-                .message("You do not have permission to access this resource")
-                .path(request.getRequestURI())
+                .message(message)
+                .path(path)
                 .timestamp(Instant.now())
                 .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
+    @NonNull
+    public ResponseEntity<ErrorResponse> handleGeneralException(@NonNull Exception ex, @NonNull HttpServletRequest request) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "An unexpected server error occurred";
+        String path = request.getRequestURI() != null ? request.getRequestURI() : "";
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .success(false)
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error("Internal Server Error")
-                .message(ex.getMessage() != null ? ex.getMessage() : "An unexpected server error occurred")
-                .path(request.getRequestURI())
+                .message(message)
+                .path(path)
                 .timestamp(Instant.now())
                 .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }

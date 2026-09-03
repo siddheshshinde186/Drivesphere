@@ -2,6 +2,7 @@ package com.drivesphere.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -16,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
- * Spring Security 6 / Boot 3.x Security Filter Chain Configuration.
+ * Spring Security 6 / Boot 3.x Security Filter Chain Configuration with null-safety.
  */
 @Configuration
 @EnableWebSecurity
@@ -27,16 +28,17 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(AuthEntryPointJwt unauthorizedHandler,
-                          JwtAuthenticationFilter jwtAuthenticationFilter,
-                          CorsConfigurationSource corsConfigurationSource) {
+    public SecurityConfig(@NonNull AuthEntryPointJwt unauthorizedHandler,
+                          @NonNull JwtAuthenticationFilter jwtAuthenticationFilter,
+                          @NonNull CorsConfigurationSource corsConfigurationSource) {
         this.unauthorizedHandler = unauthorizedHandler;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @NonNull
+    public SecurityFilterChain securityFilterChain(@NonNull HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -53,12 +55,14 @@ public class SecurityConfig {
     }
 
     @Bean
+    @NonNull
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    @NonNull
+    public AuthenticationManager authenticationManager(@NonNull AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 }

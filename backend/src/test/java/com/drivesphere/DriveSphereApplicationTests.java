@@ -26,10 +26,15 @@ class DriveSphereApplicationTests {
 
         assertNotNull(response);
         assertEquals(200, response.getStatusCode().value());
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().isSuccess());
-        assertEquals("UP", response.getBody().getData().getStatus());
-        assertEquals("drivesphere-backend", response.getBody().getData().getService());
+
+        ApiResponse<HealthResponse> body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.isSuccess());
+
+        HealthResponse data = body.getData();
+        assertNotNull(data);
+        assertEquals("UP", data.getStatus());
+        assertEquals("drivesphere-backend", data.getService());
     }
 
     @Test
