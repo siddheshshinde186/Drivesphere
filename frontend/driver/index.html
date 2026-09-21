@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Partner Console – DriveSphere</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="bg-dark text-light">
+
+    <!-- Driver Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-surface border-bottom border-secondary sticky-top py-2">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
+                <span class="brand-font fs-5 text-gradient">DriveSphere</span>
+                <span class="badge bg-warning-subtle text-warning ms-2" style="font-size: 0.72rem;">Driver Console</span>
+            </a>
+
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <!-- Online Availability Switch -->
+                <div class="form-check form-switch d-flex align-items-center gap-2 p-0 m-0">
+                    <input class="form-check-input ms-0" type="checkbox" id="driver-availability-toggle" style="width: 44px; height: 22px;">
+                    <label class="form-check-label small fw-bold text-white mb-0" id="driver-status-label">Offline</label>
+                </div>
+
+                <!-- User Profile Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-badge text-warning fs-5 me-2"></i>
+                        <span id="nav-driver-name">Driver Partner</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="../index.html"><i class="bi bi-globe me-2"></i>Public Portal</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="javascript:Auth.logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid px-4 py-4">
+        <!-- Verification Banner (If Pending) -->
+        <div id="verif-alert-banner" class="alert alert-warning border-warning d-flex justify-content-between align-items-center d-none rounded-3 mb-4">
+            <div>
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                <strong>Driver Verification Pending:</strong> Complete your document upload to unlock passenger dispatch bookings.
+            </div>
+            <button class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#uploadDocModal">
+                <i class="bi bi-upload me-1"></i> Upload Documents
+            </button>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <!-- Left: Driver Profile & Trust Score Card -->
+            <div class="col-lg-5">
+                <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                    <div class="d-flex align-items-center mb-4">
+                        <img id="driver-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" 
+                             class="rounded-circle border border-primary p-1 me-3" width="72" height="72" style="object-fit:cover;">
+                        <div>
+                            <h4 id="driver-profile-name" class="brand-font text-white mb-0">Rajesh Kumar</h4>
+                            <div class="text-muted small" id="driver-license">DL: DL-0420180019283</div>
+                            <div class="mt-1">
+                                <span id="driver-verif-badge" class="badge bg-success">VERIFIED</span>
+                                <span class="text-warning small ms-2"><i class="bi bi-star-fill me-1"></i><strong id="driver-rating">4.90</strong>/5.0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Driver Trust Score Gauge Section -->
+                    <div class="p-3 bg-dark rounded-3 border border-secondary mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small text-muted fw-bold text-uppercase"><i class="bi bi-shield-check text-info me-1"></i> Driver Trust Score</span>
+                            <span id="trust-level-badge" class="badge bg-success">EXCELLENT</span>
+                        </div>
+                        <div class="d-flex align-items-baseline mb-2">
+                            <h1 id="trust-score-number" class="brand-font text-gradient mb-0 me-2">92.5</h1>
+                            <span class="text-muted small">/ 100</span>
+                        </div>
+                        <div class="progress bg-secondary mb-3" style="height: 10px;">
+                            <div id="trust-score-progress" class="progress-bar bg-primary" role="progressbar" style="width: 92.5%;"></div>
+                        </div>
+                        <div class="small text-muted" id="trust-score-explanation" style="font-size: 0.8rem; line-height: 1.4;">
+                            Evaluation Factors: Document Verification (25/25), Commercial Experience (20/20), Customer Feedback Rating (24.5/25), Trip Completion (24/20).
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                <div class="kpi-label" style="font-size: 0.72rem;">TOTAL TRIPS</div>
+                                <div id="stat-total-trips" class="fw-bold text-white fs-5">84</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                <div class="kpi-label" style="font-size: 0.72rem;">DAILY RATE</div>
+                                <div id="stat-daily-rate" class="fw-bold text-success fs-5">₹950</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                <div class="kpi-label" style="font-size: 0.72rem;">CANCELLATION</div>
+                                <div id="stat-cancel-rate" class="fw-bold text-info fs-5">1.2%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Assigned Bookings & Active Trips -->
+            <div class="col-lg-7">
+                <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                    <h5 class="brand-font text-white mb-3"><i class="bi bi-geo-alt-fill text-primary me-2"></i>My Trip Assignments</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th>Ref</th>
+                                    <th>Vehicle</th>
+                                    <th>Customer</th>
+                                    <th>Route</th>
+                                    <th>Dates</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="driver-trips-tbody">
+                                <tr><td colspan="7" class="text-center py-4 text-muted">Loading assigned trips...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Upload Verification Documents Modal -->
+    <div class="modal fade" id="uploadDocModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-file-earmark-arrow-up text-primary me-2"></i>Submit Verification Documents</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="doc-upload-form">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Aadhaar / National ID Document URL</label>
+                            <input type="url" id="doc-id-url" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="https://..." value="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Commercial Driving License URL</label>
+                            <input type="url" id="doc-license-url" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="https://..." value="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Police Verification Certificate URL</label>
+                            <input type="url" id="doc-police-url" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="https://..." value="https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=600&q=80">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Medical & Eye Fitness Certificate URL</label>
+                            <input type="url" id="doc-medical-url" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="https://..." value="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-cloud-arrow-up me-2"></i>Submit for Admin Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script>
+        let currentDriver = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Auth.requireAuth(['ROLE_DRIVER', 'ROLE_ADMIN'])) return;
+
+            await loadDriverProfile();
+            setupDriverEvents();
+        });
+
+        async function loadDriverProfile() {
+            try {
+                const res = await API.get('/drivers/me');
+                currentDriver = res.data;
+
+                document.getElementById('nav-driver-name').innerText = currentDriver.fullName;
+                document.getElementById('driver-profile-name').innerText = currentDriver.fullName;
+                document.getElementById('driver-license').innerText = 'DL: ' + currentDriver.licenseNumber;
+                document.getElementById('driver-rating').innerText = currentDriver.rating;
+                document.getElementById('stat-total-trips').innerText = currentDriver.totalTrips;
+                document.getElementById('stat-daily-rate').innerText = '₹' + currentDriver.dailyRate;
+                document.getElementById('stat-cancel-rate').innerText = currentDriver.cancellationRate + '%';
+
+                if (currentDriver.profilePhotoUrl) {
+                    document.getElementById('driver-avatar').src = currentDriver.profilePhotoUrl;
+                }
+
+                // Verification status
+                const vBadge = document.getElementById('driver-verif-badge');
+                vBadge.innerText = currentDriver.verificationStatus;
+                if (currentDriver.verificationStatus === 'APPROVED') {
+                    vBadge.className = 'badge bg-success';
+                    document.getElementById('verif-alert-banner').classList.add('d-none');
+                } else {
+                    vBadge.className = 'badge bg-warning text-dark';
+                    document.getElementById('verif-alert-banner').classList.remove('d-none');
+                }
+
+                // Availability toggle
+                const availToggle = document.getElementById('driver-availability-toggle');
+                const statusLabel = document.getElementById('driver-status-label');
+                availToggle.checked = currentDriver.available;
+                statusLabel.innerText = currentDriver.available ? 'Online (Available)' : 'Offline';
+                statusLabel.className = currentDriver.available ? 'small fw-bold text-success' : 'small fw-bold text-muted';
+
+                // Trust Score
+                if (currentDriver.trustScore) {
+                    const ts = currentDriver.trustScore;
+                    document.getElementById('trust-score-number').innerText = ts.overallScore;
+                    document.getElementById('trust-level-badge').innerText = ts.trustLevel;
+                    document.getElementById('trust-score-progress').style.width = ts.overallScore + '%';
+                    document.getElementById('trust-score-explanation').innerText = ts.explanation;
+                }
+
+                await loadAssignedTrips();
+            } catch (err) {
+                console.error('Driver profile loading failed:', err);
+            }
+        }
+
+        async function loadAssignedTrips() {
+            if (!currentDriver) return;
+            try {
+                const res = await API.get('/bookings/driver/' + currentDriver.id);
+                const trips = res.data || [];
+                const tbody = document.getElementById('driver-trips-tbody');
+
+                if (trips.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No assigned trips currently. Ensure your status is Online.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = trips.map(t => `
+                    <tr>
+                        <td><span class="font-monospace text-info">${t.bookingReference}</span></td>
+                        <td>${t.vehicle ? t.vehicle.displayName : 'Vehicle'}</td>
+                        <td>${t.customer ? t.customer.fullName : 'Customer'}</td>
+                        <td class="small text-muted">${t.pickupLocation} &rarr; ${t.dropLocation}</td>
+                        <td class="small text-white">${t.startDateTime ? t.startDateTime.replace('T', ' ') : ''}</td>
+                        <td><span class="badge ${t.bookingStatus === 'ACTIVE' ? 'bg-success' : t.bookingStatus === 'CONFIRMED' ? 'bg-primary' : 'bg-secondary'}">${t.bookingStatus}</span></td>
+                        <td>
+                            ${t.bookingStatus === 'CONFIRMED' ? `<button class="btn btn-sm btn-success" onclick="startTrip(${t.id})">Start Trip</button>` : ''}
+                            ${t.bookingStatus === 'ACTIVE' ? `<button class="btn btn-sm btn-warning text-dark" onclick="completeTrip(${t.id})">Complete</button>` : ''}
+                            ${t.bookingStatus === 'COMPLETED' ? `<span class="badge bg-secondary">Completed</span>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Assigned trips loading error:', err);
+            }
+        }
+
+        function setupDriverEvents() {
+            // Availability Toggle
+            document.getElementById('driver-availability-toggle').addEventListener('change', async (e) => {
+                if (!currentDriver) return;
+                try {
+                    const res = await API.put('/drivers/' + currentDriver.id + '/availability');
+                    currentDriver.available = res.data.available;
+                    const statusLabel = document.getElementById('driver-status-label');
+                    statusLabel.innerText = currentDriver.available ? 'Online (Available)' : 'Offline';
+                    statusLabel.className = currentDriver.available ? 'small fw-bold text-success' : 'small fw-bold text-muted';
+                    API.showToast('Availability status updated to ' + (currentDriver.available ? 'Online' : 'Offline'), 'info');
+                } catch (err) {
+                    e.target.checked = !e.target.checked;
+                    API.showToast(err.message, 'danger');
+                }
+            });
+
+            // Document Upload Form
+            document.getElementById('doc-upload-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!currentDriver) return;
+
+                try {
+                    const payload = {
+                        identityDocUrl: document.getElementById('doc-id-url').value.trim(),
+                        licenseDocUrl: document.getElementById('doc-license-url').value.trim(),
+                        policeVerificationDocUrl: document.getElementById('doc-police-url').value.trim(),
+                        medicalFitnessDocUrl: document.getElementById('doc-medical-url').value.trim()
+                    };
+
+                    await API.post('/verifications/driver/' + currentDriver.id, payload);
+                    bootstrap.Modal.getInstance(document.getElementById('uploadDocModal')).hide();
+                    API.showToast('Verification documents submitted for administrator review!', 'success');
+                    await loadDriverProfile();
+                } catch (err) {
+                    API.showToast(err.message, 'danger');
+                }
+            });
+        }
+
+        async function startTrip(bookingId) {
+            try {
+                await API.post('/bookings/' + bookingId + '/pickup');
+                API.showToast('Trip started! Passenger pickup recorded.', 'success');
+                await loadAssignedTrips();
+            } catch (err) {
+                API.showToast(err.message, 'danger');
+            }
+        }
+
+        async function completeTrip(bookingId) {
+            try {
+                await API.post('/bookings/' + bookingId + '/return');
+                API.showToast('Trip completed successfully!', 'success');
+                await loadDriverProfile();
+            } catch (err) {
+                API.showToast(err.message, 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

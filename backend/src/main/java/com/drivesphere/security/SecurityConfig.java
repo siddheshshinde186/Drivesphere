@@ -45,7 +45,14 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/health/**", "/api/auth/**", "/error").permitAll()
+                        .requestMatchers(
+                                "/", "/index.html", "/*.html",
+                                "/assets/**", "/customer/**", "/fleet-manager/**",
+                                "/error", "/favicon.ico"
+                        ).permitAll()
+                        .requestMatchers("/api/health/**", "/api/auth/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vehicles/**", "/api/drivers/available", "/api/reviews/**").permitAll()
+                        .requestMatchers("/api/maps/**", "/api/weather/**", "/api/ai/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

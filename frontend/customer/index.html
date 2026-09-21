@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Workspace – DriveSphere</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Leaflet.js CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        #trip-planner-map, #live-tracking-map {
+            height: 380px;
+            width: 100%;
+            border-radius: 12px;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="bg-dark text-light">
+
+    <!-- Customer Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-surface border-bottom border-secondary sticky-top py-2">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
+                <span class="brand-font fs-5 text-gradient">DriveSphere</span>
+                <span class="badge bg-primary-subtle text-primary ms-2" style="font-size: 0.72rem;">Customer Portal</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#customerNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="customerNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 nav-pills" id="customer-tabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active py-1 px-3" id="tab-overview-btn" data-bs-toggle="pill" data-bs-target="#tab-overview">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" id="tab-vehicles-btn" data-bs-toggle="pill" data-bs-target="#tab-vehicles">
+                            <i class="bi bi-car-front me-1"></i> Explore Fleet
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" id="tab-ai-recommender-btn" data-bs-toggle="pill" data-bs-target="#tab-ai-recommender">
+                            <i class="bi bi-stars me-1"></i> AI Matcher
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" id="tab-planner-btn" data-bs-toggle="pill" data-bs-target="#tab-planner">
+                            <i class="bi bi-map me-1"></i> Smart Trip Planner
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" id="tab-tracker-btn" data-bs-toggle="pill" data-bs-target="#tab-tracker">
+                            <i class="bi bi-geo-alt me-1"></i> Live GPS Tracking
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" id="tab-bookings-btn" data-bs-toggle="pill" data-bs-target="#tab-bookings">
+                            <i class="bi bi-journal-check me-1"></i> My Bookings
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Notifications Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm position-relative" type="button" id="notif-dropdown-btn" data-bs-toggle="dropdown">
+                            <i class="bi bi-bell"></i>
+                            <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark p-3 shadow-lg" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0 text-white fw-bold">Notifications</h6>
+                                <button class="btn btn-link btn-sm text-info p-0" id="mark-all-read-btn">Mark all read</button>
+                            </div>
+                            <div id="notif-list" class="d-flex flex-column gap-2 small">
+                                <div class="text-muted text-center py-2">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Profile Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle fs-5 me-2 text-primary"></i>
+                            <span id="nav-user-name">Customer</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="../index.html"><i class="bi bi-globe me-2"></i>Public Landing Page</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="javascript:Auth.logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container-fluid px-4 py-4">
+        <div class="tab-content" id="customer-tab-content">
+
+            <!-- 1. DASHBOARD OVERVIEW TAB -->
+            <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-8">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h3 class="brand-font text-white mb-1">Welcome back, <span id="hero-customer-name" class="text-gradient">Traveler</span>!</h3>
+                                    <p class="text-muted small mb-0">Browse verified smart rentals, hire verified drivers with Trust Scores, or plan intelligent journeys.</p>
+                                </div>
+                                <button class="btn btn-primary btn-sm px-3" onclick="document.getElementById('tab-vehicles-btn').click()">
+                                    <i class="bi bi-search me-1"></i> Book a Ride
+                                </button>
+                            </div>
+                            
+                            <div class="row g-3 mt-2">
+                                <div class="col-sm-4">
+                                    <div class="p-3 bg-dark rounded-3 border border-secondary text-center shadow-sm">
+                                        <div id="stat-active-rentals" class="fs-1 fw-bold text-white mb-1 lh-1">0</div>
+                                        <div class="fw-bold text-info" style="letter-spacing: 0.08em; font-size: 0.85rem;">ACTIVE TRIPS</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="p-3 bg-dark rounded-3 border border-secondary text-center shadow-sm">
+                                        <div id="stat-upcoming-trips" class="fs-1 fw-bold text-white mb-1 lh-1">0</div>
+                                        <div class="fw-bold text-primary" style="letter-spacing: 0.08em; font-size: 0.85rem;">UPCOMING BOOKINGS</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="p-3 bg-dark rounded-3 border border-secondary text-center shadow-sm">
+                                        <div id="stat-completed-trips" class="fs-1 fw-bold text-white mb-1 lh-1">0</div>
+                                        <div class="fw-bold text-success" style="letter-spacing: 0.08em; font-size: 0.85rem;">COMPLETED TRIPS</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                            <h5 class="brand-font text-white mb-2"><i class="bi bi-stars text-warning me-2"></i>AI Concierge Tips</h5>
+                            <p class="text-muted small mb-3">Powered by Google Gemini 2.5 Flash-Lite mobility intelligence.</p>
+                            <div class="p-3 bg-dark rounded-3 border border-secondary mb-3 small">
+                                <div class="fw-semibold text-info mb-1"><i class="bi bi-lightbulb me-1"></i> Smart Trip Tip</div>
+                                <div id="ai-quick-tip">Planning highway travel? Hiring our verified drivers boosts your journey safety with an average 92+ Driver Trust Score.</div>
+                            </div>
+                            <button class="btn btn-outline-info btn-sm w-100 py-2" onclick="document.getElementById('tab-ai-recommender-btn').click()">
+                                <i class="bi bi-magic me-1"></i> Launch AI Fleet Matcher
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active / Recent Bookings Preview -->
+                <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="brand-font text-white mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Recent & Active Bookings</h5>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('tab-bookings-btn').click()">View All Bookings</button>
+                    </div>
+                    <div id="recent-bookings-list" class="row g-3">
+                        <div class="col-12 text-center text-muted py-4">Loading your bookings...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. EXPLORE FLEET TAB -->
+            <div class="tab-pane fade" id="tab-vehicles" role="tabpanel">
+                <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm mb-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-medium">Vehicle Category</label>
+                            <select id="filter-type" class="form-select bg-dark text-white border-secondary form-select-sm">
+                                <option value="">All Categories</option>
+                                <option value="ELECTRIC">Electric Mobility</option>
+                                <option value="SEDAN">Executive Sedan</option>
+                                <option value="SUV">Adventure SUV</option>
+                                <option value="LUXURY">Luxury Elite</option>
+                                <option value="HATCHBACK">Urban Hatchback</option>
+                                <option value="VAN">Commercial Van</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-medium">Fuel Type</label>
+                            <select id="filter-fuel" class="form-select bg-dark text-white border-secondary form-select-sm">
+                                <option value="">All Fuel Types</option>
+                                <option value="ELECTRIC">Electric (EV)</option>
+                                <option value="HYBRID">Strong Hybrid</option>
+                                <option value="PETROL">Petrol</option>
+                                <option value="DIESEL">Diesel</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small fw-medium">Min Seats</label>
+                            <select id="filter-seats" class="form-select bg-dark text-white border-secondary form-select-sm">
+                                <option value="">Any Seating</option>
+                                <option value="5">5 Seater</option>
+                                <option value="7">7 Seater</option>
+                                <option value="12">12 Seater</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small fw-medium">Transmission</label>
+                            <select id="filter-trans" class="form-select bg-dark text-white border-secondary form-select-sm">
+                                <option value="">Any</option>
+                                <option value="AUTOMATIC">Automatic</option>
+                                <option value="MANUAL">Manual</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button id="apply-filters-btn" class="btn btn-primary btn-sm w-100 py-2">
+                                <i class="bi bi-funnel me-1"></i> Apply Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="fleet-grid" class="row g-4">
+                    <div class="col-12 text-center text-muted py-5">Loading vehicle catalog...</div>
+                </div>
+            </div>
+
+            <!-- 3. AI FLEET RECOMMENDER TAB -->
+            <div class="tab-pane fade" id="tab-ai-recommender" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-stars fs-3 text-warning me-2"></i>
+                                <div>
+                                    <h5 class="brand-font text-white mb-0">AI Fleet Matcher</h5>
+                                    <small class="text-muted">Gemini 2.5 Flash-Lite Engine</small>
+                                </div>
+                            </div>
+                            <form id="ai-recommender-form">
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Number of Passengers</label>
+                                    <input type="number" id="ai-passengers" class="form-control form-control-sm bg-dark text-white border-secondary" value="4" min="1" max="15">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Daily Budget Limit (₹)</label>
+                                    <input type="number" id="ai-budget" class="form-control form-control-sm bg-dark text-white border-secondary" value="4500" step="500">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Trip Nature</label>
+                                    <select id="ai-trip-type" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                        <option value="FAMILY_VACATION">Family Vacation / Roadtrip</option>
+                                        <option value="EXECUTIVE_BUSINESS">Executive Business Travel</option>
+                                        <option value="CITY_COMMUTE">Urban City Commute</option>
+                                        <option value="ECO_TOURISM">Eco-Friendly EV Touring</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Fuel Preference</label>
+                                    <select id="ai-fuel-pref" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                        <option value="">No Preference</option>
+                                        <option value="ELECTRIC">Pure Electric (Zero Emission)</option>
+                                        <option value="HYBRID">Hybrid</option>
+                                        <option value="DIESEL">Diesel</option>
+                                        <option value="PETROL">Petrol</option>
+                                    </select>
+                                </div>
+                                <button type="submit" id="ai-find-btn" class="btn btn-primary w-100 py-2">
+                                    <i class="bi bi-magic me-1"></i> Generate AI Recommendations
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div id="ai-results-container" class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                            <div class="text-center text-muted py-5">
+                                <i class="bi bi-robot fs-1 text-secondary mb-3 d-block"></i>
+                                <h5>Set your travel requirements on the left</h5>
+                                <p class="small">Our AI evaluates real vehicles in the DriveSphere fleet and provides personalized ranking with transparent explanations.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. SMART TRIP PLANNER TAB -->
+            <div class="tab-pane fade" id="tab-planner" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm">
+                            <h5 class="brand-font text-white mb-3"><i class="bi bi-compass me-2 text-primary"></i>Plan Your Journey</h5>
+                            <form id="trip-planner-form">
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Departure City / Hub</label>
+                                    <input type="text" id="trip-source" class="form-control form-control-sm bg-dark text-white border-secondary" value="Bangalore" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Destination Location</label>
+                                    <input type="text" id="trip-dest" class="form-control form-control-sm bg-dark text-white border-secondary" value="Mysore" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary fw-semibold">Assigned Vehicle</label>
+                                    <select id="trip-vehicle-select" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                        <option value="1" data-type="ELECTRIC" data-range="312">Tata Nexon EV (312 km Range • Electric)</option>
+                                        <option value="3" data-type="DIESEL" data-range="850">Mahindra XUV700 (14.8 km/l • Diesel)</option>
+                                        <option value="5" data-type="HYBRID" data-range="950">Honda City Hybrid (27.1 km/l • Hybrid)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label id="trip-fuel-price-label" class="form-label small text-secondary fw-semibold">Electricity Price (₹ / kWh)</label>
+                                    <input type="number" id="trip-fuel-price" class="form-control form-control-sm bg-dark text-white border-secondary" value="12.00" step="0.5">
+                                </div>
+                                <button type="submit" id="plan-route-btn" class="btn btn-primary w-100 py-2 fw-semibold">
+                                    <i class="bi bi-signpost-2 me-1"></i> Calculate Route & Telemetry
+                                </button>
+                            </form>
+
+                            <!-- Destination Weather Card -->
+                            <div id="planner-weather-card" class="mt-4 p-3 bg-dark rounded-3 border border-secondary d-none">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-secondary"><i class="bi bi-cloud-sun text-info me-1"></i> Destination Weather: <strong id="weather-location-label" class="text-white">Mysore</strong></span>
+                                    <span id="weather-temp" class="badge bg-primary">26°C</span>
+                                </div>
+                                <div id="weather-condition" class="fw-semibold text-white small">Partly Cloudy</div>
+                                <div id="weather-advisory" class="text-secondary" style="font-size: 0.78rem;">Optimal road visibility across the corridor.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm">
+                            <div id="trip-planner-map" class="mb-3"></div>
+                            
+                            <!-- Calculations Summary -->
+                            <div class="row g-2 text-center mb-2" id="trip-stats-bar">
+                                <div class="col-3">
+                                    <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                        <div class="text-secondary fw-semibold" style="font-size: 0.75rem;">EST. DISTANCE</div>
+                                        <div id="trip-dist" class="fw-bold text-white fs-6">143.5 km</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                        <div class="text-secondary fw-semibold" style="font-size: 0.75rem;">DURATION</div>
+                                        <div id="trip-duration" class="fw-bold text-white fs-6">1h 59m</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                        <div id="stat-energy-label" class="text-secondary fw-semibold" style="font-size: 0.75rem;">ENERGY USED</div>
+                                        <div id="trip-fuel-used" class="fw-bold text-info fs-6">21.8 kWh</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                        <div id="stat-cost-label" class="text-secondary fw-semibold" style="font-size: 0.75rem;">EST. ENERGY COST</div>
+                                        <div id="trip-fuel-cost" class="fw-bold text-success fs-6">₹261.60</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- EV Range Validation Card -->
+                            <div id="customer-ev-range-card" class="p-3 bg-dark rounded-3 border border-secondary">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small text-secondary fw-semibold"><i class="bi bi-battery-charging text-info me-1"></i> EV RANGE VALIDATION</span>
+                                    <span id="customer-ev-status" class="badge bg-success">Range Sufficient</span>
+                                </div>
+                                <div class="row g-2 text-center">
+                                    <div class="col-4">
+                                        <div class="p-2 bg-black rounded-2 border border-secondary">
+                                            <div class="text-secondary" style="font-size: 0.70rem;">TRIP DISTANCE</div>
+                                            <div id="customer-ev-req" class="fw-bold text-white small">143.5 km</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 bg-black rounded-2 border border-secondary">
+                                            <div class="text-secondary" style="font-size: 0.70rem;">VEHICLE RANGE</div>
+                                            <div id="customer-ev-total" class="fw-bold text-info small">312.0 km</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 bg-black rounded-2 border border-secondary">
+                                            <div class="text-secondary" style="font-size: 0.70rem;">EST. REMAINING</div>
+                                            <div id="customer-ev-rem" class="fw-bold text-success small">168.5 km</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="customer-ev-warning" class="alert alert-warning py-2 px-3 small mt-2 mb-0 d-none">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    Estimated trip distance exceeds the vehicle's available range. Charging stops are recommended along the highway corridor.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. LIVE GPS TRACKING TAB -->
+            <div class="tab-pane fade" id="tab-tracker" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                                <div>
+                                    <h5 class="brand-font text-white mb-0"><i class="bi bi-broadcast text-danger me-2"></i>Live Telemetry & GPS Tracking</h5>
+                                    <small class="text-muted" id="tracking-booking-ref">Booking Ref: Select active rental</small>
+                                </div>
+                                <button id="simulate-step-btn" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-play-circle me-1"></i> Simulate GPS Step
+                                </button>
+                            </div>
+                            <div id="live-tracking-map" class="mb-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                            <h6 class="brand-font text-white mb-3">Telemetry Indicators</h6>
+                            <div class="d-flex flex-column gap-3">
+                                <div class="p-3 bg-dark rounded-3 border border-secondary">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small text-muted">Trip Status</span>
+                                        <span id="tracker-status" class="badge bg-success">IN_PROGRESS</span>
+                                    </div>
+                                    <div id="tracker-veh-name" class="fw-bold text-white">Tata Nexon EV</div>
+                                </div>
+                                <div class="p-3 bg-dark rounded-3 border border-secondary">
+                                    <div class="small text-muted mb-1">Traveled vs Remaining Distance</div>
+                                    <div class="progress bg-secondary" style="height: 10px;">
+                                        <div id="tracker-progress-bar" class="progress-bar bg-info" role="progressbar" style="width: 35%;"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between small text-muted mt-2">
+                                        <span>Traveled: <strong id="tracker-traveled" class="text-white">45 km</strong></span>
+                                        <span>Remaining: <strong id="tracker-remaining" class="text-white">100 km</strong></span>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <div class="p-2 bg-dark rounded-3 border border-secondary text-center">
+                                            <div class="text-muted" style="font-size: 0.72rem;">CURRENT SPEED</div>
+                                            <div id="tracker-speed" class="fw-bold text-white fs-5">54 km/h</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 bg-dark rounded-3 border border-secondary text-center">
+                                            <div class="text-muted" style="font-size: 0.72rem;">BATTERY / FUEL</div>
+                                            <div id="tracker-energy" class="fw-bold text-success fs-5">78%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. MY BOOKINGS TAB -->
+            <div class="tab-pane fade" id="tab-bookings" role="tabpanel">
+                <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4">
+                    <h5 class="brand-font text-white mb-3"><i class="bi bi-journal-text me-2 text-primary"></i>All My Bookings</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                            <thead>
+                                <tr class="text-secondary small fw-semibold">
+                                    <th>Booking Ref</th>
+                                    <th>Vehicle</th>
+                                    <th>Driver</th>
+                                    <th>Pickup Date / Time</th>
+                                    <th>Return Date / Time</th>
+                                    <th>Duration</th>
+                                    <th>Amount</th>
+                                    <th>Booking Status</th>
+                                    <th>Payment Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookings-table-body">
+                                <tr><td colspan="10" class="text-center py-4 text-muted">Loading your bookings...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- BOOKING & PAYMENT MODAL -->
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-calendar-plus text-primary me-2"></i>Reserve Vehicle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="reservation-form">
+                        <input type="hidden" id="modal-vehicle-id">
+                        
+                        <!-- Selected Vehicle Header -->
+                        <div class="d-flex align-items-center p-3 bg-dark rounded-3 border border-secondary mb-4">
+                            <img id="modal-veh-img" src="" class="rounded-3 me-3" width="90" height="60" style="object-fit: cover;">
+                            <div>
+                                <h6 id="modal-veh-title" class="fw-bold text-white mb-1">Vehicle Name</h6>
+                                <div class="small text-muted">
+                                    Rate: <strong id="modal-veh-rate" class="text-info">₹2,800/day</strong> | 
+                                    Seats: <span id="modal-veh-seats">5</span> | 
+                                    Fuel: <span id="modal-veh-fuel">Electric</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dates & Locations -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label small text-muted">Start Date & Time</label>
+                                <input type="datetime-local" id="modal-start-date" class="form-control form-control-sm bg-dark text-white border-secondary" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small text-muted">End Date & Time</label>
+                                <input type="datetime-local" id="modal-end-date" class="form-control form-control-sm bg-dark text-white border-secondary" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <label class="form-label small text-muted">Pickup Location</label>
+                                <input type="text" id="modal-pickup-loc" class="form-control form-control-sm bg-dark text-white border-secondary" value="Downtown Hub" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small text-muted">Dropoff Location</label>
+                                <input type="text" id="modal-drop-loc" class="form-control form-control-sm bg-dark text-white border-secondary" value="Airport Terminal" required>
+                            </div>
+                        </div>
+
+                        <!-- Driver Hiring Option -->
+                        <div class="p-3 bg-dark rounded-3 border border-secondary mb-4">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="modal-hire-driver-toggle">
+                                <label class="form-check-label fw-semibold text-white small" for="modal-hire-driver-toggle">
+                                    <i class="bi bi-person-badge text-warning me-1"></i> Hire a Professional Verified Driver
+                                </label>
+                            </div>
+                            <div id="driver-select-container" class="d-none mt-3">
+                                <label class="form-label small text-muted">Select Available Verified Driver (with Trust Score)</label>
+                                <select id="modal-driver-select" class="form-select form-select-sm bg-black text-white border-secondary mb-2">
+                                    <option value="">Loading available drivers...</option>
+                                </select>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-shield-check me-1"></i>Identity Verified</span>
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-card-checklist me-1"></i>License Verified</span>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-person-check me-1"></i>Background Checked</span>
+                                    <span class="badge bg-secondary-subtle text-light border border-secondary"><i class="bi bi-heart-pulse me-1"></i>Medical Fitness Verified</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price Breakdown -->
+                        <div class="p-3 bg-dark rounded-3 border border-secondary mb-4 small">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Vehicle Rental (<span id="modal-calc-days">1</span> days):</span>
+                                <span id="modal-calc-rental" class="text-white">₹2,800.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Driver Fee:</span>
+                                <span id="modal-calc-driver" class="text-white">₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">GST & Platform Fees (18%):</span>
+                                <span id="modal-calc-tax" class="text-white">₹504.00</span>
+                            </div>
+                            <hr class="border-secondary my-2">
+                            <div class="d-flex justify-content-between fs-6 fw-bold">
+                                <span class="text-white">Total Amount:</span>
+                                <span id="modal-calc-total" class="text-primary">₹3,304.00</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="modal-confirm-btn" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RAZORPAY TEST PAYMENT MODAL -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-shield-lock-fill text-success me-2"></i>Razorpay Test Sandbox</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill mb-3">
+                        <i class="bi bi-info-circle me-1"></i> Academic Test Mode – No Real Money Debited
+                    </div>
+                    <h3 id="pay-modal-amount" class="brand-font text-white mb-2">₹3,304.00</h3>
+                    <p class="text-muted small mb-4" id="pay-modal-ref">Booking Ref: DS-2026-XXXX</p>
+
+                    <div class="p-3 bg-dark rounded-3 border border-secondary text-start mb-4 small">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Merchant:</span>
+                            <span class="text-white">DriveSphere Mobility Pvt Ltd</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Gateway Order ID:</span>
+                            <span id="pay-modal-order-id" class="text-info font-monospace">order_mock_123</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Environment:</span>
+                            <span class="badge bg-success">Sandbox Verified</span>
+                        </div>
+                    </div>
+
+                    <button id="pay-simulate-btn" class="btn btn-success w-100 py-3 fw-bold fs-6 shadow">
+                        <i class="bi bi-check-circle-fill me-2"></i>Simulate Successful Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVIEW MODAL -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-star-half text-warning me-2"></i>Rate Your Experience</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="review-form">
+                        <input type="hidden" id="review-booking-id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Overall Trip Rating (1 to 5 Stars)</label>
+                            <select id="review-rating" class="form-select bg-dark text-white border-secondary">
+                                <option value="5">⭐⭐⭐⭐⭐ 5 - Exceptional</option>
+                                <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                                <option value="3">⭐⭐⭐ 3 - Average</option>
+                                <option value="2">⭐⭐ 2 - Poor</option>
+                                <option value="1">⭐ 1 - Very Poor</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Vehicle Condition & Cleanliness</label>
+                            <select id="review-veh-rating" class="form-select bg-dark text-white border-secondary">
+                                <option value="5">5 - Spotless & High Performance</option>
+                                <option value="4">4 - Clean & Reliable</option>
+                                <option value="3">3 - Satisfactory</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="driver-review-group">
+                            <label class="form-label small text-muted">Driver Courtesy & Safety Rating</label>
+                            <select id="review-driver-rating" class="form-select bg-dark text-white border-secondary">
+                                <option value="5">5 - Highly Professional & Punctual</option>
+                                <option value="4">4 - Good Safe Driving</option>
+                                <option value="3">3 - Average</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Your Written Review</label>
+                            <textarea id="review-comment" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Share details of your journey..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-send me-2"></i>Submit Feedback
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/chatbot.js"></script>
+    <script>
+        // State variables
+        let currentVehicles = [];
+        let availableDrivers = [];
+        let activeTrip = null;
+        let plannerMap = null;
+        let trackerMap = null;
+        let plannerRouteLayer = null;
+        let trackerMarker = null;
+        let pendingBookingId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Require Customer Auth
+            if (!Auth.requireAuth(['ROLE_CUSTOMER', 'ROLE_ADMIN'])) return;
+
+            const user = Auth.getCurrentUser();
+            if (user) {
+                document.getElementById('nav-user-name').innerText = user.firstName || 'Customer';
+                document.getElementById('hero-customer-name').innerText = user.firstName || 'Traveler';
+            }
+
+            initMaps();
+            await loadDashboardData();
+            await loadFleet();
+            await loadDrivers();
+            await loadNotifications();
+            setupFormListeners();
+
+            // Resume intended action if redirected from public portal
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetVehId = urlParams.get('vehicleId');
+            const targetAction = urlParams.get('action');
+
+            if (targetVehId && targetAction === 'book') {
+                const vid = parseInt(targetVehId, 10);
+                setTimeout(() => {
+                    openBookingModal(vid);
+                    API.showToast('Resuming your vehicle booking...', 'info');
+                }, 400);
+            } else if (targetAction === 'hire_driver') {
+                const driverBtn = document.getElementById('tab-drivers-btn');
+                if (driverBtn) driverBtn.click();
+            }
+        });
+
+        let plannerStartMarker = null;
+        let plannerDestMarker = null;
+
+        function initMaps() {
+            // Initialize Leaflet Map for Trip Planner
+            plannerMap = L.map('trip-planner-map', {
+                zoomControl: true,
+                attributionControl: true
+            }).setView([12.6337, 77.1170], 9);
+
+            const plannerOsm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+            });
+            plannerOsm.on('tileerror', () => console.warn('OpenStreetMap tile server temporarily delayed.'));
+            plannerOsm.addTo(plannerMap);
+
+            const initialWaypoints = [
+                [12.9716, 77.5946],
+                [12.8750, 77.4950],
+                [12.7230, 77.2800],
+                [12.5250, 76.8980],
+                [12.4150, 76.7500],
+                [12.2958, 76.6394]
+            ];
+            plannerRouteLayer = L.polyline(initialWaypoints, { color: '#00f2fe', weight: 4, opacity: 0.9 }).addTo(plannerMap);
+            plannerStartMarker = L.circleMarker([12.9716, 77.5946], { radius: 8, color: '#00f2fe', fillColor: '#00f2fe', fillOpacity: 1 }).addTo(plannerMap).bindPopup('<b>Departure: Bangalore Hub</b>');
+            plannerDestMarker = L.circleMarker([12.2958, 76.6394], { radius: 8, color: '#10b981', fillColor: '#10b981', fillOpacity: 1 }).addTo(plannerMap).bindPopup('<b>Destination: Mysore Hub</b>');
+
+            // Initialize Leaflet Map for Live GPS Tracker
+            trackerMap = L.map('live-tracking-map', {
+                zoomControl: true,
+                attributionControl: true
+            }).setView([12.9716, 77.5946], 12);
+
+            const trackerOsm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+            });
+            trackerOsm.on('tileerror', () => console.warn('OpenStreetMap tile server temporarily delayed.'));
+            trackerOsm.addTo(trackerMap);
+
+            // Refresh map sizes on tab clicks with small delay to ensure container transition completes
+            document.getElementById('tab-planner-btn').addEventListener('shown.bs.tab', () => {
+                setTimeout(() => {
+                    if (plannerMap) {
+                        plannerMap.invalidateSize();
+                        if (plannerRouteLayer) {
+                            plannerMap.fitBounds(plannerRouteLayer.getBounds(), { padding: [30, 30] });
+                        }
+                    }
+                }, 150);
+            });
+            document.getElementById('tab-tracker-btn').addEventListener('shown.bs.tab', () => {
+                setTimeout(() => {
+                    if (trackerMap) trackerMap.invalidateSize();
+                }, 150);
+            });
+        }
+
+        async function loadDashboardData() {
+            try {
+                const res = await API.get('/bookings/my');
+                const bookings = res.data || [];
+
+                const active = bookings.filter(b => b.bookingStatus === 'ACTIVE');
+                const upcoming = bookings.filter(b => b.bookingStatus === 'CONFIRMED');
+                const completed = bookings.filter(b => b.bookingStatus === 'COMPLETED');
+
+                document.getElementById('stat-active-rentals').innerText = active.length;
+                document.getElementById('stat-upcoming-trips').innerText = upcoming.length;
+                document.getElementById('stat-completed-trips').innerText = completed.length;
+
+                renderRecentBookings(bookings.slice(0, 3));
+                renderBookingsTable(bookings);
+
+                if (active.length > 0) {
+                    loadLiveTrip(active[0].id);
+                }
+            } catch (err) {
+                console.error('Error loading bookings:', err);
+            }
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return 'N/A';
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr.replace('T', ' ');
+                const day = String(d.getDate()).padStart(2, '0');
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const month = months[d.getMonth()];
+                const year = d.getFullYear();
+                let hours = d.getHours();
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                return `${day} ${month} ${year} • ${hours}:${minutes} ${ampm}`;
+            } catch (e) {
+                return dateStr.replace('T', ' ');
+            }
+        }
+
+        function renderRecentBookings(bookings) {
+            const container = document.getElementById('recent-bookings-list');
+            if (!bookings || bookings.length === 0) {
+                container.innerHTML = `<div class="col-12 text-center text-muted py-3">No bookings yet. Explore our fleet to reserve your first ride!</div>`;
+                return;
+            }
+
+            container.innerHTML = bookings.map(b => `
+                <div class="col-md-4">
+                    <div class="p-3 bg-dark rounded-3 border border-secondary h-100 d-flex flex-column justify-content-between shadow-sm">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge ${b.bookingStatus === 'ACTIVE' ? 'bg-success' : b.bookingStatus === 'CONFIRMED' ? 'bg-primary' : 'bg-secondary'} px-2 py-1">${b.bookingStatus}</span>
+                                <span class="text-info font-monospace small">${b.bookingReference}</span>
+                            </div>
+                            <h6 class="fw-bold text-white mb-1">${b.vehicle ? b.vehicle.displayName : 'Vehicle'}</h6>
+                            <div class="small text-secondary mb-2"><i class="bi bi-geo-alt me-1 text-primary"></i>${b.pickupLocation} &rarr; ${b.dropLocation}</div>
+                            <div class="small text-muted mb-2"><i class="bi bi-clock me-1"></i>${formatDateTime(b.startDateTime)}</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-secondary">
+                            <span class="fw-bold text-success fs-6">₹${Number(b.totalAmount).toLocaleString('en-IN')}</span>
+                            ${b.bookingStatus === 'ACTIVE' ? `<button class="btn btn-outline-info btn-sm py-0 px-2" onclick="document.getElementById('tab-tracker-btn').click(); loadLiveTrip(${b.id});">Track Live</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderBookingsTable(bookings) {
+            const tbody = document.getElementById('bookings-table-body');
+            if (!bookings || bookings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-muted">No booking records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = bookings.map(b => {
+                const duration = b.totalDays ? `${b.totalDays} Day${b.totalDays > 1 ? 's' : ''}` : '1 Day';
+                return `
+                <tr>
+                    <td><span class="font-monospace text-info fw-semibold">${b.bookingReference}</span></td>
+                    <td>
+                        <div class="fw-semibold text-white">${b.vehicle ? b.vehicle.displayName : 'Vehicle'}</div>
+                        <small class="text-secondary font-monospace" style="font-size:0.75rem;">${b.vehicle ? b.vehicle.registrationNumber : ''}</small>
+                    </td>
+                    <td>${b.driver ? `<span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-person-badge me-1"></i>${b.driver.fullName}</span>` : '<span class="badge bg-secondary-subtle text-light border border-secondary">Self-Drive</span>'}</td>
+                    <td>
+                        <div class="small text-white fw-semibold">${formatDateTime(b.startDateTime)}</div>
+                        <small class="text-secondary" style="font-size:0.75rem;"><i class="bi bi-geo-alt me-1"></i>${b.pickupLocation || 'Bangalore'}</small>
+                    </td>
+                    <td>
+                        <div class="small text-white fw-semibold">${formatDateTime(b.endDateTime)}</div>
+                        <small class="text-secondary" style="font-size:0.75rem;"><i class="bi bi-geo-alt me-1"></i>${b.dropLocation || 'Mysore'}</small>
+                    </td>
+                    <td class="text-white small fw-semibold">${duration}</td>
+                    <td class="fw-bold text-success fs-6">₹${Number(b.totalAmount).toLocaleString('en-IN')}</td>
+                    <td><span class="badge ${b.bookingStatus === 'ACTIVE' ? 'bg-success' : b.bookingStatus === 'CONFIRMED' ? 'bg-primary' : b.bookingStatus === 'COMPLETED' ? 'bg-secondary' : 'bg-danger'} px-2 py-1">${b.bookingStatus}</span></td>
+                    <td><span class="badge ${b.paymentStatus === 'PAID' ? 'bg-success' : 'bg-warning text-dark'} px-2 py-1">${b.paymentStatus}</span></td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            ${b.bookingStatus === 'CONFIRMED' || b.bookingStatus === 'PENDING' ? `<button class="btn btn-outline-danger" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
+                            ${b.bookingStatus === 'ACTIVE' ? `<button class="btn btn-outline-info" onclick="document.getElementById('tab-tracker-btn').click(); loadLiveTrip(${b.id});"><i class="bi bi-broadcast me-1"></i>Track</button>` : ''}
+                            ${b.bookingStatus === 'COMPLETED' ? `<button class="btn btn-outline-warning" onclick="openReviewModal(${b.id}, ${b.driver ? b.driver.id : 'null'})"><i class="bi bi-star me-1"></i>Review</button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadFleet() {
+            const grid = document.getElementById('fleet-grid');
+            if (grid) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <span class="spinner-border text-primary spinner-border-sm me-2"></span>
+                        <span class="text-secondary">Loading operational fleet from DriveSphere database...</span>
+                    </div>
+                `;
+            }
+
+            try {
+                const res = await API.get('/vehicles/available');
+                currentVehicles = res.data || [];
+                renderFleetGrid(currentVehicles);
+
+                // Populate trip planner vehicle selector with live operational fleet
+                const tripVehSelect = document.getElementById('trip-vehicle-select');
+                if (tripVehSelect && currentVehicles.length > 0) {
+                    tripVehSelect.innerHTML = currentVehicles.map(v => {
+                        const isEV = (v.fuelType || '').toUpperCase() === 'ELECTRIC';
+                        const range = isEV ? (v.mileage || 312) : 750;
+                        return `<option value="${v.id}" data-type="${v.fuelType}" data-range="${range}">
+                            ${v.displayName} (${isEV ? range + ' km Range • Electric' : v.mileage + ' km/l • ' + v.fuelType})
+                        </option>`;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error('Error loading fleet:', err);
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="p-4 bg-dark rounded-4 border border-secondary d-inline-block shadow-sm" style="max-width: 480px;">
+                                <i class="bi bi-exclamation-circle text-warning fs-1 d-block mb-2"></i>
+                                <h5 class="text-white mb-2">Unable to load vehicles right now</h5>
+                                <p class="text-secondary small mb-3">Please try again or check your connectivity.</p>
+                                <button class="btn btn-primary btn-sm px-4 py-2 fw-semibold" onclick="loadFleet()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Retry
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function renderFleetGrid(vehicles) {
+            const grid = document.getElementById('fleet-grid');
+            if (!vehicles || vehicles.length === 0) {
+                grid.innerHTML = `<div class="col-12 text-center text-secondary py-5">No available vehicles matching current filter.</div>`;
+                return;
+            }
+
+            grid.innerHTML = vehicles.map(v => {
+                const isEV = (v.fuelType || '').toUpperCase() === 'ELECTRIC';
+                const mileageLabel = isEV ? `${v.mileage || 312} km Range` : `${v.mileage || 'High'} km/l`;
+
+                return `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card bg-surface border-secondary h-100 rounded-4 overflow-hidden shadow-sm hover-elevate">
+                        <img src="${v.primaryImageUrl || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80'}" class="card-img-top" style="height: 190px; object-fit: cover;" alt="${v.displayName}">
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">${v.categoryName || v.vehicleType}</span>
+                                    <span class="text-warning small"><i class="bi bi-star-fill me-1"></i>${v.averageRating ? v.averageRating.toFixed(1) : '4.9'}★ (${v.totalRatings || 0})</span>
+                                </div>
+                                <h5 class="card-title text-white fw-bold mb-1">${v.displayName}</h5>
+                                <p class="card-text text-secondary small mb-3">${v.description || 'Premium rental vehicle with high mileage and advanced safety features.'}</p>
+                                
+                                <div class="row g-2 mb-3 small text-secondary">
+                                    <div class="col-6"><i class="bi bi-people me-1 text-info"></i> ${v.seatingCapacity} Seats</div>
+                                    <div class="col-6"><i class="bi bi-fuel-pump me-1 text-warning"></i> ${v.fuelType}</div>
+                                    <div class="col-6"><i class="bi bi-gear me-1 text-secondary"></i> ${v.transmission}</div>
+                                    <div class="col-6"><i class="bi bi-speedometer me-1 text-success"></i> ${mileageLabel}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary">
+                                <div>
+                                    <span class="fs-5 fw-bold text-white">₹${Number(v.rentalPricePerDay).toLocaleString('en-IN')}</span>
+                                    <span class="text-secondary small">/day</span>
+                                </div>
+                                <button class="btn btn-primary btn-sm px-3 fw-semibold" onclick="openBookingModal(${v.id})">
+                                    <i class="bi bi-calendar-check me-1"></i> Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function loadDrivers() {
+            try {
+                const res = await API.get('/drivers/available');
+                availableDrivers = res.data || [];
+                const select = document.getElementById('modal-driver-select');
+                if (availableDrivers.length === 0) {
+                    select.innerHTML = `<option value="">No verified drivers available right now</option>`;
+                } else {
+                    select.innerHTML = availableDrivers.map(d => `
+                        <option value="${d.id}" data-rate="${d.dailyRate}">
+                            ${d.fullName} (Rating: ${d.rating}★ | Trust Score: ${d.trustScore ? d.trustScore.overallScore : 85}/100 [${d.trustScore ? d.trustScore.trustLevel : 'GOOD'}]) +₹${d.dailyRate}/day
+                        </option>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading drivers:', err);
+            }
+        }
+
+        async function loadNotifications() {
+            try {
+                const res = await API.get('/notifications');
+                const notifs = res.data || [];
+                const unreadCount = notifs.filter(n => !n.read).length;
+
+                const badge = document.getElementById('notif-badge');
+                if (unreadCount > 0) {
+                    badge.innerText = unreadCount;
+                    badge.classList.remove('d-none');
+                } else {
+                    badge.classList.add('d-none');
+                }
+
+                const list = document.getElementById('notif-list');
+                if (notifs.length === 0) {
+                    list.innerHTML = `<div class="text-muted text-center py-2">No notifications</div>`;
+                } else {
+                    list.innerHTML = notifs.map(n => `
+                        <div class="p-2 rounded-2 ${n.read ? 'bg-dark' : 'bg-primary-subtle text-white'} border border-secondary">
+                            <div class="fw-semibold">${n.title}</div>
+                            <div class="text-muted" style="font-size:0.75rem;">${n.message}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Notifications fetch failed:', e);
+            }
+        }
+
+        function setupFormListeners() {
+            // Filter form
+            document.getElementById('apply-filters-btn').addEventListener('click', async () => {
+                const type = document.getElementById('filter-type').value;
+                const fuel = document.getElementById('filter-fuel').value;
+                const seats = document.getElementById('filter-seats').value;
+                const trans = document.getElementById('filter-trans').value;
+
+                let endpoint = '/vehicles/filter?';
+                if (type) endpoint += `type=${type}&`;
+                if (fuel) endpoint += `fuel=${fuel}&`;
+                if (seats) endpoint += `minSeats=${seats}&`;
+                if (trans) endpoint += `transmission=${trans}&`;
+
+                try {
+                    const res = await API.get(endpoint);
+                    renderFleetGrid(res.data || []);
+                } catch (e) {
+                    API.showToast('Filter search failed', 'danger');
+                }
+            });
+
+            // AI Recommender Form
+            document.getElementById('ai-recommender-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const container = document.getElementById('ai-results-container');
+                container.innerHTML = `<div class="text-center py-5"><span class="spinner-border text-primary"></span><div class="mt-2 text-muted">DriveSphere Intelligence is evaluating fleet seating capacity & matching vehicles...</div></div>`;
+
+                try {
+                    const payload = {
+                        passengers: parseInt(document.getElementById('ai-passengers').value, 10),
+                        maxBudgetPerDay: parseFloat(document.getElementById('ai-budget').value),
+                        tripType: document.getElementById('ai-trip-type').value,
+                        fuelPreference: document.getElementById('ai-fuel-pref').value || null
+                    };
+
+                    const res = await API.post('/ai/recommend-vehicles', payload);
+                    const rec = res.data;
+
+                    if (rec.status === 'NO_FLEET_AVAILABLE' || !rec.recommendations || rec.recommendations.length === 0) {
+                        container.innerHTML = `
+                            <div class="alert alert-warning py-4 px-4 rounded-4 border-warning shadow-sm">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-exclamation-triangle-fill text-warning fs-4 me-2"></i>
+                                    <h6 class="text-white fw-bold mb-0">No Suitable Fleet Available</h6>
+                                </div>
+                                <p class="mb-0 text-white-50">${rec.summaryExplanation || 'No single vehicle or fleet combination can accommodate the requested passenger count in our active operational fleet.'}</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    container.innerHTML = `
+                        <div class="alert alert-info py-3 px-3 small mb-4 rounded-3 border-info border-opacity-25 bg-dark shadow-sm">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="bi bi-stars text-info me-2 fs-5"></i>
+                                <strong class="text-info">AI Fleet Assessment (Passengers: ${rec.requestedPassengers}):</strong>
+                            </div>
+                            <div class="text-white-50 ps-4">${rec.summaryExplanation}</div>
+                        </div>
+                        <div class="row g-3">
+                            ${rec.recommendations.map(r => {
+                                const isMulti = r.multiVehicle || r.vehicleCount > 1;
+                                return `
+                                <div class="col-md-6">
+                                    <div class="card bg-dark border-secondary p-3 rounded-4 h-100 d-flex flex-column justify-content-between shadow-sm">
+                                        <div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="badge bg-primary px-2 py-1"><i class="bi bi-stars me-1"></i>${r.matchPercentage || 90}% Match</span>
+                                                <span class="badge ${r.available ? 'bg-success' : 'bg-danger'} px-2 py-1">
+                                                    <i class="bi ${r.available ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-1"></i>${r.available ? 'Available' : 'Fleet Incomplete'}
+                                                </span>
+                                            </div>
+
+                                            <h5 class="text-white fw-bold mb-1">
+                                                ${r.vehicle ? r.vehicle.displayName : 'Fleet Vehicle'}
+                                                ${isMulti ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1">× ${r.vehicleCount} Vehicles</span>` : ''}
+                                            </h5>
+
+                                            <div class="small text-info mb-2">
+                                                <i class="bi bi-people-fill me-1"></i><strong>Capacity:</strong> ${r.seatingCalculation || `${r.totalSeatsCapacity} Seats`}
+                                            </div>
+
+                                            <div class="p-3 bg-black rounded-3 border border-secondary mb-3">
+                                                <div class="d-flex justify-content-between align-items-baseline">
+                                                    <span class="small text-secondary fw-semibold">TOTAL DAILY RENTAL</span>
+                                                    <span class="fs-5 fw-bold text-success">₹${Number(r.totalDailyRental || r.estimatedCost).toLocaleString('en-IN')}<span class="fs-7 text-muted fw-normal">/day</span></span>
+                                                </div>
+                                                ${isMulti ? `
+                                                <div class="d-flex justify-content-between align-items-center small text-secondary pt-2 mt-2 border-top border-secondary">
+                                                    <span>Per Vehicle Daily Rate</span>
+                                                    <span class="text-white fw-semibold">₹${Number(r.perVehicleDailyRate).toLocaleString('en-IN')}/day avg</span>
+                                                </div>
+                                                ` : ''}
+                                            </div>
+
+                                            ${r.fleetItems && r.fleetItems.length > 1 ? `
+                                            <div class="mb-3 p-2 bg-dark rounded-2 border border-secondary small">
+                                                <div class="fw-semibold text-secondary mb-1" style="font-size: 0.76rem;"><i class="bi bi-layers-fill me-1 text-primary"></i>VEHICLE CONVOY BREAKDOWN:</div>
+                                                ${r.fleetItems.map(item => `
+                                                    <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-secondary border-opacity-25" style="font-size: 0.78rem;">
+                                                        <span class="text-white">${item.quantity} × ${item.vehicle.displayName} (${item.seatsPerVehicle} seats)</span>
+                                                        <span class="text-info font-monospace">₹${Number(item.dailyRatePerVehicle).toLocaleString('en-IN')}/day</span>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                            ` : ''}
+
+                                            ${r.availabilityNote ? `
+                                            <div class="small ${r.available ? 'text-success' : 'text-warning'} mb-2">
+                                                <i class="bi ${r.available ? 'bi-check2-circle' : 'bi-info-circle'} me-1"></i>${r.availabilityNote}
+                                            </div>
+                                            ` : ''}
+
+                                            <p class="small text-secondary mb-3">${r.matchReason}</p>
+                                        </div>
+
+                                        <button class="btn btn-outline-primary btn-sm w-100 py-2 fw-semibold" onclick="openBookingModal(${r.vehicle.id})" ${!r.available ? 'disabled' : ''}>
+                                            <i class="bi bi-calendar-check me-1"></i>${r.available ? 'Book This Match' : 'Fleet Unavailable'}
+                                        </button>
+                                    </div>
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                } catch (err) {
+                    container.innerHTML = `<div class="alert alert-danger py-3">Failed to generate AI recommendations: ${err.message}</div>`;
+                }
+            });
+
+            // Trip Planner Vehicle Selector Change Listener
+            const custTripVehSelect = document.getElementById('trip-vehicle-select');
+            const custTripFuelLabel = document.getElementById('trip-fuel-price-label');
+            const custTripFuelPrice = document.getElementById('trip-fuel-price');
+            const custStatEnergyLabel = document.getElementById('stat-energy-label');
+            const custStatCostLabel = document.getElementById('stat-cost-label');
+            const custEvCard = document.getElementById('customer-ev-range-card');
+
+            if (custTripVehSelect && custTripFuelLabel && custTripFuelPrice) {
+                custTripVehSelect.addEventListener('change', () => {
+                    const opt = custTripVehSelect.options[custTripVehSelect.selectedIndex];
+                    const isEV = (opt.getAttribute('data-type') || '').toUpperCase() === 'ELECTRIC';
+
+                    if (isEV) {
+                        custTripFuelLabel.innerText = 'Electricity Price (₹ / kWh)';
+                        custTripFuelPrice.value = '12.00';
+                        if (custStatEnergyLabel) custStatEnergyLabel.innerText = 'ENERGY USED';
+                        if (custStatCostLabel) custStatCostLabel.innerText = 'EST. ENERGY COST';
+                        if (custEvCard) custEvCard.classList.remove('d-none');
+                    } else {
+                        custTripFuelLabel.innerText = 'Fuel Price (₹ / L)';
+                        custTripFuelPrice.value = '102.50';
+                        if (custStatEnergyLabel) custStatEnergyLabel.innerText = 'FUEL USED';
+                        if (custStatCostLabel) custStatCostLabel.innerText = 'EST. FUEL COST';
+                        if (custEvCard) custEvCard.classList.add('d-none');
+                    }
+                });
+            }
+
+            // Trip Planner Form
+            document.getElementById('trip-planner-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const source = document.getElementById('trip-source').value.trim();
+                const dest = document.getElementById('trip-dest').value.trim();
+                const vehId = document.getElementById('trip-vehicle-select').value;
+                const fuelPrice = parseFloat(document.getElementById('trip-fuel-price').value || '12.00');
+
+                const opt = custTripVehSelect.options[custTripVehSelect.selectedIndex];
+                const isElectric = (opt.getAttribute('data-type') || '').toUpperCase() === 'ELECTRIC';
+                const ratedRange = parseFloat(opt.getAttribute('data-range') || '312');
+
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Routing via Highways...`;
+
+                try {
+                    const res = await API.post('/ai/trip-assistant', {
+                        source, destination: dest, vehicleId: vehId, fuelPricePerUnit: fuelPrice
+                    });
+                    const plan = res.data;
+
+                    document.getElementById('trip-dist').innerText = plan.distanceKm + ' km';
+                    document.getElementById('trip-duration').innerText = plan.durationFormatted;
+                    
+                    const unit = plan.energyUnit || (plan.electric ? 'kWh' : 'L');
+                    if (custStatEnergyLabel) custStatEnergyLabel.innerText = unit === 'kWh' ? 'ENERGY USED' : 'FUEL USED';
+                    if (custStatCostLabel) custStatCostLabel.innerText = unit === 'kWh' ? 'EST. ENERGY COST' : 'EST. FUEL COST';
+
+                    document.getElementById('trip-fuel-used').innerText = plan.fuelUsedUnits + ' ' + unit;
+                    document.getElementById('trip-fuel-cost').innerText = '₹' + Number(plan.estimatedFuelCost).toLocaleString('en-IN');
+
+                    // Update EV Range Validation
+                    if (isElectric && custEvCard) {
+                        custEvCard.classList.remove('d-none');
+                        const distKm = parseFloat(plan.distanceKm);
+                        const remainingRange = Math.max(0, ratedRange - distKm);
+
+                        document.getElementById('customer-ev-req').innerText = `${distKm.toFixed(1)} km`;
+                        document.getElementById('customer-ev-total').innerText = `${ratedRange.toFixed(1)} km`;
+                        document.getElementById('customer-ev-rem').innerText = `${remainingRange.toFixed(1)} km`;
+
+                        const statusBadge = document.getElementById('customer-ev-status');
+                        const warningBox = document.getElementById('customer-ev-warning');
+
+                        if (distKm > ratedRange) {
+                            statusBadge.className = 'badge bg-danger';
+                            statusBadge.innerText = 'Charging Stop Required';
+                            if (warningBox) warningBox.classList.remove('d-none');
+                        } else {
+                            statusBadge.className = 'badge bg-success';
+                            statusBadge.innerText = 'Range Sufficient';
+                            if (warningBox) warningBox.classList.add('d-none');
+                        }
+                    } else if (custEvCard) {
+                        custEvCard.classList.add('d-none');
+                    }
+
+                    // Update weather with destination location name
+                    if (plan.destinationWeather) {
+                        const w = plan.destinationWeather;
+                        const destNameEl = document.getElementById('weather-location-label');
+                        if (destNameEl) destNameEl.innerText = plan.destinationLocationName || plan.destination;
+                        document.getElementById('weather-temp').innerText = Math.round(w.temperature) + '°C';
+                        document.getElementById('weather-condition').innerText = w.condition;
+                        document.getElementById('weather-advisory').innerText = w.forecastNotice;
+                        document.getElementById('planner-weather-card').classList.remove('d-none');
+                    }
+
+                    // Render Route Polyline and Markers on Map
+                    if (plan.routeCoordinates && plan.routeCoordinates.length > 0) {
+                        if (plannerRouteLayer) plannerMap.removeLayer(plannerRouteLayer);
+                        if (plannerStartMarker) plannerMap.removeLayer(plannerStartMarker);
+                        if (plannerDestMarker) plannerMap.removeLayer(plannerDestMarker);
+
+                        plannerRouteLayer = L.polyline(plan.routeCoordinates, { color: '#00f2fe', weight: 4, opacity: 0.9 }).addTo(plannerMap);
+
+                        const startPt = plan.routeCoordinates[0];
+                        const endPt = plan.routeCoordinates[plan.routeCoordinates.length - 1];
+                        plannerStartMarker = L.circleMarker(startPt, { radius: 8, color: '#00f2fe', fillColor: '#00f2fe', fillOpacity: 1 }).addTo(plannerMap).bindPopup(`<b>Departure: ${plan.source}</b>`);
+                        plannerDestMarker = L.circleMarker(endPt, { radius: 8, color: '#10b981', fillColor: '#10b981', fillOpacity: 1 }).addTo(plannerMap).bindPopup(`<b>Destination: ${plan.destination}</b>`);
+
+                        plannerMap.invalidateSize();
+                        plannerMap.fitBounds(plannerRouteLayer.getBounds(), { padding: [30, 30] });
+                    }
+                    API.showToast('Route calculated successfully via highway navigation network.', 'success');
+                } catch (err) {
+                    API.showToast(err.message || 'Could not calculate route for specified locations.', 'danger');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            });
+
+            // Driver hire toggle in booking modal
+            const hireToggle = document.getElementById('modal-hire-driver-toggle');
+            hireToggle.addEventListener('change', () => {
+                document.getElementById('driver-select-container').classList.toggle('d-none', !hireToggle.checked);
+                recalcModalTotal();
+            });
+
+            document.getElementById('modal-driver-select').addEventListener('change', recalcModalTotal);
+            document.getElementById('modal-start-date').addEventListener('change', recalcModalTotal);
+            document.getElementById('modal-end-date').addEventListener('change', recalcModalTotal);
+
+            // Reservation Submission
+            document.getElementById('reservation-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const vehId = document.getElementById('modal-vehicle-id').value;
+                const startDate = document.getElementById('modal-start-date').value;
+                const endDate = document.getElementById('modal-end-date').value;
+                const pickupLoc = document.getElementById('modal-pickup-loc').value;
+                const dropLoc = document.getElementById('modal-drop-loc').value;
+                const driverId = hireToggle.checked ? document.getElementById('modal-driver-select').value : null;
+
+                try {
+                    const res = await API.post('/bookings', {
+                        vehicleId: vehId,
+                        driverId: driverId ? parseInt(driverId, 10) : null,
+                        startDateTime: startDate,
+                        endDateTime: endDate,
+                        pickupLocation: pickupLoc,
+                        dropLocation: dropLoc
+                    });
+
+                    const booking = res.data;
+                    pendingBookingId = booking.id;
+
+                    // Close Booking modal and open Razorpay Sandbox modal
+                    bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+
+                    const payRes = await API.post('/payments/create-order', { bookingId: booking.id });
+                    const order = payRes.data;
+
+                    document.getElementById('pay-modal-amount').innerText = '₹' + order.amount;
+                    document.getElementById('pay-modal-ref').innerText = 'Booking Ref: ' + order.bookingReference;
+                    document.getElementById('pay-modal-order-id').innerText = order.orderId;
+
+                    new bootstrap.Modal(document.getElementById('paymentModal')).show();
+                } catch (err) {
+                    API.showToast(err.message, 'danger');
+                }
+            });
+
+            // Simulate Razorpay Sandbox Payment
+            document.getElementById('pay-simulate-btn').addEventListener('click', async () => {
+                try {
+                    const orderId = document.getElementById('pay-modal-order-id').innerText;
+                    await API.post('/payments/verify', {
+                        bookingId: pendingBookingId,
+                        orderId: orderId,
+                        paymentId: 'pay_mock_' + Date.now(),
+                        signature: 'mock_sig_pass',
+                        mockApproval: true
+                    });
+
+                    bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                    API.showToast('Payment verified successfully! Booking confirmed.', 'success');
+                    await loadDashboardData();
+                    document.getElementById('tab-bookings-btn').click();
+                } catch (err) {
+                    API.showToast('Payment failed: ' + err.message, 'danger');
+                }
+            });
+
+            // Review submission
+            document.getElementById('review-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const bookingId = document.getElementById('review-booking-id').value;
+                const rating = parseFloat(document.getElementById('review-rating').value);
+                const vehRating = parseFloat(document.getElementById('review-veh-rating').value);
+                const driverRatingEl = document.getElementById('review-driver-rating');
+                const driverRating = driverRatingEl ? parseFloat(driverRatingEl.value) : null;
+                const comment = document.getElementById('review-comment').value;
+
+                try {
+                    await API.post('/reviews', {
+                        bookingId: parseInt(bookingId, 10),
+                        rating,
+                        vehicleRating: vehRating,
+                        driverRating,
+                        comment
+                    });
+
+                    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+                    API.showToast('Review submitted! Thank you for rating.', 'success');
+                    await loadDashboardData();
+                } catch (err) {
+                    API.showToast(err.message, 'danger');
+                }
+            });
+
+            // Mark all read
+            document.getElementById('mark-all-read-btn').addEventListener('click', async () => {
+                await API.put('/notifications/read-all');
+                await loadNotifications();
+            });
+        }
+
+        function openBookingModal(vehicleId) {
+            const v = currentVehicles.find(x => x.id === vehicleId);
+            if (!v) return;
+
+            document.getElementById('modal-vehicle-id').value = v.id;
+            document.getElementById('modal-veh-img').src = v.primaryImageUrl || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=300&q=80';
+            document.getElementById('modal-veh-title').innerText = v.displayName;
+            document.getElementById('modal-veh-rate').innerText = '₹' + v.rentalPricePerDay + '/day';
+            document.getElementById('modal-veh-seats').innerText = v.seatingCapacity;
+            document.getElementById('modal-veh-fuel').innerText = v.fuelType;
+
+            // Prepopulate start (tomorrow 9am) and end (3 days later 9am)
+            const now = new Date();
+            now.setDate(now.getDate() + 1);
+            now.setHours(9, 0, 0, 0);
+            const startStr = now.toISOString().slice(0, 16);
+
+            now.setDate(now.getDate() + 2);
+            const endStr = now.toISOString().slice(0, 16);
+
+            document.getElementById('modal-start-date').value = startStr;
+            document.getElementById('modal-end-date').value = endStr;
+
+            recalcModalTotal();
+            new bootstrap.Modal(document.getElementById('bookingModal')).show();
+        }
+
+        function recalcModalTotal() {
+            const vehId = parseInt(document.getElementById('modal-vehicle-id').value, 10);
+            const v = currentVehicles.find(x => x.id === vehId);
+            if (!v) return;
+
+            const start = new Date(document.getElementById('modal-start-date').value);
+            const end = new Date(document.getElementById('modal-end-date').value);
+
+            let diffDays = 1;
+            if (end > start) {
+                const diffHours = (end - start) / (1000 * 60 * 60);
+                diffDays = Math.max(1, Math.ceil(diffHours / 24));
+            }
+
+            const rentalTotal = v.rentalPricePerDay * diffDays;
+            
+            let driverDaily = 0;
+            const hireDriver = document.getElementById('modal-hire-driver-toggle').checked;
+            if (hireDriver) {
+                const select = document.getElementById('modal-driver-select');
+                const selectedOpt = select.options[select.selectedIndex];
+                if (selectedOpt && selectedOpt.getAttribute('data-rate')) {
+                    driverDaily = parseFloat(selectedOpt.getAttribute('data-rate'));
+                } else {
+                    driverDaily = 850;
+                }
+            }
+            const driverTotal = driverDaily * diffDays;
+            const subtotal = rentalTotal + driverTotal;
+            const tax = subtotal * 0.18;
+            const grandTotal = subtotal + tax;
+
+            document.getElementById('modal-calc-days').innerText = diffDays;
+            document.getElementById('modal-calc-rental').innerText = '₹' + rentalTotal.toFixed(2);
+            document.getElementById('modal-calc-driver').innerText = '₹' + driverTotal.toFixed(2);
+            document.getElementById('modal-calc-tax').innerText = '₹' + tax.toFixed(2);
+            document.getElementById('modal-calc-total').innerText = '₹' + grandTotal.toFixed(2);
+        }
+
+        async function loadLiveTrip(bookingId) {
+            try {
+                const res = await API.get('/trips/booking/' + bookingId);
+                activeTrip = res.data;
+
+                document.getElementById('tracking-booking-ref').innerText = 'Booking Ref: ' + activeTrip.bookingReference;
+                document.getElementById('tracker-status').innerText = activeTrip.status;
+                document.getElementById('tracker-veh-name').innerText = activeTrip.vehicleName;
+                document.getElementById('tracker-traveled').innerText = activeTrip.distanceTraveledKm + ' km';
+                document.getElementById('tracker-remaining').innerText = activeTrip.remainingDistanceKm + ' km';
+
+                const total = activeTrip.distanceKm || 100;
+                const progress = Math.min(100, Math.round((activeTrip.distanceTraveledKm / total) * 100));
+                document.getElementById('tracker-progress-bar').style.width = progress + '%';
+
+                const lat = activeTrip.currentLatitude || activeTrip.startLatitude;
+                const lng = activeTrip.currentLongitude || activeTrip.startLongitude;
+
+                trackerMap.setView([lat, lng], 13);
+                if (trackerMarker) trackerMap.removeLayer(trackerMarker);
+                trackerMarker = L.marker([lat, lng]).addTo(trackerMap)
+                    .bindPopup(`<strong>${activeTrip.vehicleName}</strong><br>Status: ${activeTrip.status}`)
+                    .openPopup();
+            } catch (err) {
+                console.warn('No active trip for tracking:', err.message);
+            }
+        }
+
+        document.getElementById('simulate-step-btn').addEventListener('click', async () => {
+            if (!activeTrip) {
+                API.showToast('No active trip loaded to simulate telemetry', 'warning');
+                return;
+            }
+            try {
+                const res = await API.post('/trips/' + activeTrip.id + '/simulate');
+                activeTrip = res.data;
+                loadLiveTrip(activeTrip.bookingId);
+                API.showToast('Simulated GPS waypoint advanced along route', 'info');
+            } catch (e) {
+                API.showToast(e.message, 'danger');
+            }
+        });
+
+        async function cancelBooking(bookingId) {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+            try {
+                await API.put('/bookings/' + bookingId + '/cancel');
+                API.showToast('Booking cancelled successfully', 'info');
+                await loadDashboardData();
+            } catch (e) {
+                API.showToast(e.message, 'danger');
+            }
+        }
+
+        function openReviewModal(bookingId, driverId) {
+            document.getElementById('review-booking-id').value = bookingId;
+            document.getElementById('driver-review-group').classList.toggle('d-none', !driverId);
+            new bootstrap.Modal(document.getElementById('reviewModal')).show();
+        }
+    </script>
+</body>
+</html>

@@ -107,6 +107,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @NonNull
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(@NonNull IllegalArgumentException ex, @NonNull HttpServletRequest request) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "Invalid argument provided";
+        String path = request.getRequestURI() != null ? request.getRequestURI() : "";
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .success(false)
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(message)
+                .path(path)
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     @NonNull
     public ResponseEntity<ErrorResponse> handleGeneralException(@NonNull Exception ex, @NonNull HttpServletRequest request) {

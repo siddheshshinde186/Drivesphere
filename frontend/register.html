@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveSphere – Create Account</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-dark text-light d-flex flex-column min-vh-100 justify-content-between">
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
+                <span class="brand-font fs-4 text-gradient">DriveSphere</span>
+            </a>
+            <div class="d-flex align-items-center">
+                <a href="index.html" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-house me-1"></i>Home</a>
+                <a href="login.html" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-in-right me-1"></i>Sign In</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Registration Container -->
+    <main class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-9">
+                <div class="card bg-surface border-secondary shadow-lg p-4 rounded-4">
+                    <div class="text-center mb-4">
+                        <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex p-3 mb-2">
+                            <i class="bi bi-person-plus-fill fs-2"></i>
+                        </div>
+                        <h2 class="brand-font text-white mb-1">Create an Account</h2>
+                        <p class="text-muted small">Join DriveSphere for smart rentals or register as a verified driver</p>
+                    </div>
+
+                    <div id="reg-alert" class="alert alert-danger d-none py-2 px-3 small" role="alert"></div>
+
+                    <!-- Role Selection Toggle -->
+                    <div class="btn-group w-100 mb-4 p-1 bg-dark rounded-3 border border-secondary" role="group">
+                        <input type="radio" class="btn-check" name="roleType" id="role-customer" value="ROLE_CUSTOMER" checked autocomplete="off">
+                        <label class="btn btn-outline-primary border-0 rounded-2 py-2" for="role-customer">
+                            <i class="bi bi-person me-1"></i> Customer Account
+                        </label>
+
+                        <input type="radio" class="btn-check" name="roleType" id="role-driver" value="ROLE_DRIVER" autocomplete="off">
+                        <label class="btn btn-outline-primary border-0 rounded-2 py-2" for="role-driver">
+                            <i class="bi bi-person-badge me-1"></i> Driver Partner
+                        </label>
+                    </div>
+
+                    <form id="register-form">
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label for="firstName" class="form-label text-light small fw-medium">First Name</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="firstName" placeholder="First name" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="lastName" class="form-label text-light small fw-medium">Last Name</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="lastName" placeholder="Last name" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label text-light small fw-medium">Email Address</label>
+                            <input type="email" class="form-control bg-dark text-white border-secondary" id="email" placeholder="name@example.com" required>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label for="phoneNumber" class="form-label text-light small fw-medium">Phone Number</label>
+                                <input type="tel" class="form-control bg-dark text-white border-secondary" id="phoneNumber" placeholder="+91 9876543210" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="password" class="form-label text-light small fw-medium">Password</label>
+                                <input type="password" class="form-control bg-dark text-white border-secondary" id="password" placeholder="Min. 6 characters" minlength="6" required>
+                            </div>
+                        </div>
+
+                        <!-- Driver Specific Additional Fields -->
+                        <div id="driver-fields" class="p-3 bg-dark rounded-3 border border-secondary mb-3 d-none">
+                            <div class="fw-semibold text-info small mb-2"><i class="bi bi-shield-check me-1"></i> Driver License & Verification Information</div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-sm-6">
+                                    <label class="form-label text-muted small">Driving License Number</label>
+                                    <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="licenseNumber" placeholder="DL-0420220019283">
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label text-muted small">License Expiry Date</label>
+                                    <input type="date" class="form-control form-control-sm bg-black text-white border-secondary" id="licenseExpiryDate">
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-sm-6">
+                                    <label class="form-label text-muted small">Years of Driving Experience</label>
+                                    <input type="number" class="form-control form-control-sm bg-black text-white border-secondary" id="experienceYears" value="3" min="1" max="40">
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label text-muted small">Languages Spoken</label>
+                                    <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="languages" placeholder="English, Hindi">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label text-muted small">Residential Address</label>
+                                <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="address" placeholder="Street, City, Postal Code">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="reg-btn" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <span id="reg-btn-text"><i class="bi bi-check2-circle me-2"></i>Create Account</span>
+                            <span id="reg-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <span class="text-muted small">Already have an account?</span>
+                        <a href="login.html" class="text-primary small fw-semibold ms-1">Sign In Here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-3 border-top border-secondary text-center text-muted small">
+        <div class="container">
+            DriveSphere – Smart Mobility & Fleet Intelligence Platform &copy; 2026
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS & App Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleCustomer = document.getElementById('role-customer');
+            const roleDriver = document.getElementById('role-driver');
+            const driverFields = document.getElementById('driver-fields');
+            const form = document.getElementById('register-form');
+            const alertBox = document.getElementById('reg-alert');
+            const btnText = document.getElementById('reg-btn-text');
+            const spinner = document.getElementById('reg-spinner');
+            const regBtn = document.getElementById('reg-btn');
+
+            roleCustomer.addEventListener('change', () => {
+                driverFields.classList.add('d-none');
+            });
+
+            roleDriver.addEventListener('change', () => {
+                driverFields.classList.remove('d-none');
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                alertBox.classList.add('d-none');
+                btnText.classList.add('d-none');
+                spinner.classList.remove('d-none');
+                regBtn.disabled = true;
+
+                try {
+                    const isDriver = roleDriver.checked;
+                    const payload = {
+                        firstName: document.getElementById('firstName').value.trim(),
+                        lastName: document.getElementById('lastName').value.trim(),
+                        email: document.getElementById('email').value.trim(),
+                        phoneNumber: document.getElementById('phoneNumber').value.trim(),
+                        password: document.getElementById('password').value,
+                        role: isDriver ? 'ROLE_DRIVER' : 'ROLE_CUSTOMER'
+                    };
+
+                    if (isDriver) {
+                        payload.licenseNumber = document.getElementById('licenseNumber').value.trim() || 'DL-' + Date.now();
+                        payload.licenseExpiryDate = document.getElementById('licenseExpiryDate').value || '2030-12-31';
+                        payload.experienceYears = parseInt(document.getElementById('experienceYears').value || '2', 10);
+                        payload.languages = document.getElementById('languages').value.trim() || 'English';
+                        payload.address = document.getElementById('address').value.trim() || 'City Center';
+                    }
+
+                    const res = await API.post('/auth/register', payload);
+
+                    if (res && res.data && res.data.token) {
+                        API.setToken(res.data.token);
+                        API.setUser(res.data.user);
+                        API.showToast('Account created successfully!', 'success');
+                        setTimeout(() => {
+                            Auth.redirectToDashboard();
+                        }, 500);
+                    } else {
+                        throw new Error('Registration failed');
+                    }
+                } catch (err) {
+                    alertBox.innerText = err.message || 'Registration failed. Please check form inputs.';
+                    alertBox.classList.remove('d-none');
+                    btnText.classList.remove('d-none');
+                    spinner.classList.add('d-none');
+                    regBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

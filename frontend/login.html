@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveSphere – Portal Authentication</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-dark text-light d-flex flex-column min-vh-100 justify-content-between">
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
+                <span class="brand-font fs-4 text-gradient">DriveSphere</span>
+            </a>
+            <div class="d-flex align-items-center">
+                <a href="index.html" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-house me-1"></i>Home</a>
+                <a href="register.html" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Register</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Login Container -->
+    <main class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8">
+                <div class="card bg-surface border-secondary shadow-lg p-4 rounded-4">
+                    <div class="text-center mb-4">
+                        <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex p-3 mb-3">
+                            <i class="bi bi-lock-fill fs-2"></i>
+                        </div>
+                        <h2 class="brand-font text-white mb-1">Account Login</h2>
+                        <p class="text-muted small">Sign in to access your role-based mobility workspace</p>
+                    </div>
+
+                    <div id="login-info-alert" class="alert alert-info d-none py-2 px-3 small d-flex align-items-center mb-3" role="alert">
+                        <i class="bi bi-info-circle-fill me-2 fs-6"></i>
+                        <span id="login-info-text">Please sign in to continue with your booking.</span>
+                    </div>
+
+                    <div id="login-alert" class="alert alert-danger d-none py-2 px-3 small" role="alert"></div>
+
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="email" class="form-label text-light small fw-medium">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control bg-dark text-white border-secondary" id="email" placeholder="name@drivesphere.local" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="password" class="form-label text-light small fw-medium mb-0">Password</label>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-key"></i></span>
+                                <input type="password" class="form-control bg-dark text-white border-secondary" id="password" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <button type="submit" id="login-btn" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <span id="login-btn-text"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</span>
+                            <span id="login-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    </form>
+
+                    <!-- Quick 1-Click Demo Logins -->
+                    <div class="mt-4 pt-3 border-top border-secondary">
+                        <div class="text-muted small text-center mb-3 fw-medium">🚀 Instant 1-Click Academic Demo Credentials</div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-info btn-sm w-100 py-2 demo-btn" 
+                                        data-email="customer@drivesphere.local" data-pwd="Password@123">
+                                    <i class="bi bi-person me-1"></i> Customer
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-warning btn-sm w-100 py-2 demo-btn" 
+                                        data-email="driver@drivesphere.local" data-pwd="Password@123">
+                                    <i class="bi bi-person-badge me-1"></i> Driver
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100 py-2 demo-btn" 
+                                        data-email="fleet@drivesphere.local" data-pwd="Password@123">
+                                    <i class="bi bi-truck me-1"></i> Fleet Mgr
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-danger btn-sm w-100 py-2 demo-btn" 
+                                        data-email="admin@drivesphere.local" data-pwd="Password@123">
+                                    <i class="bi bi-shield-lock me-1"></i> Admin
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <span class="text-muted small">Don't have an account?</span>
+                        <a href="register.html" class="text-primary small fw-semibold ms-1">Create Account</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-3 border-top border-secondary text-center text-muted small">
+        <div class="container">
+            DriveSphere – Smart Mobility & Fleet Intelligence Platform &copy; 2026
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS & App Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('login-form');
+            const emailInput = document.getElementById('email');
+            const pwdInput = document.getElementById('password');
+            const alertBox = document.getElementById('login-alert');
+            const btnText = document.getElementById('login-btn-text');
+            const spinner = document.getElementById('login-spinner');
+            const loginBtn = document.getElementById('login-btn');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const returnTo = urlParams.get('returnTo') || urlParams.get('redirect');
+            const message = urlParams.get('message');
+            const infoAlert = document.getElementById('login-info-alert');
+            const infoText = document.getElementById('login-info-text');
+
+            if (message && infoAlert && infoText) {
+                infoText.innerText = message;
+                infoAlert.classList.remove('d-none');
+            } else if (returnTo && infoAlert && infoText) {
+                infoText.innerText = 'Please sign in to continue with your booking.';
+                infoAlert.classList.remove('d-none');
+            }
+
+            function isSafeLocalUrl(url) {
+                if (!url) return false;
+                const trimmed = url.trim();
+                if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('//') || trimmed.toLowerCase().includes('javascript:')) {
+                    return false;
+                }
+                return true;
+            }
+
+            // Handle 1-Click Demo Buttons
+            document.querySelectorAll('.demo-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    emailInput.value = btn.getAttribute('data-email');
+                    pwdInput.value = btn.getAttribute('data-pwd');
+                    form.dispatchEvent(new Event('submit'));
+                });
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                alertBox.classList.add('d-none');
+                btnText.classList.add('d-none');
+                spinner.classList.remove('d-none');
+                loginBtn.disabled = true;
+
+                try {
+                    const email = emailInput.value.trim();
+                    const password = pwdInput.value;
+
+                    const res = await API.post('/auth/login', { email, password });
+                    
+                    if (res && res.data && res.data.token) {
+                        API.setToken(res.data.token);
+                        API.setUser(res.data.user);
+                        API.showToast('Login successful! Redirecting to workspace...', 'success');
+                        
+                        setTimeout(() => {
+                            if (returnTo && isSafeLocalUrl(returnTo)) {
+                                window.location.href = returnTo;
+                            } else {
+                                Auth.redirectToDashboard();
+                            }
+                        }, 500);
+                    } else {
+                        throw new Error('Invalid token returned by server');
+                    }
+                } catch (err) {
+                    alertBox.innerText = err.message || 'Login failed. Please check your credentials.';
+                    alertBox.classList.remove('d-none');
+                    btnText.classList.remove('d-none');
+                    spinner.classList.add('d-none');
+                    loginBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

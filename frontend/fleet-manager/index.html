@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Intelligence & Telematics – DriveSphere</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Leaflet.js CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <!-- Chart.js for Fleet Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        #fleet-telemetry-map {
+            height: 380px;
+            width: 100%;
+            border-radius: 12px;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="bg-dark text-light">
+
+    <!-- Fleet Manager Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-surface border-bottom border-secondary sticky-top py-2">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
+                <span class="brand-font fs-5 text-gradient">DriveSphere</span>
+                <span class="badge bg-info-subtle text-info ms-2" style="font-size: 0.72rem;">Fleet Manager</span>
+            </a>
+
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-gear text-info fs-5 me-2"></i>
+                        <span id="nav-fleet-name">Fleet Manager</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="../index.html"><i class="bi bi-globe me-2"></i>Public Portal</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="javascript:Auth.logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid px-4 py-4">
+        <!-- Top Fleet KPIs -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-2">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
+                    <div class="kpi-label mb-1">TOTAL FLEET</div>
+                    <div id="kpi-total" class="fs-4 fw-bold text-white">0</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
+                    <div class="kpi-label mb-1">AVAILABLE</div>
+                    <div id="kpi-available" class="fs-4 fw-bold text-success">0</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
+                    <div class="kpi-label mb-1">RENTED / ON TRIP</div>
+                    <div id="kpi-rented" class="fs-4 fw-bold text-primary">0</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
+                    <div class="kpi-label mb-1">IN MAINTENANCE</div>
+                    <div id="kpi-maintenance" class="fs-4 fw-bold text-warning">0</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
+                    <div class="kpi-label mb-1">UTILIZATION RATE</div>
+                    <div id="kpi-utilization" class="fs-4 fw-bold text-info">0.0%</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
+                    <div class="kpi-label mb-1">FLEET REVENUE</div>
+                    <div id="kpi-revenue" class="fs-4 fw-bold text-success">₹0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Telemetry Map & Analytics Charts -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-7">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                        <h5 class="brand-font text-white mb-0"><i class="bi bi-geo-alt text-info me-2"></i>Regional Fleet GPS Map</h5>
+                        <span class="badge bg-info-subtle border border-info border-opacity-25 text-info px-2 py-1"><i class="bi bi-cpu me-1"></i>Simulated Fleet Telemetry</span>
+                    </div>
+                    <div id="fleet-telemetry-map"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                    <h5 class="brand-font text-white mb-3"><i class="bi bi-graph-up text-primary me-2"></i>Fleet Utilization Trend</h5>
+                    <div style="height: 300px;">
+                        <canvas id="utilizationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fleet Management & Maintenance Section -->
+        <div class="row g-4">
+            <!-- Vehicle Inventory Management -->
+            <div class="col-lg-8">
+                <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="brand-font text-white mb-0"><i class="bi bi-car-front text-primary me-2"></i>Vehicle Inventory</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                            <i class="bi bi-plus-lg me-1"></i> Add New Vehicle
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th>Registration</th>
+                                    <th>Model</th>
+                                    <th>Type</th>
+                                    <th>Fuel</th>
+                                    <th>Rate/Day</th>
+                                    <th>Odometer</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fleet-table-tbody">
+                                <tr><td colspan="8" class="text-center py-4 text-muted">Loading fleet inventory...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Scheduling & Work Orders -->
+            <div class="col-lg-4">
+                <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="brand-font text-white mb-0"><i class="bi bi-tools text-warning me-2"></i>Service & Maintenance</h5>
+                        <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#scheduleMaintModal">
+                            <i class="bi bi-calendar-plus"></i> Schedule
+                        </button>
+                    </div>
+                    <div id="maintenance-list" class="d-flex flex-column gap-2 overflow-auto" style="max-height: 480px;">
+                        <div class="text-muted text-center py-4">Loading maintenance records...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Vehicle Modal -->
+    <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-plus-circle text-primary me-2"></i>Add Vehicle to Fleet</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="add-vehicle-form">
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label small text-muted">Brand</label>
+                                <input type="text" id="add-brand" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="e.g. Tata" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small text-muted">Model</label>
+                                <input type="text" id="add-model" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="e.g. Harrier Fearless" required>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label small text-muted">Registration Number</label>
+                                <input type="text" id="add-reg" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="KA-01-XX-9999" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small text-muted">Manufacture Year</label>
+                                <input type="number" id="add-year" class="form-control form-control-sm bg-dark text-white border-secondary" value="2024" required>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-4">
+                                <label class="form-label small text-muted">Vehicle Type</label>
+                                <select id="add-type" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="ELECTRIC">ELECTRIC</option>
+                                    <option value="SUV">SUV</option>
+                                    <option value="SEDAN">SEDAN</option>
+                                    <option value="LUXURY">LUXURY</option>
+                                    <option value="HATCHBACK">HATCHBACK</option>
+                                    <option value="VAN">VAN</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label small text-muted">Fuel Type</label>
+                                <select id="add-fuel" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="ELECTRIC">ELECTRIC</option>
+                                    <option value="DIESEL">DIESEL</option>
+                                    <option value="PETROL">PETROL</option>
+                                    <option value="HYBRID">HYBRID</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label small text-muted">Transmission</label>
+                                <select id="add-trans" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="AUTOMATIC">AUTOMATIC</option>
+                                    <option value="MANUAL">MANUAL</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-4">
+                                <label class="form-label small text-muted">Seats</label>
+                                <input type="number" id="add-seats" class="form-control form-control-sm bg-dark text-white border-secondary" value="5" min="2" max="15" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label small text-muted">Mileage (km/l or km/charge)</label>
+                                <input type="number" id="add-mileage" class="form-control form-control-sm bg-dark text-white border-secondary" value="16.5" step="0.5" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label small text-muted">Daily Rental Rate (₹)</label>
+                                <input type="number" id="add-price" class="form-control form-control-sm bg-dark text-white border-secondary" value="3200" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Primary Image URL</label>
+                            <input type="url" id="add-img" class="form-control form-control-sm bg-dark text-white border-secondary" value="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-check2-circle me-2"></i>Save Vehicle
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Maintenance Modal -->
+    <div class="modal fade" id="scheduleMaintModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-wrench-adjustable text-warning me-2"></i>Schedule Maintenance</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="schedule-maint-form">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Select Vehicle</label>
+                            <select id="maint-veh-select" class="form-select form-select-sm bg-dark text-white border-secondary" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Service Type</label>
+                            <select id="maint-type" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                <option value="ROUTINE">Routine Periodic Service</option>
+                                <option value="INSPECTION">Safety & Brake Inspection</option>
+                                <option value="BATTERY_HEALTH">EV Battery Health Diagnostic</option>
+                                <option value="REPAIR">Mechanical Repair</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Service Date</label>
+                            <input type="date" id="maint-date" class="form-control form-control-sm bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Estimated Cost (₹)</label>
+                            <input type="number" id="maint-cost" class="form-control form-control-sm bg-dark text-white border-secondary" value="3500">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Work Order Description</label>
+                            <textarea id="maint-desc" class="form-control form-control-sm bg-dark text-white border-secondary" rows="2" placeholder="e.g. Brake pad wear replacement and wheel balancing" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100 py-2 fw-semibold">
+                            <i class="bi bi-lock me-1"></i> Lock Vehicle & Schedule Service
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script>
+        let telemetryMap = null;
+        let vehicleMarkers = [];
+        let allFleetVehicles = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Auth.requireAuth(['ROLE_FLEET_MANAGER', 'ROLE_ADMIN'])) return;
+
+            initTelemetryMap();
+            await loadFleetDashboard();
+            await loadInventory();
+            await loadMaintenance();
+            setupFleetEvents();
+        });
+
+        function initTelemetryMap() {
+            telemetryMap = L.map('fleet-telemetry-map').setView([12.9716, 77.5946], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(telemetryMap);
+        }
+
+        async function loadFleetDashboard() {
+            try {
+                const res = await API.get('/fleet/dashboard');
+                const d = res.data;
+
+                document.getElementById('kpi-total').innerText = d.totalVehicles;
+                document.getElementById('kpi-available').innerText = d.availableVehicles;
+                document.getElementById('kpi-rented').innerText = d.rentedVehicles;
+                document.getElementById('kpi-maintenance').innerText = d.maintenanceVehicles;
+                document.getElementById('kpi-utilization').innerText = d.utilizationRatePercent + '%';
+                document.getElementById('kpi-revenue').innerText = '₹' + d.totalRevenue.toLocaleString();
+
+                renderUtilizationChart();
+            } catch (err) {
+                console.error('Fleet dashboard error:', err);
+            }
+        }
+
+        async function renderUtilizationChart() {
+            try {
+                const res = await API.get('/fleet/utilization-trend');
+                const chartData = res.data;
+
+                const ctx = document.getElementById('utilizationChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: chartData.datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8' } }
+                        },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error('Chart load failed:', err);
+            }
+        }
+
+        async function loadInventory() {
+            try {
+                const res = await API.get('/vehicles');
+                allFleetVehicles = res.data || [];
+
+                const tbody = document.getElementById('fleet-table-tbody');
+                const maintSelect = document.getElementById('maint-veh-select');
+
+                tbody.innerHTML = allFleetVehicles.map(v => `
+                    <tr>
+                        <td><span class="font-monospace text-info">${v.registrationNumber}</span></td>
+                        <td>
+                            <div class="fw-semibold text-white">${v.displayName}</div>
+                            <small class="text-muted">${v.location || 'Hub'}</small>
+                        </td>
+                        <td><span class="badge bg-secondary">${v.vehicleType}</span></td>
+                        <td><span class="badge bg-dark border border-secondary">${v.fuelType}</span></td>
+                        <td class="text-white fw-bold">₹${v.rentalPricePerDay}</td>
+                        <td class="small text-muted">${v.currentOdometerKm || 0} km</td>
+                        <td>
+                            <span class="badge ${v.status === 'AVAILABLE' ? 'bg-success' : v.status === 'RENTED' || v.status === 'BOOKED' ? 'bg-primary' : v.status === 'MAINTENANCE' ? 'bg-warning text-dark' : 'bg-danger'}">
+                                ${v.status}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deactivateVehicle(${v.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                maintSelect.innerHTML = allFleetVehicles.map(v => `
+                    <option value="${v.id}">${v.displayName} (${v.registrationNumber}) [${v.status}]</option>
+                `).join('');
+
+                // Render Map Markers
+                vehicleMarkers.forEach(m => telemetryMap.removeLayer(m));
+                vehicleMarkers = [];
+
+                allFleetVehicles.forEach(v => {
+                    const lat = v.latitude || 12.9716;
+                    const lng = v.longitude || 77.5946;
+                    const statusBadge = v.status === 'AVAILABLE' ? 'bg-success' : (v.status === 'RENTED' || v.status === 'BOOKED') ? 'bg-primary' : 'bg-warning text-dark';
+
+                    const marker = L.marker([lat, lng]).addTo(telemetryMap)
+                        .bindPopup(`
+                            <div class="p-1">
+                                <div class="fw-bold text-white mb-1" style="font-size: 0.95rem;">${v.displayName}</div>
+                                <div class="text-secondary small mb-1"><span class="font-monospace">${v.registrationNumber}</span> &bull; ${v.location || 'Bangalore Hub'}</div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge ${statusBadge}">${v.status}</span>
+                                    <span class="small text-info fw-bold">₹${Number(v.rentalPricePerDay).toLocaleString('en-IN')}/day</span>
+                                </div>
+                                <div class="small text-secondary border-top border-secondary border-opacity-50 pt-1">
+                                    ${v.fuelType === 'ELECTRIC' ? '<i class="bi bi-lightning-charge-fill text-warning me-1"></i>Range: ' + v.mileage + ' km' : '<i class="bi bi-fuel-pump-fill text-warning me-1"></i>Mileage: ' + v.mileage + ' km/l'}
+                                </div>
+                            </div>
+                        `);
+                    vehicleMarkers.push(marker);
+                });
+
+                if (vehicleMarkers.length > 0) {
+                    telemetryMap.invalidateSize();
+                    const group = L.featureGroup(vehicleMarkers);
+                    telemetryMap.fitBounds(group.getBounds().pad(0.15));
+                }
+            } catch (err) {
+                console.error('Inventory error:', err);
+            }
+        }
+
+        async function loadMaintenance() {
+            try {
+                const res = await API.get('/maintenance');
+                const list = res.data || [];
+                const container = document.getElementById('maintenance-list');
+
+                if (list.length === 0) {
+                    container.innerHTML = `<div class="text-muted text-center py-4">No active maintenance work orders.</div>`;
+                    return;
+                }
+
+                container.innerHTML = list.map(m => `
+                    <div class="p-3 bg-dark rounded-3 border border-secondary">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold text-white small">${m.vehicleName}</span>
+                            <span class="badge ${m.status === 'COMPLETED' ? 'bg-success' : m.status === 'SCHEDULED' ? 'bg-warning text-dark' : 'bg-danger'}">${m.status}</span>
+                        </div>
+                        <div class="text-info small mb-1">${m.serviceType} – Scheduled: ${m.serviceDate}</div>
+                        <div class="text-muted small mb-2">${m.description}</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                            <span class="text-success fw-bold small">₹${m.cost}</span>
+                            ${m.status !== 'COMPLETED' ? `<button class="btn btn-sm btn-outline-success py-0 px-2" onclick="completeMaintenance(${m.id})">Mark Completed</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Maintenance error:', err);
+            }
+        }
+
+        function setupFleetEvents() {
+            // Add vehicle
+            document.getElementById('add-vehicle-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    const payload = {
+                        brand: document.getElementById('add-brand').value.trim(),
+                        model: document.getElementById('add-model').value.trim(),
+                        registrationNumber: document.getElementById('add-reg').value.trim(),
+                        year: parseInt(document.getElementById('add-year').value, 10),
+                        vehicleType: document.getElementById('add-type').value,
+                        fuelType: document.getElementById('add-fuel').value,
+                        transmission: document.getElementById('add-trans').value,
+                        seatingCapacity: parseInt(document.getElementById('add-seats').value, 10),
+                        mileage: parseFloat(document.getElementById('add-mileage').value),
+                        rentalPricePerDay: parseFloat(document.getElementById('add-price').value),
+                        rentalPricePerHour: parseFloat(document.getElementById('add-price').value) / 10,
+                        primaryImageUrl: document.getElementById('add-img').value.trim()
+                    };
+
+                    await API.post('/vehicles', payload);
+                    bootstrap.Modal.getInstance(document.getElementById('addVehicleModal')).hide();
+                    API.showToast('Vehicle added to fleet successfully!', 'success');
+                    await loadFleetDashboard();
+                    await loadInventory();
+                } catch (err) {
+                    API.showToast(err.message, 'danger');
+                }
+            });
+
+            // Schedule maintenance
+            document.getElementById('schedule-maint-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    const payload = {
+                        vehicleId: parseInt(document.getElementById('maint-veh-select').value, 10),
+                        serviceType: document.getElementById('maint-type').value,
+                        serviceDate: document.getElementById('maint-date').value,
+                        cost: parseFloat(document.getElementById('maint-cost').value || '0'),
+                        description: document.getElementById('maint-desc').value.trim()
+                    };
+
+                    await API.post('/maintenance', payload);
+                    bootstrap.Modal.getInstance(document.getElementById('scheduleMaintModal')).hide();
+                    API.showToast('Maintenance scheduled! Vehicle locked as MAINTENANCE.', 'warning');
+                    await loadFleetDashboard();
+                    await loadInventory();
+                    await loadMaintenance();
+                } catch (err) {
+                    API.showToast(err.message, 'danger');
+                }
+            });
+        }
+
+        async function completeMaintenance(maintId) {
+            try {
+                await API.put(`/maintenance/${maintId}/status?status=COMPLETED`);
+                API.showToast('Maintenance marked completed! Vehicle restored to AVAILABLE status.', 'success');
+                await loadFleetDashboard();
+                await loadInventory();
+                await loadMaintenance();
+            } catch (err) {
+                API.showToast(err.message, 'danger');
+            }
+        }
+
+        async function deactivateVehicle(id) {
+            if (!confirm('Are you sure you want to deactivate this vehicle from the operational fleet?')) return;
+            try {
+                await API.delete('/vehicles/' + id);
+                API.showToast('Vehicle deactivated', 'info');
+                await loadFleetDashboard();
+                await loadInventory();
+            } catch (err) {
+                API.showToast(err.message, 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -3,52 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="DriveSphere – Smart Mobility & Fleet Intelligence Platform. Enterprise-grade telematics, AI dispatching, and connected fleet management.">
-    <title>DriveSphere – Smart Mobility & Fleet Intelligence Platform</title>
+    <meta name="description" content="DriveSphere – Smart Mobility & Fleet Intelligence. Rent electric & premium vehicles, hire verified drivers with Trust Scores, and plan smart journeys.">
+    <title>DriveSphere – Smart Mobility & Connected Vehicle Rentals</title>
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    
-    <!-- Bootstrap Icons -->
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     
-    <!-- Custom Design System CSS -->
+    <!-- Custom Theme CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        #public-planner-map {
+            height: 380px;
+            width: 100%;
+            border-radius: 16px;
+            z-index: 1;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-dark text-light">
 
-    <!-- Header & Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-custom sticky-top" id="mainNav">
+    <!-- Customer-Facing Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-surface border-bottom border-secondary sticky-top py-3" id="mainNav">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="#hero">
-                <div class="brand-icon-wrapper">
-                    <i class="bi bi-ev-front-fill text-info fs-5"></i>
+                <div class="brand-icon-wrapper p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25">
+                    <i class="bi bi-ev-front-fill text-info fs-4"></i>
                 </div>
                 <div>
                     <span class="fs-4 fw-bold brand-font text-white">Drive<span class="text-gradient">Sphere</span></span>
-                    <span class="badge bg-dark border border-secondary text-muted ms-1 fs-8">Platform Foundation</span>
                 </div>
             </a>
             
-            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navContent" aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
                 <i class="bi bi-list fs-2"></i>
             </button>
 
             <div class="collapse navbar-collapse" id="navContent">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#overview">Overview</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#health-terminal">API Health</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#telematics-preview">Live Telematics</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#architecture">Architecture</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#specifications">Tech Specs</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom px-3" href="#hero">Home</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom px-3" href="#vehicles-section">Vehicles</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom px-3" href="#drivers-section">Verified Drivers</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom px-3" href="#planner-section">Trip Planner</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom px-3" href="#services-section">Services</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom px-3" href="#how-it-works">How It Works</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-link-custom dropdown-toggle px-3" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-grid-fill me-1 text-primary"></i>Portals
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark shadow-lg">
+                            <li><a class="dropdown-item py-2" href="customer/index.html"><i class="bi bi-person me-2 text-info"></i>Customer Workspace</a></li>
+                            <li><a class="dropdown-item py-2" href="driver/index.html"><i class="bi bi-person-badge me-2 text-warning"></i>Driver Partner Console</a></li>
+                            <li><a class="dropdown-item py-2" href="fleet-manager/index.html"><i class="bi bi-truck me-2 text-primary"></i>Fleet Intelligence</a></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li><a class="dropdown-item py-2" href="admin/index.html"><i class="bi bi-shield-lock me-2 text-danger"></i>Platform Governance</a></li>
+                        </ul>
+                    </li>
                 </ul>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="glass-card-sm px-3 py-2 d-flex align-items-center gap-2" id="headerStatusWidget">
-                        <span class="pulse-dot checking" id="headerStatusDot"></span>
-                        <span class="small fw-semibold text-secondary" id="headerStatusText">Checking API...</span>
+                <div class="d-flex align-items-center gap-2">
+                    <div id="navbar-auth-controls" class="d-flex align-items-center">
+                        <a href="login.html" class="btn btn-outline-light btn-sm me-2 px-3"><i class="bi bi-box-arrow-in-right me-1"></i>Sign In</a>
+                        <a href="register.html" class="btn btn-primary btn-sm px-3 fw-semibold"><i class="bi bi-person-plus me-1"></i>Register</a>
                     </div>
                 </div>
             </div>
@@ -57,93 +80,93 @@
 
     <!-- Main Content -->
     <main>
-        <!-- Hero Section -->
-        <section class="py-5 my-lg-4" id="hero">
+        <!-- 1. Hero Section -->
+        <section class="py-5 my-lg-3" id="hero">
             <div class="container">
                 <div class="row align-items-center g-5">
                     <div class="col-lg-7">
-                        <div class="hero-badge mb-3">
-                            <i class="bi bi-cpu-fill"></i> Smart Mobility & Fleet Intelligence
+                        <div class="badge bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info px-3 py-2 rounded-pill mb-3">
+                            <i class="bi bi-stars text-warning me-1"></i> Next-Gen Smart Mobility & Chauffeur Platform
                         </div>
-                        <h1 class="hero-title fw-bold">
-                            Intelligent Mobility.<br>
-                            <span class="text-gradient">Autonomous Fleet</span> Telematics.
+                        <h1 class="display-3 fw-bold text-white mb-3 lh-sm">
+                            Smart Mobility.<br>
+                            <span class="text-gradient">Simplified.</span>
                         </h1>
-                        <p class="hero-subtitle mb-4">
-                            DriveSphere unifies connected electric fleets, real-time IoT telematics, AI dispatching, predictive maintenance, and enterprise security into an integrated smart mobility operating platform.
+                        <p class="fs-5 text-secondary mb-4 lh-base" style="max-width: 600px;">
+                            Rent premium electric and luxury vehicles, hire certified professional drivers with transparent <strong>Trust Scores</strong>, plan intelligent trips with live weather, and track your journeys with real-time GPS telemetry.
                         </p>
-                        <div class="d-flex flex-wrap gap-3 mb-4">
-                            <a href="#health-terminal" class="btn btn-electric" id="btnTestHealth">
-                                <i class="bi bi-activity"></i> Test Backend Health
+                        <div class="d-flex flex-wrap gap-3 mb-5">
+                            <a href="#vehicles-section" class="btn btn-primary btn-lg px-4 py-3 fw-semibold shadow-lg">
+                                <i class="bi bi-car-front-fill me-2"></i>Explore Vehicles
                             </a>
-                            <a href="#telematics-preview" class="btn btn-glass" id="btnExploreTelemetry">
-                                <i class="bi bi-geo-alt"></i> Telematics & Map Preview
+                            <a href="#planner-section" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold">
+                                <i class="bi bi-compass me-2 text-info"></i>Plan Your Trip
                             </a>
                         </div>
-                        <div class="row g-3 pt-2">
-                            <div class="col-sm-4">
-                                <div class="stat-pill">
-                                    <span class="number text-info">99.99%</span>
-                                    <span class="label">Target Telemetry Uptime</span>
+                        <div class="row g-3">
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 bg-surface rounded-3 border border-secondary text-center h-100">
+                                    <i class="bi bi-shield-check text-success fs-4 d-block mb-1"></i>
+                                    <div class="fw-bold text-white small">Verified Drivers</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;">92+ Trust Score</div>
                                 </div>
                             </div>
-                            <div class="col-sm-4">
-                                <div class="stat-pill">
-                                    <span class="number text-gradient-purple">&lt; 20ms</span>
-                                    <span class="label">Ingestion Latency</span>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 bg-surface rounded-3 border border-secondary text-center h-100">
+                                    <i class="bi bi-battery-charging text-info fs-4 d-block mb-1"></i>
+                                    <div class="fw-bold text-white small">Green Fleet</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;">EVs & Strong Hybrids</div>
                                 </div>
                             </div>
-                            <div class="col-sm-4">
-                                <div class="stat-pill">
-                                    <span class="number text-success">EV Ready</span>
-                                    <span class="label">Smart Battery Telematics</span>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 bg-surface rounded-3 border border-secondary text-center h-100">
+                                    <i class="bi bi-broadcast text-primary fs-4 d-block mb-1"></i>
+                                    <div class="fw-bold text-white small">Live GPS Telemetry</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;">Real-time Tracking</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 bg-surface rounded-3 border border-secondary text-center h-100">
+                                    <i class="bi bi-credit-card-2-front text-warning fs-4 d-block mb-1"></i>
+                                    <div class="fw-bold text-white small">Razorpay Sandbox</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;">Instant Checkout</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Hero Visual Card -->
+                    <!-- Hero Visual Showcase Card -->
                     <div class="col-lg-5">
-                        <div class="glass-card p-4 position-relative">
-                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3 border-secondary border-opacity-25">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="pulse-dot online"></div>
-                                    <span class="fw-bold text-white small">DriveSphere Core Engine</span>
-                                </div>
-                                <span class="badge bg-primary bg-opacity-25 text-info border border-info border-opacity-25">Spring Boot 3.4.3</span>
+                        <div class="card bg-surface border-secondary shadow-lg rounded-4 overflow-hidden p-3 position-relative">
+                            <div class="position-absolute top-0 end-0 m-4 badge bg-success px-3 py-2 shadow">
+                                <i class="bi bi-lightning-charge-fill me-1"></i> Available Now
                             </div>
-
-                            <div class="mb-3">
-                                <div class="small text-muted mb-1">Architecture Base</div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-semibold text-white">Java 21 LTS + Spring Data JPA</span>
-                                    <span class="text-success small fw-medium"><i class="bi bi-shield-check"></i> Enterprise Certified</span>
+                            <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=700&q=80" 
+                                 class="rounded-4 img-fluid mb-3" style="height: 250px; width: 100%; object-fit: cover;">
+                            
+                            <div class="px-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge bg-primary-subtle text-primary">Electric SUV</span>
+                                    <span class="text-warning small"><i class="bi bi-star-fill me-1"></i>4.95 (24 Ratings)</span>
                                 </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="small text-muted mb-1">Database Engine</div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-semibold text-white">MySQL 8.x + Hibernate Dialect</span>
-                                    <span class="text-info small fw-medium">port: 3306</span>
+                                <h4 class="fw-bold text-white mb-1">Tata Nexon EV Empowered</h4>
+                                <p class="text-muted small mb-3">Long-range pure electric SUV with panoramic view, ventilated leather seats, and Level-1 ADAS.</p>
+                                
+                                <div class="row g-2 mb-3 small text-secondary">
+                                    <div class="col-6"><i class="bi bi-people text-info me-1"></i> 5 Passenger Seats</div>
+                                    <div class="col-6"><i class="bi bi-speedometer2 text-success me-1"></i> 312 km Range</div>
+                                    <div class="col-6"><i class="bi bi-gear text-secondary me-1"></i> Automatic Drive</div>
+                                    <div class="col-6"><i class="bi bi-geo-alt text-danger me-1"></i> Indiranagar Hub</div>
                                 </div>
-                            </div>
 
-                            <div class="mb-3">
-                                <div class="small text-muted mb-1">Security Model</div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-semibold text-white">Stateless JWT + Spring Security 6</span>
-                                    <span class="text-purple small fw-medium" style="color: #a855f7;"><i class="bi bi-key-fill"></i> JJWT 0.12.6</span>
-                                </div>
-                            </div>
-
-                            <div class="p-3 glass-card-sm mt-3">
-                                <div class="d-flex align-items-center justify-content-between small text-muted mb-1">
-                                    <span>Platform Foundation Readiness</span>
-                                    <span class="text-info fw-bold">100%</span>
-                                </div>
-                                <div class="progress" style="height: 6px; background-color: rgba(255,255,255,0.06);">
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="d-flex align-items-center justify-content-between pt-3 border-top border-secondary">
+                                    <div>
+                                        <div class="text-muted small">Daily Rental Rate</div>
+                                        <div class="fs-4 fw-bold text-white">₹2,800 <span class="fs-6 text-muted font-normal">/ day</span></div>
+                                    </div>
+                                    <a href="customer/index.html" class="btn btn-primary px-3 py-2 fw-semibold">
+                                        <i class="bi bi-calendar-check me-1"></i> Book Vehicle
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -152,77 +175,423 @@
             </div>
         </section>
 
-        <!-- API Health Diagnostic Terminal -->
-        <section class="py-5" id="health-terminal">
+        <!-- 2. Quick Search Widget Section -->
+        <section class="py-4" id="search-widget">
             <div class="container">
-                <div class="row justify-content-center mb-4 text-center">
-                    <div class="col-lg-8">
-                        <div class="hero-badge mb-2">
-                            <i class="bi bi-broadcast"></i> REST Diagnostic Console
+                <div class="card bg-surface border-secondary p-4 rounded-4 shadow-lg">
+                    <form id="hero-search-form" class="row g-3 align-items-end">
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label text-secondary small fw-medium"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Pickup Location</label>
+                            <input type="text" id="quick-search-loc" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Bangalore, Indiranagar" value="Bangalore">
                         </div>
-                        <h2 class="fw-bold">Backend Health Check Endpoint</h2>
-                        <p class="text-secondary">
-                            Verify live communication between the frontend client and the Spring Boot backend service via <code>GET /api/health</code>.
-                        </p>
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label text-secondary small fw-medium"><i class="bi bi-calendar-event text-info me-1"></i> Rental Duration</label>
+                            <select id="quick-search-duration" class="form-select bg-dark text-white border-secondary">
+                                <option value="1">1 Day</option>
+                                <option value="2">2 Days (Weekend Trip)</option>
+                                <option value="3" selected>3 Days</option>
+                                <option value="7">7 Days (Weekly Rental)</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label text-secondary small fw-medium"><i class="bi bi-car-front text-primary me-1"></i> Vehicle Category</label>
+                            <select id="quick-search-category" class="form-select bg-dark text-white border-secondary">
+                                <option value="">All Categories</option>
+                                <option value="ELECTRIC">Electric Mobility (EV)</option>
+                                <option value="SUV">Adventure SUV</option>
+                                <option value="SEDAN">Executive Sedan</option>
+                                <option value="LUXURY">Luxury Elite</option>
+                                <option value="HATCHBACK">Urban Hatchback</option>
+                                <option value="VAN">Passenger Van</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                                <i class="bi bi-search me-1"></i> Search Available Fleet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Customer Features & Services Section -->
+        <section class="py-5" id="services-section">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <div class="badge bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info px-3 py-1 rounded-pill mb-2">
+                        Comprehensive Services
+                    </div>
+                    <h2 class="fw-bold brand-font text-white">Why Choose DriveSphere?</h2>
+                    <p class="text-secondary" style="max-width: 650px; margin: auto;">
+                        Engineered for modern travelers, corporate commuters, and family road trips with premium vehicles, verified chauffeurs, and intelligent digital tools.
+                    </p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Feature 1: Rent a Vehicle -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100 hover-elevate">
+                            <div class="feature-icon-box icon-cyan mb-3">
+                                <i class="bi bi-car-front"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">Rent a Vehicle</h4>
+                            <p class="text-secondary small mb-3">
+                                Browse sanitized, modern cars across electric, hybrid, SUV, and executive sedan categories. Complete transparent pricing with zero surprise deposits.
+                            </p>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li><i class="bi bi-check2 text-info me-2"></i>Multi-category fleet inventory</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Real-time availability status</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Flexible daily & hourly rates</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2: Hire Verified Driver -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100 hover-elevate">
+                            <div class="feature-icon-box icon-purple mb-3">
+                                <i class="bi bi-person-badge"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">Hire a Verified Driver</h4>
+                            <p class="text-secondary small mb-3">
+                                Need a chauffeur? Hire government-verified, background-checked professional drivers with transparent public <strong>Driver Trust Scores</strong>.
+                            </p>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li><i class="bi bi-check2 text-info me-2"></i>Multi-factor Trust Score (0-100)</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Commercial license & identity verified</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Optional add-on during vehicle booking</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3: Smart Trip Planner -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100 hover-elevate">
+                            <div class="feature-icon-box icon-emerald mb-3">
+                                <i class="bi bi-map"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">Smart Trip Planner</h4>
+                            <p class="text-secondary small mb-3">
+                                Enter your destination and get an intelligent breakdown of road distance, estimated travel duration, fuel/energy expenditure, and live destination weather.
+                            </p>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li><i class="bi bi-check2 text-info me-2"></i>Interactive Leaflet map routing</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Open-Meteo live weather forecast</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Estimated fuel & energy consumption</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Feature 4: Live Trip Tracking -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100 hover-elevate">
+                            <div class="feature-icon-box icon-blue mb-3">
+                                <i class="bi bi-broadcast"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">Live Trip Tracking</h4>
+                            <p class="text-secondary small mb-3">
+                                Follow active journeys on an interactive map. Track live vehicle positioning, speed, remaining distance, and battery/fuel levels in real-time.
+                            </p>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li><i class="bi bi-check2 text-info me-2"></i>Real-time GPS telemetry updates</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Trip status progress bar</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Academic telemetry step simulator</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Feature 5: AI Mobility Assistant -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100 hover-elevate">
+                            <div class="feature-icon-box icon-amber mb-3">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">AI Mobility Assistant</h4>
+                            <p class="text-secondary small mb-3">
+                                Powered by Google Gemini 2.5 Flash-Lite. Ask your AI concierge for vehicle recommendations based on passenger count, budget, or roadtrip terrain.
+                            </p>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li><i class="bi bi-check2 text-info me-2"></i>Personalized vehicle matching</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Interactive floating chat drawer</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Instant answers to rental policies</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Feature 6: Secure Payments -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100 hover-elevate">
+                            <div class="feature-icon-box icon-rose mb-3">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">Secure Payments</h4>
+                            <p class="text-secondary small mb-3">
+                                Smooth digital checkout with Razorpay sandbox integration. Verify payments with cryptographic HMAC signatures and receive instant booking confirmation.
+                            </p>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li><i class="bi bi-check2 text-info me-2"></i>Razorpay test mode enabled</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Zero-risk test payment simulation</li>
+                                <li><i class="bi bi-check2 text-info me-2"></i>Digital receipt & transaction ledger</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Featured Vehicles Discovery Section -->
+        <section class="py-5" id="vehicles-section">
+            <div class="container">
+                <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+                    <div>
+                        <div class="badge bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info px-3 py-1 rounded-pill mb-2">
+                            Fleet Discovery
+                        </div>
+                        <h2 class="fw-bold brand-font text-white mb-1">Featured Vehicles</h2>
+                        <p class="text-secondary mb-0">Explore available vehicles from our connected regional fleet.</p>
+                    </div>
+
+                    <!-- Category Filter Buttons -->
+                    <div class="btn-group mt-3 mt-md-0" role="group" id="fleet-category-pills">
+                        <button type="button" class="btn btn-outline-secondary btn-sm active" data-filter="">All Fleet</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-filter="ELECTRIC">Electric</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-filter="SUV">SUV</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-filter="SEDAN">Sedan</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-filter="LUXURY">Luxury</button>
                     </div>
                 </div>
 
-                <div class="row justify-content-center">
-                    <div class="col-lg-10">
-                        <div class="glass-card p-4">
-                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="p-2 rounded bg-info bg-opacity-10 border border-info border-opacity-25 text-info fw-bold font-monospace">
-                                        GET
+                <!-- Dynamic Vehicles Grid (Loaded from API) -->
+                <div id="public-vehicles-grid" class="row g-4">
+                    <div class="col-12 text-center text-muted py-5">
+                        <span class="spinner-border text-primary spinner-border-sm me-2"></span>
+                        Loading operational fleet from DriveSphere database...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Verified Driver & Trust Score Section -->
+        <section class="py-5" id="drivers-section">
+            <div class="container">
+                <div class="card bg-surface border-secondary p-4 p-lg-5 rounded-4 shadow-lg">
+                    <div class="row align-items-center g-5">
+                        <div class="col-lg-6">
+                            <div class="badge bg-warning bg-opacity-10 border border-warning border-opacity-25 text-warning px-3 py-1 rounded-pill mb-3">
+                                <i class="bi bi-shield-check me-1"></i> Safety First
+                            </div>
+                            <h2 class="fw-bold brand-font text-white mb-3">Travel Safe With Verified Chauffeurs</h2>
+                            <p class="text-secondary lh-base mb-4">
+                                Whether you're navigating urban traffic or embarking on a highway weekend excursion, hire certified professional drivers directly with your rental.
+                            </p>
+
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="p-2 rounded bg-success bg-opacity-10 text-success fs-5">
+                                        <i class="bi bi-patch-check-fill"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-white font-monospace">http://localhost:8080/api/health</div>
-                                        <div class="small text-muted">Returns system status, service identity, and timestamp</div>
+                                        <div class="fw-bold text-white">Driver Trust Score (0 to 100)</div>
+                                        <div class="small text-secondary">A transparent algorithmic rating computed from government verification, years of driving tenure, customer satisfaction ratings, and completed trips.</div>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-3">
-                                    <button class="btn btn-sm btn-electric" id="pingHealthBtn">
-                                        <i class="bi bi-arrow-repeat"></i> Ping Endpoint
-                                    </button>
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="p-2 rounded bg-info bg-opacity-10 text-info fs-5">
+                                        <i class="bi bi-fingerprint"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-white">4-Tier Background Screening</div>
+                                        <div class="small text-secondary">National ID, commercial driving license, police verification clearance, and medical fitness certificates reviewed by administrators.</div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-4">
-                                    <div class="glass-card-sm p-3">
-                                        <div class="small text-muted">Status</div>
-                                        <div class="d-flex align-items-center gap-2 mt-1">
-                                            <span class="pulse-dot checking" id="healthStatusDot"></span>
-                                            <span class="fw-bold text-white" id="healthStatusText">Initializing...</span>
+                            <a href="customer/index.html" class="btn btn-warning fw-semibold px-4 py-2">
+                                <i class="bi bi-person-check me-1"></i> Browse & Hire Drivers
+                            </a>
+                        </div>
+
+                        <!-- Driver Showcase Profile Card -->
+                        <div class="col-lg-6">
+                            <div class="card bg-dark border-secondary p-4 rounded-4 shadow">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" 
+                                         class="rounded-circle border border-warning p-1 me-3" width="70" height="70" style="object-fit:cover;">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h5 class="fw-bold text-white mb-0">Rajesh Kumar</h5>
+                                            <span class="badge bg-success small"><i class="bi bi-shield-check me-1"></i>VERIFIED</span>
+                                        </div>
+                                        <div class="text-secondary small">Commercial Chauffeur &bull; 7+ Years Experience</div>
+                                        <div class="text-warning small"><i class="bi bi-star-fill me-1"></i>4.90 / 5.0 (84 Completed Journeys)</div>
+                                    </div>
+                                </div>
+
+                                <!-- Trust Score Display -->
+                                <div class="p-3 bg-black rounded-3 border border-secondary mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small text-secondary fw-semibold">DRIVER TRUST SCORE</span>
+                                        <span class="badge bg-success">EXCELLENT</span>
+                                    </div>
+                                    <div class="d-flex align-items-baseline gap-2 mb-2">
+                                        <span class="display-6 fw-bold text-gradient">92.5</span>
+                                        <span class="text-muted small">/ 100</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px; background-color: rgba(255,255,255,0.1);">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 92.5%;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Verified Badges (Customer-Safe Only) -->
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <span class="badge bg-dark border border-secondary text-info py-2 px-3"><i class="bi bi-check-circle-fill text-success me-1"></i>Identity Verified</span>
+                                    <span class="badge bg-dark border border-secondary text-info py-2 px-3"><i class="bi bi-check-circle-fill text-success me-1"></i>License Verified</span>
+                                    <span class="badge bg-dark border border-secondary text-info py-2 px-3"><i class="bi bi-check-circle-fill text-success me-1"></i>Background Checked</span>
+                                    <span class="badge bg-dark border border-secondary text-info py-2 px-3"><i class="bi bi-check-circle-fill text-success me-1"></i>Medical Fitness</span>
+                                </div>
+
+                                <div class="small text-secondary">
+                                    <i class="bi bi-chat-quote-fill text-warning me-1"></i> "Rajesh was exceptionally polite, punctual, and drove smoothly through the highway corridor. Highly recommended!"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Smart Trip Planner Interactive Section -->
+        <section class="py-5" id="planner-section">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <div class="badge bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info px-3 py-1 rounded-pill mb-2">
+                        Intelligent Routing
+                    </div>
+                    <h2 class="fw-bold brand-font text-white">Smart Trip Planner</h2>
+                    <p class="text-secondary" style="max-width: 650px; margin: auto;">
+                        Calculate exact journey distances, estimated travel durations, fuel/energy expenses, and live destination forecasts ahead of your journey.
+                    </p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Left: Planner Input Controls -->
+                    <div class="col-lg-5">
+                        <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
+                            <h5 class="fw-bold text-white mb-3"><i class="bi bi-compass text-primary me-2"></i>Configure Your Trip</h5>
+                            <form id="public-trip-form">
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary fw-medium">Departure Location</label>
+                                    <input type="text" id="planner-source" class="form-control bg-dark text-white border-secondary" value="Bangalore" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary fw-medium">Destination</label>
+                                    <input type="text" id="planner-dest" class="form-control bg-dark text-white border-secondary" value="Mysore" required>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-sm-7">
+                                        <label class="form-label small text-secondary fw-medium">Select Vehicle</label>
+                                        <select id="planner-veh-select" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                            <option value="1" data-type="ELECTRIC" data-range="312">Tata Nexon EV (312 km Range • Electric)</option>
+                                            <option value="3" data-type="DIESEL" data-range="850">Mahindra XUV700 (14.8 km/l • Diesel)</option>
+                                            <option value="5" data-type="HYBRID" data-range="950">Honda City Hybrid (27.1 km/l • Hybrid)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <label id="planner-fuel-label" class="form-label small text-secondary fw-medium">Electricity Price (₹/kWh)</label>
+                                        <input type="number" id="planner-fuel-price" class="form-control form-control-sm bg-dark text-white border-secondary" value="12.0" step="0.5">
+                                    </div>
+                                </div>
+                                <button type="submit" id="planner-calculate-btn" class="btn btn-primary w-100 py-2 fw-semibold">
+                                    <i class="bi bi-signpost-2 me-1"></i> Calculate Route & Forecast
+                                </button>
+                            </form>
+
+                            <!-- Destination Live Weather Card (Open-Meteo) -->
+                            <div id="planner-weather-box" class="mt-4 p-3 bg-dark rounded-3 border border-secondary">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-secondary"><i class="bi bi-cloud-sun text-info me-1"></i> Destination Weather: <strong id="pub-weather-location" class="text-white">Mysore</strong></span>
+                                    <span id="pub-weather-temp" class="badge bg-primary">23°C</span>
+                                </div>
+                                <div id="pub-weather-condition" class="fw-bold text-white small">Optimal Road Visibility</div>
+                                <div id="pub-weather-advisory" class="text-secondary" style="font-size: 0.78rem;">Clear driving conditions across highway corridors.</div>
+                            </div>
+
+                            <!-- Nearby Amenities -->
+                            <div class="mt-3 p-3 bg-dark rounded-3 border border-secondary small">
+                                <div class="fw-semibold text-white mb-2"><i class="bi bi-geo-fill text-danger me-1"></i> Recommended Highway Amenities</div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span class="badge bg-dark border border-secondary text-info"><i class="bi bi-lightning-charge me-1"></i>EV Fast Chargers</span>
+                                    <span class="badge bg-dark border border-secondary text-warning"><i class="bi bi-fuel-pump me-1"></i>HP / Shell Fuel</span>
+                                    <span class="badge bg-dark border border-secondary text-success"><i class="bi bi-cup-hot me-1"></i>Food Plazas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Leaflet Route Map -->
+                    <div class="col-lg-7">
+                        <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm h-100 d-flex flex-column justify-content-between">
+                            <div id="public-planner-map" class="mb-3"></div>
+
+                            <!-- Trip Calculation Results Bar -->
+                            <div class="row g-2 text-center mb-2">
+                                <div class="col-3">
+                                    <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                        <div class="text-secondary fw-semibold" style="font-size: 0.72rem;">EST. DISTANCE</div>
+                                        <div id="pub-trip-dist" class="fw-bold text-white fs-6">143.5 km</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                        <div class="text-secondary fw-semibold" style="font-size: 0.72rem;">DURATION</div>
+                                        <div id="pub-trip-duration" class="fw-bold text-white fs-6">1h 59m</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                        <div id="pub-energy-label" class="text-secondary fw-semibold" style="font-size: 0.72rem;">ENERGY USED</div>
+                                        <div id="pub-trip-fuel" class="fw-bold text-info fs-6">21.8 kWh</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="p-2 bg-dark rounded-3 border border-secondary">
+                                        <div id="pub-cost-label" class="text-secondary fw-semibold" style="font-size: 0.72rem;">EST. ENERGY COST</div>
+                                        <div id="pub-trip-cost" class="fw-bold text-success fs-6">₹261.60</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- EV Range / Trip Validation Card -->
+                            <div id="pub-ev-range-card" class="p-3 bg-dark rounded-3 border border-secondary">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small text-secondary fw-semibold"><i class="bi bi-battery-charging text-info me-1"></i> EV RANGE VALIDATION</span>
+                                    <span id="pub-ev-status" class="badge bg-success">Range Sufficient</span>
+                                </div>
+                                <div class="row g-2 text-center">
+                                    <div class="col-4">
+                                        <div class="p-2 bg-black rounded-2 border border-secondary">
+                                            <div class="text-secondary" style="font-size: 0.70rem;">TRIP DISTANCE</div>
+                                            <div id="pub-ev-req" class="fw-bold text-white small">143.5 km</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 bg-black rounded-2 border border-secondary">
+                                            <div class="text-secondary" style="font-size: 0.70rem;">VEHICLE RANGE</div>
+                                            <div id="pub-ev-total" class="fw-bold text-info small">312.0 km</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 bg-black rounded-2 border border-secondary">
+                                            <div class="text-secondary" style="font-size: 0.70rem;">EST. REMAINING</div>
+                                            <div id="pub-ev-rem" class="fw-bold text-success small">168.5 km</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="glass-card-sm p-3">
-                                        <div class="small text-muted">Round-trip Latency</div>
-                                        <div class="fw-bold text-white mt-1" id="healthResponseTime">-- ms</div>
-                                    </div>
+                                <div id="pub-ev-warning" class="alert alert-warning py-2 px-3 small mt-2 mb-0 d-none">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    Estimated trip distance exceeds the vehicle's available range. Charging stops are recommended along the highway corridor.
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="glass-card-sm p-3">
-                                        <div class="small text-muted">CORS Policy</div>
-                                        <div class="fw-bold text-success mt-1"><i class="bi bi-check-circle-fill"></i> Enabled for Localhost</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Terminal Window Output -->
-                            <div class="terminal-window">
-                                <div class="terminal-header">
-                                    <div class="terminal-dots">
-                                        <div class="terminal-dot dot-red"></div>
-                                        <div class="terminal-dot dot-yellow"></div>
-                                        <div class="terminal-dot dot-green"></div>
-                                    </div>
-                                    <span class="small text-muted font-monospace">Live HTTP Response Payload</span>
-                                    <span class="small text-muted font-monospace">JSON</span>
-                                </div>
-                                <pre class="terminal-body mb-0" id="healthJsonOutput">// Awaiting response from backend...</pre>
                             </div>
                         </div>
                     </div>
@@ -230,273 +599,209 @@
             </div>
         </section>
 
-        <!-- Live Telematics & Fleet Map Preview -->
-        <section class="py-5" id="telematics-preview">
+        <!-- 7. How It Works Section -->
+        <section class="py-5" id="how-it-works">
             <div class="container">
-                <div class="row justify-content-center mb-4 text-center">
-                    <div class="col-lg-8">
-                        <div class="hero-badge mb-2">
-                            <i class="bi bi-geo-alt-fill"></i> Spatial & Telemetry Engine
-                        </div>
-                        <h2 class="fw-bold">Connected Fleet Telematics Preview</h2>
-                        <p class="text-secondary">
-                            High-frequency vehicle position tracking powered by Leaflet.js with dark-mode geospatial vectors and Chart.js energy analytics.
-                        </p>
+                <div class="text-center mb-5">
+                    <div class="badge bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info px-3 py-1 rounded-pill mb-2">
+                        Simple 4-Step Process
                     </div>
+                    <h2 class="fw-bold brand-font text-white">How DriveSphere Works</h2>
+                    <p class="text-secondary" style="max-width: 600px; margin: auto;">
+                        From vehicle selection to live journey tracking, experience a seamless smart mobility rental.
+                    </p>
                 </div>
 
                 <div class="row g-4">
-                    <!-- Left: Leaflet Map -->
-                    <div class="col-lg-6">
-                        <div class="glass-card p-3 h-100">
-                            <div class="d-flex align-items-center justify-content-between mb-3 px-2">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-compass text-info fs-5"></i>
-                                    <span class="fw-bold text-white">Live Mobility Corridor Preview</span>
-                                </div>
-                                <span class="badge bg-secondary text-light small font-monospace">3 Units Active</span>
-                            </div>
-                            <div id="telemetryMap"></div>
-                            <div class="d-flex justify-content-between align-items-center mt-3 px-2 small text-muted">
-                                <span><i class="bi bi-pin-map-fill text-info"></i> Interactive Markers Available</span>
-                                <span>Click marker for vehicle telematics</span>
-                            </div>
+                    <div class="col-md-3">
+                        <div class="p-4 bg-surface rounded-4 border border-secondary text-center h-100 position-relative">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold mb-3" style="width: 48px; height: 48px;">1</div>
+                            <h5 class="fw-bold text-white mb-2">Select Vehicle</h5>
+                            <p class="text-secondary small mb-0">Browse our fleet of electric, hybrid, SUV, and luxury cars with real-time availability.</p>
                         </div>
                     </div>
-
-                    <!-- Right: Chart.js Telemetry -->
-                    <div class="col-lg-6">
-                        <div class="glass-card p-3 h-100 d-flex flex-column">
-                            <div class="d-flex align-items-center justify-content-between mb-3 px-2">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-graph-up text-primary fs-5"></i>
-                                    <span class="fw-bold text-white">Fleet Energy & Efficiency Metric</span>
-                                </div>
-                                <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 small font-monospace">Simulated Real-Time</span>
-                            </div>
-                            <div style="position: relative; height: 360px; width: 100%;">
-                                <canvas id="telemetryChart"></canvas>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mt-3 px-2 small text-muted">
-                                <span><i class="bi bi-lightning-charge-fill text-warning"></i> Wh/km Consumption</span>
-                                <span>Chart.js 4.4 Engine</span>
-                            </div>
+                    <div class="col-md-3">
+                        <div class="p-4 bg-surface rounded-4 border border-secondary text-center h-100 position-relative">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold mb-3" style="width: 48px; height: 48px;">2</div>
+                            <h5 class="fw-bold text-white mb-2">Optional Driver</h5>
+                            <p class="text-secondary small mb-0">Choose self-drive or add a verified chauffeur with a certified Driver Trust Score.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-4 bg-surface rounded-4 border border-secondary text-center h-100 position-relative">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold mb-3" style="width: 48px; height: 48px;">3</div>
+                            <h5 class="fw-bold text-white mb-2">Secure Checkout</h5>
+                            <p class="text-secondary small mb-0">Confirm your reservation with Razorpay sandbox payment and instant digital confirmation.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-4 bg-surface rounded-4 border border-secondary text-center h-100 position-relative">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold mb-3" style="width: 48px; height: 48px;">4</div>
+                            <h5 class="fw-bold text-white mb-2">Track & Travel</h5>
+                            <p class="text-secondary small mb-0">Follow live GPS telemetry, monitor remaining distance, and rate your experience afterwards.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Architecture & Foundation Showcase -->
-        <section class="py-5" id="architecture">
+        <!-- 8. Customer Reviews & Testimonials -->
+        <section class="py-5" id="reviews-section">
             <div class="container">
-                <div class="row justify-content-center mb-5 text-center">
-                    <div class="col-lg-8">
-                        <div class="hero-badge mb-2">
-                            <i class="bi bi-diagram-3-fill"></i> Enterprise Architecture
-                        </div>
-                        <h2 class="fw-bold">Designed for Scalable Mobility</h2>
-                        <p class="text-secondary">
-                            Structured with an extensible clean architecture ready for the full DriveSphere implementation.
-                        </p>
+                <div class="text-center mb-5">
+                    <div class="badge bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info px-3 py-1 rounded-pill mb-2">
+                        Customer Satisfaction
                     </div>
+                    <h2 class="fw-bold brand-font text-white">What Travelers Say</h2>
+                    <p class="text-secondary" style="max-width: 600px; margin: auto;">
+                        Real experiences from verified DriveSphere customers across corporate travels and roadtrips.
+                    </p>
                 </div>
 
                 <div class="row g-4">
                     <div class="col-md-4">
-                        <div class="glass-card p-4 h-100">
-                            <div class="feature-icon-box icon-cyan">
-                                <i class="bi bi-hdd-network"></i>
-                            </div>
-                            <h4 class="fw-bold text-white">Fleet IoT & Telematics</h4>
-                            <p class="text-muted small">
-                                Relational schema and entity mappings for high-frequency telemetry ingestion (speed, odometer, battery state of charge, coordinates).
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100">
+                            <div class="text-warning mb-2">⭐⭐⭐⭐⭐ 5.0</div>
+                            <p class="text-secondary small mb-3">
+                                "Renting the Tata Nexon EV was flawless. Rajesh, our verified driver, arrived 15 minutes early and navigated Bangalore expressway traffic effortlessly. The Driver Trust Score feature gave our family complete peace of mind!"
                             </p>
+                            <div class="d-flex align-items-center mt-auto pt-3 border-top border-secondary">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" class="rounded-circle me-3" width="42" height="42">
+                                <div>
+                                    <div class="fw-bold text-white small">Priya Sharma</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;">Bangalore &bull; Verified Customer</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="col-md-4">
-                        <div class="glass-card p-4 h-100">
-                            <div class="feature-icon-box icon-purple">
-                                <i class="bi bi-stars"></i>
-                            </div>
-                            <h4 class="fw-bold text-white">AI Intelligence Ready</h4>
-                            <p class="text-muted small">
-                                Pre-configured integration bindings for Google Gemini API to drive predictive maintenance alerts, anomaly detection, and driver scoring.
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100">
+                            <div class="text-warning mb-2">⭐⭐⭐⭐⭐ 5.0</div>
+                            <p class="text-secondary small mb-3">
+                                "The Smart Trip Planner was surprisingly accurate. It calculated the exact fuel cost and weather ahead of our trip to Mysore. Booking took less than 2 minutes with Razorpay test checkout."
                             </p>
+                            <div class="d-flex align-items-center mt-auto pt-3 border-top border-secondary">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80" class="rounded-circle me-3" width="42" height="42">
+                                <div>
+                                    <div class="fw-bold text-white small">Vikram Malhotra</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;">Executive Traveler</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="col-md-4">
-                        <div class="glass-card p-4 h-100">
-                            <div class="feature-icon-box icon-emerald">
-                                <i class="bi bi-map"></i>
-                            </div>
-                            <h4 class="fw-bold text-white">Dynamic Geofencing & ORS</h4>
-                            <p class="text-muted small">
-                                OpenRouteService environment bindings for turn-by-turn routing, distance matrix calculation, isochrones, and smart geofences.
+                        <div class="card bg-surface border-secondary p-4 rounded-4 h-100">
+                            <div class="text-warning mb-2">⭐⭐⭐⭐⭐ 4.9</div>
+                            <p class="text-secondary small mb-3">
+                                "The BMW 330Li was spotless and in pristine condition. Live GPS tracking in the customer portal allowed me to follow the journey seamlessly. Truly an enterprise-grade mobility service."
                             </p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="glass-card p-4 h-100">
-                            <div class="feature-icon-box icon-blue">
-                                <i class="bi bi-shield-lock"></i>
+                            <div class="d-flex align-items-center mt-auto pt-3 border-top border-secondary">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" class="rounded-circle me-3" width="42" height="42">
+                                <div>
+                                    <div class="fw-bold text-white small">Ananya Deshmukh</div>
+                                    <div class="text-muted" style="font-size: 0.76rem;">Corporate Mobility Member</div>
+                                </div>
                             </div>
-                            <h4 class="fw-bold text-white">Stateless JWT Security</h4>
-                            <p class="text-muted small">
-                                JJWT 0.12.6 token authentication filter chain with HMAC SHA-256 signatures, stateless session policy, and role-based authorization hooks.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="glass-card p-4 h-100">
-                            <div class="feature-icon-box icon-amber">
-                                <i class="bi bi-cloud-arrow-up"></i>
-                            </div>
-                            <h4 class="fw-bold text-white">Cloud Media Storage</h4>
-                            <p class="text-muted small">
-                                Cloudinary integration configuration for vehicle inspection photos, driver licenses, incident evidence, and profile avatars.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="glass-card p-4 h-100">
-                            <div class="feature-icon-box icon-rose">
-                                <i class="bi bi-credit-card-2-front"></i>
-                            </div>
-                            <h4 class="fw-bold text-white">Payment Settlement</h4>
-                            <p class="text-muted small">
-                                Razorpay integration placeholders ready for passenger trip billing, driver payouts, automated deposits, and digital invoices.
-                            </p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Technical Specifications Table -->
-        <section class="py-5" id="specifications">
+        <!-- 9. Final Call to Action -->
+        <section class="py-5" id="cta-section">
             <div class="container">
-                <div class="glass-card p-4 p-md-5">
-                    <div class="row align-items-center mb-4">
-                        <div class="col-md-8">
-                            <h3 class="fw-bold text-white mb-1">System Foundation Matrix</h3>
-                            <p class="text-muted mb-0 small">Verified dependencies, runtimes, and architectural contracts.</p>
+                <div class="card bg-surface border-secondary p-5 rounded-4 shadow-lg text-center position-relative overflow-hidden">
+                    <div class="position-relative z-1" style="max-width: 700px; margin: auto;">
+                        <h2 class="display-5 fw-bold brand-font text-white mb-3">Ready to Move Smarter?</h2>
+                        <p class="text-secondary fs-6 mb-4">
+                            Join DriveSphere today to explore our connected fleet, book self-drive or chauffeur trips, and experience autonomous journey tracking.
+                        </p>
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <a href="register.html" class="btn btn-primary btn-lg px-4 py-3 fw-semibold">
+                                <i class="bi bi-person-plus me-1"></i> Create Free Account
+                            </a>
+                            <a href="login.html" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Portal
+                            </a>
                         </div>
-                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-2">
-                                <i class="bi bi-check2-all"></i> Build Status: PASSING
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-dark table-borderless align-middle mb-0">
-                            <thead>
-                                <tr class="border-bottom border-secondary border-opacity-25 text-muted small">
-                                    <th>LAYER</th>
-                                    <th>TECHNOLOGY</th>
-                                    <th>VERSION</th>
-                                    <th>CONFIGURATION SOURCE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="text-info fw-semibold"><i class="bi bi-box-seam me-2"></i>Backend Core</td>
-                                    <td>Spring Boot + Spring MVC</td>
-                                    <td><code>3.4.3</code></td>
-                                    <td><code>backend/pom.xml</code></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-info fw-semibold"><i class="bi bi-filetype-java me-2"></i>Runtime</td>
-                                    <td>Java SE Runtime Environment</td>
-                                    <td><code>Java 21 LTS</code></td>
-                                    <td>Detected Local JDK 21</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-info fw-semibold"><i class="bi bi-tools me-2"></i>Build Tool</td>
-                                    <td>Apache Maven Wrapper (mvnw)</td>
-                                    <td><code>3.9.16 / 3.3.4</code></td>
-                                    <td><code>backend/.mvn/wrapper/</code></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-info fw-semibold"><i class="bi bi-database me-2"></i>Relational Persistence</td>
-                                    <td>MySQL 8.x + Spring Data JPA / Hibernate</td>
-                                    <td><code>Dialect: MySQLDialect</code></td>
-                                    <td><code>database/schema.sql</code>, <code>application.properties</code></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-info fw-semibold"><i class="bi bi-shield-shaded me-2"></i>Authentication</td>
-                                    <td>Spring Security 6 + JJWT</td>
-                                    <td><code>0.12.6</code></td>
-                                    <td><code>com.drivesphere.security.*</code></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-info fw-semibold"><i class="bi bi-window-sidebar me-2"></i>Frontend UI</td>
-                                    <td>HTML5, CSS3, Bootstrap 5, Bootstrap Icons</td>
-                                    <td><code>5.3.3 / 1.11.3</code></td>
-                                    <td><code>frontend/index.html</code>, <code>style.css</code></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-info fw-semibold"><i class="bi bi-geo me-2"></i>Mapping & Telematics</td>
-                                    <td>Leaflet.js + CartoDB Dark Matter</td>
-                                    <td><code>1.9.4</code></td>
-                                    <td><code>frontend/assets/js/app.js</code></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-info fw-semibold"><i class="bi bi-pie-chart me-2"></i>Data Visualization</td>
-                                    <td>Chart.js</td>
-                                    <td><code>4.4.1</code></td>
-                                    <td><code>frontend/assets/js/app.js</code></td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="text-center text-md-start">
+    <!-- Professional Customer-Facing Footer -->
+    <footer class="border-top border-secondary bg-black py-5">
         <div class="container">
-            <div class="row align-items-center gy-3">
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-1">
-                        <i class="bi bi-ev-front-fill text-info"></i>
-                        <span class="fw-bold text-white">DriveSphere</span>
-                        <span class="text-muted small">| Smart Mobility & Fleet Intelligence Platform</span>
+            <div class="row g-4 justify-content-between">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-ev-front-fill text-info fs-4"></i>
+                        <span class="fs-4 fw-bold brand-font text-white">Drive<span class="text-gradient">Sphere</span></span>
                     </div>
-                    <div class="text-muted small">
-                        Project Foundation Initialized &amp; Verified. Ready for full feature implementation.
+                    <p class="text-secondary small mb-3">
+                        DriveSphere is a connected smart mobility platform enabling self-drive vehicle rentals, verified chauffeur hiring with Driver Trust Scores, and real-time trip intelligence.
+                    </p>
+                    <div class="d-flex gap-3 text-secondary">
+                        <a href="#" class="text-secondary fs-5"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="text-secondary fs-5"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="text-secondary fs-5"><i class="bi bi-github"></i></a>
                     </div>
                 </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <div class="text-muted small">
-                        Running on <strong>Spring Boot 3.4.3</strong> &bull; <strong>Java 21 LTS</strong> &bull; <strong>MySQL 8.x</strong>
-                    </div>
-                    <div class="text-muted small mt-1">
-                        &copy; 2026 DriveSphere Platform. All rights reserved.
-                    </div>
+
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="fw-bold text-white mb-3">Mobility Platform</h6>
+                    <ul class="list-unstyled small text-secondary d-flex flex-column gap-2">
+                        <li><a href="#vehicles-section" class="text-secondary text-decoration-none hover-white">Explore Fleet</a></li>
+                        <li><a href="#drivers-section" class="text-secondary text-decoration-none hover-white">Verified Drivers</a></li>
+                        <li><a href="#planner-section" class="text-secondary text-decoration-none hover-white">Smart Trip Planner</a></li>
+                        <li><a href="#services-section" class="text-secondary text-decoration-none hover-white">Platform Services</a></li>
+                        <li><a href="#how-it-works" class="text-secondary text-decoration-none hover-white">How It Works</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="fw-bold text-white mb-3">Workspace Portals</h6>
+                    <ul class="list-unstyled small text-secondary d-flex flex-column gap-2">
+                        <li><a href="customer/index.html" class="text-secondary text-decoration-none hover-white">Customer Portal</a></li>
+                        <li><a href="driver/index.html" class="text-secondary text-decoration-none hover-white">Driver Console</a></li>
+                        <li><a href="fleet-manager/index.html" class="text-secondary text-decoration-none hover-white">Fleet Manager</a></li>
+                        <li><a href="admin/index.html" class="text-secondary text-decoration-none hover-white">Platform Admin</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold text-white mb-3">Contact & Support</h6>
+                    <div class="text-secondary small mb-2"><i class="bi bi-geo-alt text-primary me-2"></i>Indiranagar Hub, Bangalore, India</div>
+                    <div class="text-secondary small mb-2"><i class="bi bi-envelope text-info me-2"></i>support@drivesphere.local</div>
+                    <div class="text-secondary small"><i class="bi bi-telephone text-success me-2"></i>+91 (080) 4567-8900</div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center pt-4 mt-4 border-top border-secondary small text-secondary">
+                <div>&copy; 2026 DriveSphere Mobility Platform. All rights reserved.</div>
+                <div class="d-flex gap-3">
+                    <a href="#" class="text-secondary text-decoration-none">Privacy Policy</a>
+                    <a href="#" class="text-secondary text-decoration-none">Terms of Service</a>
+                    <a href="#" class="text-secondary text-decoration-none">Security Standards</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <!-- Bootstrap 5 Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Custom Frontend Application JS -->
+    <!-- Custom Frontend Application Scripts -->
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/chatbot.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
 </html>

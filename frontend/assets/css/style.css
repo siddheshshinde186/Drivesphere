@@ -20,9 +20,9 @@
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
 
   --glow-cyan: 0 0 25px rgba(0, 242, 254, 0.25);
   --glow-emerald: 0 0 25px rgba(16, 185, 129, 0.25);
@@ -85,6 +85,99 @@ h1, h2, h3, h4, h5, h6, .brand-font {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* ===================================================================
+   Global Contrast & Text Readability Hierarchy (WCAG AAA High Contrast)
+   =================================================================== */
+body {
+  color: #f8fafc;
+}
+
+h1, h2, h3, h4, h5, h6, .brand-font {
+  color: #ffffff !important;
+}
+
+/* Force readable contrast for Bootstrap muted/secondary text on dark cards */
+.text-muted {
+  color: #cbd5e1 !important; /* Visible light silver-slate */
+}
+
+.text-secondary {
+  color: #cbd5e1 !important; /* Clearly readable secondary gray */
+}
+
+.text-white-50 {
+  color: #e2e8f0 !important;
+}
+
+/* Form inputs & labels */
+label,
+.form-label {
+  color: #f1f5f9 !important;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+  color: #ffffff !important;
+  background-color: #0d1527 !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  color: #ffffff !important;
+  border-color: #00f2fe !important;
+  box-shadow: 0 0 0 0.25rem rgba(0, 242, 254, 0.2) !important;
+}
+
+.form-control::placeholder {
+  color: #94a3b8 !important;
+}
+
+.form-text {
+  color: #cbd5e1 !important;
+}
+
+/* Cards & Content */
+.card {
+  background-color: var(--bg-surface) !important;
+  color: #f8fafc;
+}
+
+.card-title {
+  color: #ffffff !important;
+}
+
+.card-text,
+p {
+  color: #cbd5e1;
+}
+
+.kpi-label {
+  color: #cbd5e1 !important;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+/* Tables */
+.table-dark th {
+  color: #e2e8f0 !important;
+  background-color: #0f172a !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+}
+
+.table-dark td {
+  color: #f1f5f9 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Glassmorphism Cards */
@@ -307,17 +400,30 @@ h1, h2, h3, h4, h5, h6, .brand-font {
   overflow-y: auto;
 }
 
-/* Map Container */
+/* Interactive Maps: Ensure Leaflet renders with guaranteed container dimensions */
+#trip-planner-map,
+#public-planner-map,
+#live-tracking-map,
+#fleet-telemetry-map,
 #telemetryMap {
-  height: 360px;
+  height: 420px;
+  min-height: 380px;
   width: 100%;
-  border-radius: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background-color: #090d16;
   z-index: 1;
+  position: relative;
 }
 
 /* Leaflet Dark Theme Overrides */
 .leaflet-container {
   background: #090d16 !important;
+}
+
+/* Elegant Dark Mode Filter for OpenStreetMap: Transforms standard light OSM tiles into a sleek dark navigation map without any API key or watermarks */
+.leaflet-tile-pane {
+  filter: brightness(0.68) invert(1) contrast(2.5) hue-rotate(190deg) saturate(0.35) brightness(0.85);
 }
 
 .leaflet-popup-content-wrapper {
@@ -408,4 +514,48 @@ footer {
   border-top: 1px solid var(--border-color);
   background: #060910;
   padding: 48px 0 24px;
+}
+
+/* App Utility & Component Styles */
+.bg-surface {
+  background: var(--bg-surface) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.brand-font {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hover-elevate {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hover-elevate:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.glass-card {
+  background: var(--bg-surface);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+}
+
+.glass-card-sm {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
 }
