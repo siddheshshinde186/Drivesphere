@@ -27,6 +27,7 @@ public class VehicleDto {
     private Transmission transmission;
     private Integer seatingCapacity;
     private BigDecimal mileage;
+    private Integer rangeKm;
     private BigDecimal batteryCapacityKwh;
     private BigDecimal fuelTankCapacityL;
     private BigDecimal rentalPricePerDay;
@@ -38,6 +39,12 @@ public class VehicleDto {
     private VehicleStatus status;
     private boolean available;
     private BigDecimal currentOdometerKm;
+    private BigDecimal lastServiceOdometerKm;
+    private java.time.LocalDate lastServiceDate;
+    private String serviceStatus;
+    private BigDecimal kmUntilNextService;
+    private Long daysUntilNextService;
+    private java.time.LocalDate estimatedNextServiceDate;
     private String primaryImageUrl;
     private List<String> imageUrls;
     private Long categoryId;

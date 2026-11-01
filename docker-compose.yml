@@ -4,18 +4,70 @@ services:
     container_name: drivesphere-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: drivesphere
-      MYSQL_USER: drivesphere
-      MYSQL_PASSWORD: drivesphere_secret
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-drivesphere}
+      MYSQL_USER: ${DB_USERNAME:-drivesphere}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-drivesphere_secret}
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
-      - ./database/sample-data.sql:/docker-entrypoint-initdb.d/03-sample-data.sql:ro
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  drivesphere-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: drivesphere-backend
+    restart: unless-stopped
+    depends_on:
+      drivesphere-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SPRING_DATASOURCE_URL: jdbc:mysql://drivesphere-db:3306/${DB_NAME:-drivesphere}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-drivesphere}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-drivesphere_secret}
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      DRIVESPHERE_DEMO_DATA_ENABLED: ${DRIVESPHERE_DEMO_DATA_ENABLED:-false}
+      DRIVESPHERE_STORAGE_LOCAL_DIR: /app/uploads/documents
+      DRIVESPHERE_PAYMENT_ALLOW_MOCK: ${DRIVESPHERE_PAYMENT_ALLOW_MOCK:-false}
+      DRIVESPHERE_GPS_ALLOW_SIMULATION: ${DRIVESPHERE_GPS_ALLOW_SIMULATION:-false}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+      OPENROUTESERVICE_API_KEY: ${OPENROUTESERVICE_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@drivesphere.com}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads/documents
+
+  drivesphere-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: drivesphere-frontend
+    restart: unless-stopped
+    depends_on:
+      - drivesphere-backend
+    ports:
+      - "80:80"
 
 volumes:
   db_data:
+  uploads_data:

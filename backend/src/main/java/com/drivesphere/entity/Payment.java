@@ -28,7 +28,7 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(name = "gateway", length = 30, nullable = false)
-    private PaymentGateway gateway = PaymentGateway.MOCK;
+    private PaymentGateway gateway = PaymentGateway.RAZORPAY;
 
     @Column(name = "gateway_order_id", length = 100)
     private String gatewayOrderId;
@@ -43,4 +43,19 @@ public class Payment extends BaseEntity {
     @Builder.Default
     @Column(name = "status", length = 30, nullable = false)
     private PaymentStatus status = PaymentStatus.PENDING;
+
+    @Column(name = "refund_id", length = 100)
+    private String refundId;
+
+    @Column(name = "refund_amount", precision = 10, scale = 2)
+    private BigDecimal refundAmount;
+
+    @Column(name = "refund_status", length = 40)
+    private String refundStatus;
+
+    @Column(name = "idempotency_key", length = 100)
+    private String idempotencyKey;
+
+    @Column(name = "raw_webhook_payload", columnDefinition = "TEXT")
+    private String rawWebhookPayload;
 }

@@ -21,4 +21,6 @@ public class AiRecommendationRequest {
     private Transmission transmissionPreference;
     private BigDecimal estimatedDistanceKm;
     private List<String> preferredFeatures;
+    private java.time.LocalDateTime startDateTime;
+    private java.time.LocalDateTime endDateTime;
 }

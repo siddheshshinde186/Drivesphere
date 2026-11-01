@@ -11,8 +11,9 @@
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Custom Theme CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Custom Theme CSS & Manager -->
+    <link rel="stylesheet" href="assets/css/style.css?v=2.1">
+    <script src="assets/js/theme.js?v=2.1"></script>
 </head>
 <body class="bg-dark text-light d-flex flex-column min-vh-100 justify-content-between">
 
@@ -23,8 +24,8 @@
                 <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
                 <span class="brand-font fs-4 text-gradient">DriveSphere</span>
             </a>
-            <div class="d-flex align-items-center">
-                <a href="index.html" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-house me-1"></i>Home</a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="index.html" class="btn btn-outline-secondary btn-sm me-1"><i class="bi bi-house me-1"></i>Home</a>
                 <a href="register.html" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Register</a>
             </div>
         </div>
@@ -52,19 +53,23 @@
 
                     <form id="login-form">
                         <div class="mb-3">
-                            <label for="email" class="form-label text-light small fw-medium">Email Address</label>
+                            <label for="email" class="form-label text-light small fw-medium">Email Address or Phone Number</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control bg-dark text-white border-secondary" id="email" placeholder="name@drivesphere.local" required>
+                                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-person-badge"></i></span>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="email" name="identifier" placeholder="name@example.com or +91 9876543210" required autocomplete="username">
                             </div>
                         </div>
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label for="password" class="form-label text-light small fw-medium mb-0">Password</label>
+                                <a href="forgot-password.html" id="forgot-password-link" class="text-primary small text-decoration-none">Forgot Password?</a>
                             </div>
                             <div class="input-group">
                                 <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-key"></i></span>
                                 <input type="password" class="form-control bg-dark text-white border-secondary" id="password" placeholder="••••••••" required>
+                                <button class="btn btn-outline-secondary border-secondary text-secondary toggle-password-btn" type="button" data-target="password" aria-label="Show password" title="Show password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
                             </div>
                         </div>
                         <button type="submit" id="login-btn" class="btn btn-primary w-100 py-2 fw-semibold">
@@ -73,38 +78,7 @@
                         </button>
                     </form>
 
-                    <!-- Quick 1-Click Demo Logins -->
-                    <div class="mt-4 pt-3 border-top border-secondary">
-                        <div class="text-muted small text-center mb-3 fw-medium">🚀 Instant 1-Click Academic Demo Credentials</div>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-info btn-sm w-100 py-2 demo-btn" 
-                                        data-email="customer@drivesphere.local" data-pwd="Password@123">
-                                    <i class="bi bi-person me-1"></i> Customer
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-warning btn-sm w-100 py-2 demo-btn" 
-                                        data-email="driver@drivesphere.local" data-pwd="Password@123">
-                                    <i class="bi bi-person-badge me-1"></i> Driver
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-primary btn-sm w-100 py-2 demo-btn" 
-                                        data-email="fleet@drivesphere.local" data-pwd="Password@123">
-                                    <i class="bi bi-truck me-1"></i> Fleet Mgr
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-danger btn-sm w-100 py-2 demo-btn" 
-                                        data-email="admin@drivesphere.local" data-pwd="Password@123">
-                                    <i class="bi bi-shield-lock me-1"></i> Admin
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center mt-4">
+                    <div class="text-center mt-4 pt-3 border-top border-secondary">
                         <span class="text-muted small">Don't have an account?</span>
                         <a href="register.html" class="text-primary small fw-semibold ms-1">Create Account</a>
                     </div>
@@ -113,19 +87,95 @@
         </div>
     </main>
 
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white" id="forgotPasswordModalLabel"><i class="bi bi-shield-lock me-2 text-primary"></i>Forgot Password</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Enter your registered email address. We will send a secure single-use password reset link valid for 15 minutes.</p>
+                    <div id="forgot-password-alert" class="alert alert-danger d-none py-2 px-3 small" role="alert"></div>
+                    <div id="forgot-password-success" class="alert alert-success d-none py-2 px-3 small" role="alert"></div>
+                    <form id="forgot-password-form">
+                        <div class="mb-3">
+                            <label for="forgot-email" class="form-label text-light small fw-medium">Registered Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control bg-dark text-white border-secondary" id="forgot-email" placeholder="name@example.com" required>
+                            </div>
+                        </div>
+                        <button type="submit" id="forgot-btn" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <span id="forgot-btn-text"><i class="bi bi-send me-1"></i>Send Reset Link</span>
+                            <span id="forgot-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal (Triggered by verification email query token) -->
+    <div class="modal fade" id="resetPasswordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white" id="resetPasswordModalLabel"><i class="bi bi-key-fill me-2 text-warning"></i>Reset Password</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Please choose a new, strong password (minimum 8 characters with uppercase, lowercase, number, and special character).</p>
+                    <div id="reset-password-alert" class="alert alert-danger d-none py-2 px-3 small" role="alert"></div>
+                    <div id="reset-password-success" class="alert alert-success d-none py-2 px-3 small" role="alert"></div>
+                    <form id="reset-password-form">
+                        <input type="hidden" id="reset-token">
+                        <div class="mb-3">
+                            <label for="new-password" class="form-label text-light small fw-medium">New Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control bg-dark text-white border-secondary" id="new-password" placeholder="••••••••" required>
+                                <button class="btn btn-outline-secondary border-secondary text-secondary toggle-password-btn" type="button" data-target="new-password" aria-label="Show password" title="Show password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm-password" class="form-label text-light small fw-medium">Confirm New Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control bg-dark text-white border-secondary" id="confirm-password" placeholder="••••••••" required>
+                                <button class="btn btn-outline-secondary border-secondary text-secondary toggle-password-btn" type="button" data-target="confirm-password" aria-label="Show password" title="Show password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" id="reset-btn" class="btn btn-warning w-100 py-2 fw-semibold text-dark">
+                            <span id="reset-btn-text"><i class="bi bi-check2-circle me-1"></i>Update Password</span>
+                            <span id="reset-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="py-3 border-top border-secondary text-center text-muted small">
-        <div class="container">
-            DriveSphere – Smart Mobility & Fleet Intelligence Platform &copy; 2026
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div>DriveSphere – Smart Mobility &amp; Fleet Intelligence Platform &copy; 2026</div>
+            <div class="d-flex gap-3">
+                <a href="terms.html" class="text-muted text-decoration-none">Terms</a>
+                <a href="privacy.html" class="text-muted text-decoration-none">Privacy Policy</a>
+                <a href="refund-policy.html" class="text-muted text-decoration-none">Cancellation Policy</a>
+            </div>
         </div>
     </footer>
 
     <!-- Bootstrap JS & App Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/api.js"></script>
-    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/api.js?v=2.3"></script>
+    <script src="assets/js/auth.js?v=2.3"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const form = document.getElementById('login-form');
             const emailInput = document.getElementById('email');
             const pwdInput = document.getElementById('password');
@@ -137,8 +187,41 @@
             const urlParams = new URLSearchParams(window.location.search);
             const returnTo = urlParams.get('returnTo') || urlParams.get('redirect');
             const message = urlParams.get('message');
+            const action = urlParams.get('action');
+            const token = urlParams.get('token');
+            const prefillEmail = urlParams.get('email');
             const infoAlert = document.getElementById('login-info-alert');
             const infoText = document.getElementById('login-info-text');
+
+            if (prefillEmail && emailInput) {
+                emailInput.value = prefillEmail.trim();
+            }
+
+            // Carry login identifier into Forgot Password page safely
+            const forgotLink = document.getElementById('forgot-password-link');
+            function updateForgotLink() {
+                if (!forgotLink) return;
+                const rawVal = emailInput ? emailInput.value.trim() : '';
+                if (!rawVal) {
+                    forgotLink.href = 'forgot-password.html';
+                } else if (rawVal.includes('@')) {
+                    forgotLink.href = 'forgot-password.html?email=' + encodeURIComponent(rawVal);
+                } else {
+                    forgotLink.href = 'forgot-password.html?identifier=' + encodeURIComponent(rawVal) + '&type=phone';
+                }
+            }
+
+            if (emailInput) {
+                emailInput.addEventListener('input', updateForgotLink);
+                emailInput.addEventListener('change', updateForgotLink);
+                updateForgotLink();
+            }
+
+            if (forgotLink) {
+                forgotLink.addEventListener('click', (e) => {
+                    updateForgotLink();
+                });
+            }
 
             if (message && infoAlert && infoText) {
                 infoText.innerText = message;
@@ -146,6 +229,27 @@
             } else if (returnTo && infoAlert && infoText) {
                 infoText.innerText = 'Please sign in to continue with your booking.';
                 infoAlert.classList.remove('d-none');
+            }
+
+            // Handle Email Verification link click from email (?action=verify-email&token=...)
+            if ((action === 'verify-email' || action === 'verify') && token) {
+                try {
+                    infoText.innerText = 'Verifying your email address...';
+                    infoAlert.classList.remove('d-none');
+                    await API.get('/auth/verify-email?token=' + encodeURIComponent(token));
+                    infoAlert.className = 'alert alert-success py-2 px-3 small d-flex align-items-center mb-3';
+                    infoText.innerText = 'Email successfully verified! You may now sign in with your credentials.';
+                } catch (err) {
+                    alertBox.innerText = err.message || 'Verification link is invalid or has expired.';
+                    alertBox.classList.remove('d-none');
+                    infoAlert.classList.add('d-none');
+                }
+            }
+
+            // Forward legacy or email-based password reset actions to dedicated reset-password.html
+            if (action === 'reset-password' && token) {
+                window.location.href = 'reset-password.html?token=' + encodeURIComponent(token);
+                return;
             }
 
             function isSafeLocalUrl(url) {
@@ -157,30 +261,31 @@
                 return true;
             }
 
-            // Handle 1-Click Demo Buttons
-            document.querySelectorAll('.demo-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    emailInput.value = btn.getAttribute('data-email');
-                    pwdInput.value = btn.getAttribute('data-pwd');
-                    form.dispatchEvent(new Event('submit'));
-                });
-            });
-
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 alertBox.classList.add('d-none');
+                if (infoAlert && !action) {
+                    infoAlert.classList.add('d-none');
+                }
                 btnText.classList.add('d-none');
                 spinner.classList.remove('d-none');
                 loginBtn.disabled = true;
 
                 try {
-                    const email = emailInput.value.trim();
+                    const identifier = emailInput.value.trim();
                     const password = pwdInput.value;
 
-                    const res = await API.post('/auth/login', { email, password });
+                    const res = await API.post('/auth/login', {
+                        identifier: identifier,
+                        email: identifier,
+                        password: password
+                    });
                     
                     if (res && res.data && res.data.token) {
                         API.setToken(res.data.token);
+                        if (res.data.refreshToken) {
+                            API.setRefreshToken(res.data.refreshToken);
+                        }
                         API.setUser(res.data.user);
                         API.showToast('Login successful! Redirecting to workspace...', 'success');
                         
@@ -192,14 +297,95 @@
                             }
                         }, 500);
                     } else {
-                        throw new Error('Invalid token returned by server');
+                        throw new Error('Invalid authentication response from server.');
                     }
                 } catch (err) {
-                    alertBox.innerText = err.message || 'Login failed. Please check your credentials.';
+                    const errMsg = err.message || 'Login failed. Please check your credentials.';
+                    alertBox.innerText = errMsg;
                     alertBox.classList.remove('d-none');
+                    if (infoAlert) {
+                        infoAlert.classList.add('d-none');
+                    }
+
                     btnText.classList.remove('d-none');
                     spinner.classList.add('d-none');
                     loginBtn.disabled = false;
+                }
+            });
+
+            // Handle Forgot Password Form
+            const forgotForm = document.getElementById('forgot-password-form');
+            const forgotAlert = document.getElementById('forgot-password-alert');
+            const forgotSuccess = document.getElementById('forgot-password-success');
+            const forgotBtnText = document.getElementById('forgot-btn-text');
+            const forgotSpinner = document.getElementById('forgot-spinner');
+            const forgotBtn = document.getElementById('forgot-btn');
+
+            forgotForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                forgotAlert.classList.add('d-none');
+                forgotSuccess.classList.add('d-none');
+                forgotBtnText.classList.add('d-none');
+                forgotSpinner.classList.remove('d-none');
+                forgotBtn.disabled = true;
+
+                try {
+                    const email = document.getElementById('forgot-email').value.trim();
+                    await API.post('/auth/forgot-password', { email });
+                    forgotSuccess.innerText = 'If an account matches that email address, a password reset link has been dispatched to your inbox.';
+                    forgotSuccess.classList.remove('d-none');
+                    forgotForm.reset();
+                } catch (err) {
+                    forgotAlert.innerText = err.message || 'Failed to dispatch password reset request.';
+                    forgotAlert.classList.remove('d-none');
+                } finally {
+                    forgotBtnText.classList.remove('d-none');
+                    forgotSpinner.classList.add('d-none');
+                    forgotBtn.disabled = false;
+                }
+            });
+
+            // Handle Reset Password Form
+            const resetForm = document.getElementById('reset-password-form');
+            const resetAlert = document.getElementById('reset-password-alert');
+            const resetSuccess = document.getElementById('reset-password-success');
+            const resetBtnText = document.getElementById('reset-btn-text');
+            const resetSpinner = document.getElementById('reset-spinner');
+            const resetBtn = document.getElementById('reset-btn');
+
+            resetForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                resetAlert.classList.add('d-none');
+                resetSuccess.classList.add('d-none');
+
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                const token = document.getElementById('reset-token').value;
+
+                if (newPassword !== confirmPassword) {
+                    resetAlert.innerText = 'Passwords do not match.';
+                    resetAlert.classList.remove('d-none');
+                    return;
+                }
+
+                resetBtnText.classList.add('d-none');
+                resetSpinner.classList.remove('d-none');
+                resetBtn.disabled = true;
+
+                try {
+                    await API.post('/auth/reset-password', { token, newPassword });
+                    resetSuccess.innerText = 'Password has been successfully updated! You can now log in with your new password.';
+                    resetSuccess.classList.remove('d-none');
+                    setTimeout(() => {
+                        window.location.href = 'login.html?message=' + encodeURIComponent('Password reset successful. Please sign in.');
+                    }, 2000);
+                } catch (err) {
+                    resetAlert.innerText = err.message || 'Password reset token is invalid or has expired.';
+                    resetAlert.classList.remove('d-none');
+                } finally {
+                    resetBtnText.classList.remove('d-none');
+                    resetSpinner.classList.add('d-none');
+                    resetBtn.disabled = false;
                 }
             });
         });

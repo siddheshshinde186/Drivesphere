@@ -30,4 +30,11 @@ public class TripDto {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private Integer simulationStep;
+    private Boolean isSimulatedTelemetry;
+    private String telemetrySource;
+    private BigDecimal speedKmh;
+    private BigDecimal headingDegrees;
+    private BigDecimal batteryLevelPercent;
+    private BigDecimal fuelLevelPercent;
+    private LocalDateTime lastUpdated;
 }

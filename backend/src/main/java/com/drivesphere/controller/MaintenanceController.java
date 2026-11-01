@@ -52,7 +52,7 @@ public class MaintenanceController {
             @Valid @RequestBody MaintenanceCreateRequest request) {
         MaintenanceDto dto = maintenanceService.scheduleMaintenance(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(dto, "Maintenance scheduled. Vehicle locked as MAINTENANCE."));
+                .body(ApiResponse.success(dto, "Maintenance scheduled successfully."));
     }
 
     @PutMapping("/{id}/status")
@@ -64,6 +64,26 @@ public class MaintenanceController {
         return ResponseEntity.ok(ApiResponse.success(
                 maintenanceService.updateMaintenanceStatus(id, status, cost, notes),
                 "Maintenance record updated"
+        ));
+    }
+
+    @PutMapping("/vehicle/{vehicleId}/odometer")
+    public ResponseEntity<ApiResponse<com.drivesphere.dto.VehicleDto>> updateOdometer(
+            @PathVariable Long vehicleId,
+            @RequestBody java.util.Map<String, BigDecimal> payload) {
+        BigDecimal odometerKm = payload.get("odometerKm");
+        if (odometerKm == null) {
+            throw new IllegalArgumentException("Field 'odometerKm' is required in request payload.");
+        }
+        com.drivesphere.dto.VehicleDto updated = maintenanceService.updateVehicleOdometer(vehicleId, odometerKm);
+        return ResponseEntity.ok(ApiResponse.success(updated, "Vehicle odometer updated successfully. Servicing intervals recalculated."));
+    }
+
+    @GetMapping("/policy")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getServicePolicy() {
+        return ResponseEntity.ok(ApiResponse.success(
+                maintenanceService.getServicePolicy(),
+                "Vehicle maintenance service interval policy"
         ));
     }
 }

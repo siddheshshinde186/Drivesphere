@@ -9,12 +9,17 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MaintenanceRepository extends JpaRepository<Maintenance, Long> {
     List<Maintenance> findByVehicleIdOrderByServiceDateDesc(Long vehicleId);
     List<Maintenance> findByStatus(MaintenanceStatus status);
     long countByStatus(MaintenanceStatus status);
+
+    List<Maintenance> findByVehicleIdAndStatus(Long vehicleId, MaintenanceStatus status);
+    Optional<Maintenance> findFirstByVehicleIdAndStatusOrderByServiceDateDesc(Long vehicleId, MaintenanceStatus status);
+    long countByVehicleIdAndStatusInAndServiceDateBetween(Long vehicleId, List<MaintenanceStatus> statuses, LocalDate startDate, LocalDate endDate);
 
     @Query("SELECT m FROM Maintenance m WHERE m.status = 'SCHEDULED' AND m.serviceDate <= :targetDate")
     List<Maintenance> findUpcomingMaintenance(LocalDate targetDate);

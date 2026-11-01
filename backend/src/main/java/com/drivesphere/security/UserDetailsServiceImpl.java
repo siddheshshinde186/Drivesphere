@@ -23,9 +23,28 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(@NonNull String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email.trim().toLowerCase())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    public UserDetails loadUserByUsername(@NonNull String identifier) throws UsernameNotFoundException {
+        String trimmed = identifier.trim();
+        java.util.Optional<User> userOpt;
+
+        if (trimmed.contains("@")) {
+            userOpt = userRepository.findByEmail(trimmed.toLowerCase());
+        } else {
+            // Identifier is a phone number
+            String normalizedPhone = com.drivesphere.service.AuthService.normalizePhoneNumber(trimmed);
+            userOpt = userRepository.findByPhoneNumber(normalizedPhone);
+            if (userOpt.isEmpty()) {
+                String digits = com.drivesphere.service.AuthService.extractPhoneDigits(trimmed);
+                if (digits != null && !digits.isBlank()) {
+                    userOpt = userRepository.findByPhoneDigits(digits);
+                    if (userOpt.isEmpty() && digits.length() == 10) {
+                        userOpt = userRepository.findByPhoneDigits("91" + digits);
+                    }
+                }
+            }
+        }
+
+        User user = userOpt.orElseThrow(() -> new UsernameNotFoundException("User not found with identifier: " + identifier));
 
         List<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))

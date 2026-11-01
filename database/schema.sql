@@ -1,7 +1,14 @@
 -- ===================================================================
 -- DriveSphere – Smart Mobility & Fleet Intelligence Platform
 -- Target RDBMS: MySQL 8.x
--- Database Schema Definition (schema.sql)
+-- Consolidated Full Database Schema (schema.sql - Reference Snapshot)
+--
+-- NOTE FOR DEPLOYMENTS:
+-- DriveSphere utilizes Flyway as the authoritative, versioned schema-management
+-- mechanism for application deployments (located in backend/src/main/resources/db/migration/).
+-- Flyway automatically evolves empty databases through migrations V1 to V5.
+-- If manually executing this complete schema snapshot directly into MySQL,
+-- ensure Flyway's baseline-version is set to 5 (spring.flyway.baseline-version=5).
 -- ===================================================================
 
 CREATE DATABASE IF NOT EXISTS drivesphere
@@ -32,8 +39,11 @@ CREATE TABLE IF NOT EXISTS users (
     last_name VARCHAR(60) NOT NULL,
     phone_number VARCHAR(20) UNIQUE,
     avatar_url VARCHAR(500),
+    preferred_vehicle_type VARCHAR(50) NULL,
+    driver_preference VARCHAR(50) NULL,
     is_active BOOLEAN DEFAULT TRUE,
     is_verified BOOLEAN DEFAULT FALSE,
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_users_email (email),
@@ -92,6 +102,10 @@ CREATE TABLE IF NOT EXISTS vehicles (
     status ENUM('AVAILABLE', 'BOOKED', 'RENTED', 'MAINTENANCE', 'INACTIVE') NOT NULL DEFAULT 'AVAILABLE',
     is_available BOOLEAN NOT NULL DEFAULT TRUE,
     current_odometer_km DECIMAL(10, 2) DEFAULT 0.00,
+    last_service_odometer_km DECIMAL(10, 2) NULL,
+    last_service_date DATE NULL,
+    range_km INT NULL,
+    energy_consumption_kwh_per_100km DECIMAL(5, 2) NULL,
     primary_image_url VARCHAR(500),
     category_id BIGINT NULL,
     average_rating DECIMAL(3, 2) DEFAULT 5.00,
@@ -129,6 +143,8 @@ CREATE TABLE IF NOT EXISTS drivers (
     total_trips INT DEFAULT 0,
     cancellation_rate DECIMAL(5, 2) DEFAULT 0.00,
     is_available BOOLEAN DEFAULT TRUE,
+    is_online BOOLEAN DEFAULT FALSE,
+    last_seen_at TIMESTAMP NULL,
     daily_rate DECIMAL(10, 2) NOT NULL DEFAULT 800.00,
     languages VARCHAR(150),
     address VARCHAR(255),
@@ -138,7 +154,8 @@ CREATE TABLE IF NOT EXISTS drivers (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_drivers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_drivers_vehicle FOREIGN KEY (current_vehicle_id) REFERENCES vehicles(id) ON DELETE SET NULL,
-    INDEX idx_drivers_available (is_available)
+    INDEX idx_drivers_available (is_available),
+    INDEX idx_drivers_presence (is_online, is_available, last_seen_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------------
@@ -207,9 +224,14 @@ CREATE TABLE IF NOT EXISTS bookings (
     rental_amount DECIMAL(10, 2) NOT NULL,
     driver_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     tax_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    tax_rate DECIMAL(5, 4) DEFAULT 0.1800,
+    discount_amount DECIMAL(10, 2) DEFAULT 0.00,
+    deposit_amount DECIMAL(10, 2) DEFAULT 0.00,
     total_amount DECIMAL(10, 2) NOT NULL,
-    booking_status ENUM('PENDING', 'CONFIRMED', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    booking_status ENUM('PENDING', 'HELD', 'PENDING_PAYMENT', 'CONFIRMED', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'EXPIRED', 'REFUND_PENDING', 'REFUNDED', 'REJECTED') NOT NULL DEFAULT 'HELD',
     payment_status ENUM('PENDING', 'PAID', 'REFUNDED', 'FAILED') NOT NULL DEFAULT 'PENDING',
+    hold_expires_at DATETIME NULL,
+    pricing_snapshot TEXT NULL,
     pickup_time DATETIME NULL,
     return_time DATETIME NULL,
     notes TEXT,
@@ -278,6 +300,11 @@ CREATE TABLE IF NOT EXISTS payments (
     gateway_order_id VARCHAR(100),
     gateway_payment_id VARCHAR(100),
     gateway_signature VARCHAR(255),
+    refund_id VARCHAR(100) NULL,
+    refund_amount DECIMAL(10, 2) NULL,
+    refund_status VARCHAR(40) NULL,
+    idempotency_key VARCHAR(100) NULL,
+    raw_webhook_payload TEXT NULL,
     status ENUM('PENDING', 'PAID', 'REFUNDED', 'FAILED') NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -342,4 +369,74 @@ CREATE TABLE IF NOT EXISTS notifications (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_notifications_user_read (user_id, is_read)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------------
+-- 17. Audit Logs Table
+-- -------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    actor_email VARCHAR(120),
+    actor_role VARCHAR(50),
+    action VARCHAR(80) NOT NULL,
+    resource_type VARCHAR(60) NOT NULL,
+    resource_id VARCHAR(60),
+    details TEXT,
+    ip_address VARCHAR(60),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_audit_actor (actor_email),
+    INDEX idx_audit_action (action),
+    INDEX idx_audit_resource (resource_type, resource_id),
+    INDEX idx_audit_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------------
+-- 18. Refresh Tokens Table
+-- -------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    token VARCHAR(128) NOT NULL UNIQUE,
+    expiry_date TIMESTAMP NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_refresh_token (token),
+    INDEX idx_refresh_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------------
+-- 19. Email Verification Tokens Table
+-- -------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    token_hash VARCHAR(128) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
+    used_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_email_verif_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_email_verif_hash (token_hash),
+    INDEX idx_email_verif_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------------
+-- 20. Password Reset Tokens Table
+-- -------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    token_hash VARCHAR(128) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
+    used_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pwd_reset_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_pwd_reset_hash (token_hash),
+    INDEX idx_pwd_reset_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

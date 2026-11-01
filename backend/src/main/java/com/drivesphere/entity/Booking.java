@@ -72,6 +72,18 @@ public class Booking extends BaseEntity {
     @Column(name = "tax_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal taxAmount = BigDecimal.ZERO;
 
+    @Builder.Default
+    @Column(name = "tax_rate", precision = 5, scale = 4)
+    private BigDecimal taxRate = BigDecimal.valueOf(0.18);
+
+    @Builder.Default
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    @Builder.Default
+    @Column(name = "deposit_amount", precision = 10, scale = 2)
+    private BigDecimal depositAmount = BigDecimal.ZERO;
+
     @Column(name = "total_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal totalAmount;
 
@@ -84,6 +96,12 @@ public class Booking extends BaseEntity {
     @Builder.Default
     @Column(name = "payment_status", length = 30, nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Column(name = "hold_expires_at")
+    private LocalDateTime holdExpiresAt;
+
+    @Column(name = "pricing_snapshot", columnDefinition = "TEXT")
+    private String pricingSnapshot;
 
     @Column(name = "pickup_time")
     private LocalDateTime pickupTime;

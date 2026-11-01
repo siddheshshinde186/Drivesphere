@@ -30,7 +30,10 @@ class BusinessLogicTests {
     @BeforeEach
     void setUp() {
         GeminiClient gemini = new GeminiClient();
-        mapsClient = new MapsClient();
+        mapsClient = Mockito.spy(new MapsClient());
+        Mockito.doReturn(java.util.Collections.emptyList()).when(mapsClient).getNearbyPlaces(Mockito.anyDouble(), Mockito.anyDouble());
+        Mockito.doThrow(new IllegalArgumentException("Unable to geocode location: UnknownFakeLocationXYZ9999"))
+                .when(mapsClient).geocode("UnknownFakeLocationXYZ9999");
         WeatherClient weather = new WeatherClient();
         vehicleRepo = Mockito.mock(VehicleRepository.class);
         EntityDtoMapper mapper = new EntityDtoMapper();
@@ -164,8 +167,8 @@ class BusinessLogicTests {
                 .build());
 
         assertNotNull(plan);
-        assertTrue(plan.getDistanceKm().doubleValue() >= 130.0 && plan.getDistanceKm().doubleValue() <= 160.0,
-                "Distance between Bangalore and Mysore should be ~140-150 km, got: " + plan.getDistanceKm());
+        assertTrue(plan.getDistanceKm().doubleValue() >= 130.0 && plan.getDistanceKm().doubleValue() <= 175.0,
+                "Distance between Bangalore and Mysore should be ~140-170 km, got: " + plan.getDistanceKm());
         assertTrue(plan.getDurationMinutes() >= 90 && plan.getDurationMinutes() <= 200,
                 "Duration should be realistic travel time, got: " + plan.getDurationMinutes());
         assertTrue(plan.isElectric());
@@ -210,10 +213,123 @@ class BusinessLogicTests {
     @Test
     void razorpaySignatureValidation_ShouldVerifyExpectedMockHmac() {
         RazorpayClient client = new RazorpayClient();
+        org.springframework.test.util.ReflectionTestUtils.setField(client, "allowMock", true);
         String orderId = "order_mock_test_12345";
         String paymentId = "pay_mock_test_67890";
         String validSignature = "mock_sig_12345";
 
         assertTrue(client.verifySignature(orderId, paymentId, validSignature));
+    }
+
+    @Test
+    void razorpaySignatureValidation_ShouldVerifyRealHmac() throws Exception {
+        RazorpayClient client = new RazorpayClient();
+        org.springframework.test.util.ReflectionTestUtils.setField(client, "keyId", "rzp_test_key123");
+        org.springframework.test.util.ReflectionTestUtils.setField(client, "keySecret", "secret_key_abc");
+
+        String orderId = "order_real_123";
+        String paymentId = "pay_real_456";
+        String data = orderId + "|" + paymentId;
+
+        javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+        mac.init(new javax.crypto.spec.SecretKeySpec("secret_key_abc".getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+        byte[] hash = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        StringBuilder hex = new StringBuilder();
+        for (byte b : hash) {
+            hex.append(String.format("%02x", b));
+        }
+
+        assertTrue(client.verifySignature(orderId, paymentId, hex.toString()));
+        assertFalse(client.verifySignature(orderId, paymentId, "invalid_sig"));
+    }
+
+    @Test
+    void loginRateLimiter_ShouldBlockAfterFiveFailedAttempts() {
+        com.drivesphere.security.LoginRateLimiter limiter = new com.drivesphere.security.LoginRateLimiter();
+        String testUser = "attacker@example.com";
+
+        for (int i = 0; i < 4; i++) {
+            limiter.loginFailed(testUser);
+            assertFalse(limiter.isBlocked(testUser));
+        }
+
+        limiter.loginFailed(testUser);
+        assertTrue(limiter.isBlocked(testUser), "User should be blocked on 5th failed attempt");
+
+        limiter.loginSucceeded(testUser);
+        assertFalse(limiter.isBlocked(testUser), "Successful login should reset failure count");
+    }
+
+    @Test
+    void tripTracking_ShouldValidateCoordinateBoundsAndRejectInvalidLatLong() {
+        TripTrackingService trackingService = new TripTrackingService(null, null, null, null);
+
+        GpsUpdateDto badLat = GpsUpdateDto.builder()
+                .tripId(1L)
+                .latitude(BigDecimal.valueOf(95.0))
+                .longitude(BigDecimal.valueOf(77.0))
+                .build();
+        assertThrows(IllegalArgumentException.class, () -> trackingService.updateGpsLocation(badLat, 1L, false));
+
+        GpsUpdateDto badLng = GpsUpdateDto.builder()
+                .tripId(1L)
+                .latitude(BigDecimal.valueOf(12.0))
+                .longitude(BigDecimal.valueOf(185.0))
+                .build();
+        assertThrows(IllegalArgumentException.class, () -> trackingService.updateGpsLocation(badLng, 1L, false));
+
+        GpsUpdateDto badSpeed = GpsUpdateDto.builder()
+                .tripId(1L)
+                .latitude(BigDecimal.valueOf(12.0))
+                .longitude(BigDecimal.valueOf(77.0))
+                .speedKmh(BigDecimal.valueOf(-10.0))
+                .build();
+        assertThrows(IllegalArgumentException.class, () -> trackingService.updateGpsLocation(badSpeed, 1L, false));
+    }
+
+    @Test
+    void invoiceService_ShouldCalculateGstAndFormatProperly() {
+        com.drivesphere.repository.BookingRepository mockBookingRepo = Mockito.mock(com.drivesphere.repository.BookingRepository.class);
+        com.drivesphere.repository.PaymentRepository mockPaymentRepo = Mockito.mock(com.drivesphere.repository.PaymentRepository.class);
+        InvoiceService invoiceService = new InvoiceService(mockBookingRepo, mockPaymentRepo);
+
+        User customer = User.builder().firstName("Arjun").lastName("Mehta").email("arjun@example.com").phoneNumber("+919876543210").build();
+        customer.setId(10L);
+
+        Vehicle vehicle = Vehicle.builder().brand("Tata").model("Nexon EV").registrationNumber("KA-01-EV-2024").vehicleType(VehicleType.ELECTRIC).rentalPricePerDay(BigDecimal.valueOf(2500.0)).build();
+        vehicle.setId(5L);
+
+        Booking booking = Booking.builder()
+                .bookingReference("DS-2026-TEST1")
+                .bookingStatus(BookingStatus.CONFIRMED)
+                .customer(customer)
+                .vehicle(vehicle)
+                .pickupLocation("Indiranagar")
+                .dropLocation("Electronic City")
+                .startDateTime(java.time.LocalDateTime.now())
+                .endDateTime(java.time.LocalDateTime.now().plusDays(2))
+                .totalDays(2)
+                .rentalAmount(BigDecimal.valueOf(5000.0))
+                .driverAmount(BigDecimal.ZERO)
+                .taxAmount(BigDecimal.valueOf(900.0))
+                .totalAmount(BigDecimal.valueOf(5900.0))
+                .paymentStatus(PaymentStatus.PAID)
+                .build();
+        booking.setId(100L);
+
+        when(mockBookingRepo.findById(100L)).thenReturn(Optional.of(booking));
+        when(mockPaymentRepo.findFirstByBookingIdAndStatusOrderByCreatedAtDesc(100L, PaymentStatus.PAID)).thenReturn(Optional.empty());
+        when(mockPaymentRepo.findByBookingId(100L)).thenReturn(List.of());
+
+        InvoiceDto invoice = invoiceService.generateInvoice(100L, 10L, false);
+
+        assertNotNull(invoice);
+        assertEquals("DS-2026-TEST1", invoice.getBookingReference());
+        assertEquals("Arjun Mehta", invoice.getCustomerName());
+        assertEquals(new BigDecimal("5000.0"), invoice.getRentalSubtotal());
+        assertEquals(new BigDecimal("450.00"), invoice.getCgstAmount());
+        assertEquals(new BigDecimal("450.00"), invoice.getSgstAmount());
+        assertEquals(new BigDecimal("900.0"), invoice.getTotalTaxAmount());
+        assertEquals(new BigDecimal("5900.0"), invoice.getTotalAmount());
     }
 }

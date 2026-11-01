@@ -10,6 +10,7 @@ import com.drivesphere.repository.TripRepository;
 import com.drivesphere.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,24 +29,97 @@ public class TripTrackingService {
     private final VehicleRepository vehicleRepository;
     private final EntityDtoMapper mapper;
 
+    @org.springframework.beans.factory.annotation.Value("${drivesphere.gps.allow-simulation:false}")
+    private boolean allowSimulation;
+
     @Transactional(readOnly = true)
     public TripDto getTripByBookingId(Long bookingId) {
-        return tripRepository.findByBookingId(bookingId)
-                .map(mapper::toTripDto)
+        return getTripByBookingId(bookingId, null, true);
+    }
+
+    @Transactional(readOnly = true)
+    public TripDto getTripByBookingId(Long bookingId, Long currentUserId, boolean isStaff) {
+        Trip trip = tripRepository.findByBookingId(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found for booking id: " + bookingId));
+
+        if (!isStaff && currentUserId != null) {
+            boolean isDriver = trip.getBooking() != null && trip.getBooking().getDriver() != null
+                    && trip.getBooking().getDriver().getUser() != null
+                    && trip.getBooking().getDriver().getUser().getId().equals(currentUserId);
+            boolean isCustomer = trip.getBooking() != null && trip.getBooking().getCustomer() != null
+                    && trip.getBooking().getCustomer().getId().equals(currentUserId);
+
+            if (!isDriver && !isCustomer) {
+                throw new AccessDeniedException("Access denied: You cannot view trip tracking for this booking.");
+            }
+        }
+
+        return enrichTripDto(trip);
     }
 
     @Transactional(readOnly = true)
     public TripDto getTripById(Long tripId) {
-        return tripRepository.findById(tripId)
-                .map(mapper::toTripDto)
+        return getTripById(tripId, null, true);
+    }
+
+    @Transactional(readOnly = true)
+    public TripDto getTripById(Long tripId, Long currentUserId, boolean isStaff) {
+        Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
+
+        if (!isStaff && currentUserId != null) {
+            boolean isDriver = trip.getBooking() != null && trip.getBooking().getDriver() != null
+                    && trip.getBooking().getDriver().getUser() != null
+                    && trip.getBooking().getDriver().getUser().getId().equals(currentUserId);
+            boolean isCustomer = trip.getBooking() != null && trip.getBooking().getCustomer() != null
+                    && trip.getBooking().getCustomer().getId().equals(currentUserId);
+
+            if (!isDriver && !isCustomer) {
+                throw new AccessDeniedException("Access denied: You cannot view this trip.");
+            }
+        }
+
+        return enrichTripDto(trip);
     }
 
     @Transactional
-    public TripDto updateGpsLocation(GpsUpdateDto dto) {
+    public TripDto updateGpsLocation(GpsUpdateDto dto, Long currentUserId, boolean isStaff) {
+        if (dto.getTripId() == null) {
+            throw new IllegalArgumentException("Trip ID is required.");
+        }
+        if (dto.getLatitude() == null || dto.getLongitude() == null) {
+            throw new IllegalArgumentException("Latitude and Longitude are required.");
+        }
+        double lat = dto.getLatitude().doubleValue();
+        double lng = dto.getLongitude().doubleValue();
+        if (lat < -90.0 || lat > 90.0) {
+            throw new IllegalArgumentException("Latitude must be between -90 and 90 degrees.");
+        }
+        if (lng < -180.0 || lng > 180.0) {
+            throw new IllegalArgumentException("Longitude must be between -180 and 180 degrees.");
+        }
+        if (dto.getSpeedKmh() != null && dto.getSpeedKmh().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Speed cannot be negative.");
+        }
+
         Trip trip = tripRepository.findById(dto.getTripId())
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + dto.getTripId()));
+
+        if (trip.getStatus() == TripStatus.COMPLETED || (trip.getBooking() != null && trip.getBooking().getBookingStatus() == BookingStatus.CANCELLED)) {
+            throw new IllegalStateException("Cannot update location for a completed or cancelled trip.");
+        }
+
+        if (!isStaff && currentUserId != null) {
+            boolean isDriver = trip.getBooking() != null && trip.getBooking().getDriver() != null
+                    && trip.getBooking().getDriver().getUser() != null
+                    && trip.getBooking().getDriver().getUser().getId().equals(currentUserId);
+            boolean isCustomer = trip.getBooking() != null && trip.getBooking().getCustomer() != null
+                    && trip.getBooking().getCustomer().getId().equals(currentUserId);
+
+            if (!isDriver && !isCustomer) {
+                throw new AccessDeniedException("Unauthorized: You cannot broadcast GPS telemetry for another user's trip.");
+            }
+        }
 
         trip.setCurrentLatitude(dto.getLatitude());
         trip.setCurrentLongitude(dto.getLongitude());
@@ -61,25 +135,55 @@ public class TripTrackingService {
                     .vehicle(vehicle)
                     .latitude(dto.getLatitude())
                     .longitude(dto.getLongitude())
-                    .speedKmh(dto.getSpeedKmh() != null ? dto.getSpeedKmh() : BigDecimal.valueOf(48.5))
-                    .headingDegrees(dto.getHeadingDegrees() != null ? dto.getHeadingDegrees() : BigDecimal.valueOf(180.0))
-                    .batteryLevelPercent(dto.getBatteryLevelPercent() != null ? dto.getBatteryLevelPercent() : BigDecimal.valueOf(82.0))
-                    .fuelLevelPercent(dto.getFuelLevelPercent() != null ? dto.getFuelLevelPercent() : BigDecimal.valueOf(74.0))
+                    .speedKmh(dto.getSpeedKmh())
+                    .headingDegrees(dto.getHeadingDegrees())
+                    .batteryLevelPercent(dto.getBatteryLevelPercent())
+                    .fuelLevelPercent(dto.getFuelLevelPercent())
                     .recordedAt(Instant.now())
                     .build();
             gpsLogRepository.save(logEntry);
         }
 
-        return mapper.toTripDto(tripRepository.save(trip));
+        Trip saved = tripRepository.save(trip);
+        TripDto tripDto = mapper.toTripDto(saved);
+        tripDto.setIsSimulatedTelemetry(false);
+        tripDto.setTelemetrySource("DEVICE_HARDWARE_TELEMETRY");
+        return tripDto;
     }
 
     /**
      * Advances simulated GPS telemetry step by step along the route for academic demonstration.
+     * Fails fast in production if allow-simulation is set to false.
      */
     @Transactional
     public TripDto simulateTripStep(Long tripId) {
+        return simulateTripStep(tripId, null, true);
+    }
+
+    @Transactional
+    public TripDto simulateTripStep(Long tripId, Long currentUserId, boolean isStaff) {
+        if (!allowSimulation) {
+            throw new IllegalStateException("Simulated GPS telemetry is strictly disabled in production. Connect live GPS telemetry.");
+        }
+
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
+
+        if (!isStaff && currentUserId != null) {
+            boolean isDriver = trip.getBooking() != null && trip.getBooking().getDriver() != null
+                    && trip.getBooking().getDriver().getUser() != null
+                    && trip.getBooking().getDriver().getUser().getId().equals(currentUserId);
+            boolean isCustomer = trip.getBooking() != null && trip.getBooking().getCustomer() != null
+                    && trip.getBooking().getCustomer().getId().equals(currentUserId);
+
+            if (!isDriver && !isCustomer) {
+                throw new AccessDeniedException("Unauthorized to simulate this trip.");
+            }
+        }
+
+        if (trip.getStatus() == TripStatus.COMPLETED || (trip.getBooking() != null && trip.getBooking().getBookingStatus() == BookingStatus.CANCELLED)) {
+            throw new IllegalStateException("Cannot simulate completed or cancelled trip.");
+        }
 
         if (trip.getStatus() == TripStatus.NOT_STARTED) {
             trip.setStatus(TripStatus.IN_PROGRESS);
@@ -140,6 +244,27 @@ public class TripTrackingService {
             }
         }
 
-        return mapper.toTripDto(tripRepository.save(trip));
+        Trip saved = tripRepository.save(trip);
+        TripDto tripDto = mapper.toTripDto(saved);
+        tripDto.setIsSimulatedTelemetry(true);
+        tripDto.setTelemetrySource("ACADEMIC_ROUTE_INTERPOLATOR");
+        return tripDto;
+    }
+
+    private TripDto enrichTripDto(Trip trip) {
+        TripDto dto = mapper.toTripDto(trip);
+        dto.setIsSimulatedTelemetry(trip.getSimulationStep() != null && trip.getSimulationStep() > 0);
+        dto.setTelemetrySource(dto.getIsSimulatedTelemetry() ? "ACADEMIC_ROUTE_INTERPOLATOR" : "DEVICE_HARDWARE_TELEMETRY");
+
+        // Enrich with genuine latest telemetry recorded for this trip if available
+        gpsLogRepository.findFirstByTripIdOrderByRecordedAtDesc(trip.getId())
+                .ifPresent(log -> {
+                    dto.setSpeedKmh(log.getSpeedKmh());
+                    dto.setHeadingDegrees(log.getHeadingDegrees());
+                    dto.setBatteryLevelPercent(log.getBatteryLevelPercent());
+                    dto.setFuelLevelPercent(log.getFuelLevelPercent());
+                });
+
+        return dto;
     }
 }

@@ -47,10 +47,16 @@ public class Vehicle extends BaseEntity {
     private Integer seatingCapacity;
 
     @Column(name = "mileage", precision = 6, scale = 2, nullable = false)
-    private BigDecimal mileage; // km per liter or km per kWh
+    private BigDecimal mileage; // km per liter for ICE/Hybrid
+
+    @Column(name = "range_km")
+    private Integer rangeKm; // Rated full battery/tank range in km
 
     @Column(name = "battery_capacity_kwh", precision = 6, scale = 2)
     private BigDecimal batteryCapacityKwh;
+
+    @Column(name = "energy_consumption_kwh_per_100km", precision = 5, scale = 2)
+    private BigDecimal energyConsumptionKwhPer100Km;
 
     @Column(name = "fuel_tank_capacity_l", precision = 6, scale = 2)
     private BigDecimal fuelTankCapacityL;
@@ -84,6 +90,12 @@ public class Vehicle extends BaseEntity {
 
     @Column(name = "current_odometer_km", precision = 10, scale = 2)
     private BigDecimal currentOdometerKm;
+
+    @Column(name = "last_service_odometer_km", precision = 10, scale = 2)
+    private BigDecimal lastServiceOdometerKm;
+
+    @Column(name = "last_service_date")
+    private java.time.LocalDate lastServiceDate;
 
     @Column(name = "primary_image_url", length = 500)
     private String primaryImageUrl;

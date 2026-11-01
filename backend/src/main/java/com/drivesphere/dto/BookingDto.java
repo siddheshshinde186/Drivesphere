@@ -39,5 +39,6 @@ public class BookingDto {
     private LocalDateTime returnTime;
     private String notes;
     private Long tripId;
+    private boolean pickupEligible;
     private Instant createdAt;
 }

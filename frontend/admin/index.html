@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administrator Governance – DriveSphere</title>
+    <title>Admin Dashboard – DriveSphere</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,8 +11,9 @@
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Custom Theme CSS -->
+    <!-- Custom Theme CSS & Theme Manager -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/theme.js"></script>
 </head>
 <body class="bg-dark text-light">
 
@@ -22,7 +23,7 @@
             <a class="navbar-brand d-flex align-items-center" href="index.html">
                 <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
                 <span class="brand-font fs-5 text-gradient">DriveSphere</span>
-                <span class="badge bg-danger-subtle text-danger ms-2" style="font-size: 0.72rem;">Platform Governance</span>
+                <span class="badge bg-danger-subtle text-danger ms-2" style="font-size: 0.72rem;">Admin Dashboard</span>
             </a>
 
             <div class="d-flex align-items-center gap-3 ms-auto">
@@ -44,35 +45,46 @@
 
     <!-- Main Content -->
     <main class="container-fluid px-4 py-4">
-        <!-- System KPIs -->
+        <!-- System Real-Data KPIs -->
         <div class="row g-3 mb-4">
-            <div class="col-sm-6 col-lg-3">
-                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
-                    <div class="kpi-label mb-1"><i class="bi bi-people text-primary me-1"></i> TOTAL USERS</div>
+            <div class="col-sm-6 col-lg">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center h-100">
+                    <div class="kpi-label mb-1 text-muted small"><i class="bi bi-people text-primary me-1"></i> TOTAL USERS</div>
                     <div id="kpi-users" class="fs-4 fw-bold text-white">0</div>
+                    <div class="small text-muted mt-1"><span id="kpi-users-active" class="text-success fw-semibold">0</span> Active Accounts</div>
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
-                    <div class="kpi-label mb-1"><i class="bi bi-person-badge text-warning me-1"></i> VERIFIED DRIVERS</div>
+            <div class="col-sm-6 col-lg">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center h-100">
+                    <div class="kpi-label mb-1 text-muted small"><i class="bi bi-person-badge text-warning me-1"></i> DRIVER ROSTER</div>
                     <div id="kpi-drivers" class="fs-4 fw-bold text-warning">0</div>
+                    <div class="small text-muted mt-1"><span id="kpi-drivers-online" class="text-success fw-semibold">0</span> Online · <span id="kpi-drivers-busy" class="text-warning fw-semibold">0</span> Busy</div>
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
-                    <div class="kpi-label mb-1"><i class="bi bi-journal-bookmark text-info me-1"></i> TOTAL BOOKINGS</div>
+            <div class="col-sm-6 col-lg">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center h-100">
+                    <div class="kpi-label mb-1 text-muted small"><i class="bi bi-car-front text-cyan me-1"></i> FLEET VEHICLES</div>
+                    <div id="kpi-vehicles" class="fs-4 fw-bold text-cyan">0</div>
+                    <div class="small text-muted mt-1"><span id="kpi-vehicles-avail" class="text-success fw-semibold">0</span> Ready · <span id="kpi-vehicles-maint" class="text-danger fw-semibold">0</span> Maint</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center h-100">
+                    <div class="kpi-label mb-1 text-muted small"><i class="bi bi-journal-bookmark text-info me-1"></i> ALL BOOKINGS</div>
                     <div id="kpi-bookings" class="fs-4 fw-bold text-info">0</div>
+                    <div class="small text-muted mt-1"><span id="kpi-bookings-active" class="text-info fw-semibold">0</span> Active · <span id="kpi-bookings-completed" class="text-success fw-semibold">0</span> Completed</div>
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center">
-                    <div class="kpi-label mb-1"><i class="bi bi-cash-stack text-success me-1"></i> PLATFORM REVENUE</div>
+            <div class="col-sm-6 col-lg">
+                <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm text-center h-100">
+                    <div class="kpi-label mb-1 text-muted small"><i class="bi bi-cash-stack text-success me-1"></i> PAID REVENUE</div>
                     <div id="kpi-revenue" class="fs-4 fw-bold text-success">₹0</div>
+                    <div class="small text-muted mt-1">Platform Avg: <span id="kpi-avg-rating" class="text-warning fw-bold">5.00★</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- Governance Tabs -->
+        <!-- Admin Management Tabs -->
         <ul class="nav nav-tabs border-secondary mb-4" id="adminTabs" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active py-2 px-3 text-light" id="tab-verif-btn" data-bs-toggle="tab" data-bs-target="#tab-verif">
@@ -81,8 +93,20 @@
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link py-2 px-3 text-light" id="tab-presence-btn" data-bs-toggle="tab" data-bs-target="#tab-presence">
+                    <i class="bi bi-broadcast text-success me-1"></i> Driver Presence
+                    <span id="online-drivers-badge" class="badge bg-success ms-1">0</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link py-2 px-3 text-light" id="tab-reviews-btn" data-bs-toggle="tab" data-bs-target="#tab-reviews">
+                    <i class="bi bi-star-half text-warning me-1"></i> Reviews & Feedback
+                    <span id="review-count-badge" class="badge bg-info ms-1">0</span>
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link py-2 px-3 text-light" id="tab-users-btn" data-bs-toggle="tab" data-bs-target="#tab-users">
-                    <i class="bi bi-people text-primary me-1"></i> User Governance
+                    <i class="bi bi-people text-primary me-1"></i> User Management
                 </button>
             </li>
             <li class="nav-item">
@@ -93,6 +117,11 @@
             <li class="nav-item">
                 <button class="nav-link py-2 px-3 text-light" id="tab-diagnostics-btn" data-bs-toggle="tab" data-bs-target="#tab-diagnostics">
                     <i class="bi bi-activity text-danger me-1"></i> System Health & Diagnostics
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link py-2 px-3 text-light" id="tab-audit-btn" data-bs-toggle="tab" data-bs-target="#tab-audit">
+                    <i class="bi bi-clock-history text-info me-1"></i> Audit Trail
                 </button>
             </li>
             <li class="nav-item ms-auto">
@@ -130,7 +159,7 @@
                 </div>
             </div>
 
-            <!-- 2. USER GOVERNANCE TAB -->
+            <!-- 2. USER MANAGEMENT TAB -->
             <div class="tab-pane fade" id="tab-users">
                 <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -285,7 +314,7 @@
                                 </tr>
                                 <tr>
                                     <td class="text-info fw-semibold"><i class="bi bi-robot me-2"></i>AI Mobility Concierge</td>
-                                    <td>Google Gemini 2.5 Flash-Lite</td>
+                                    <td>Google Gemini 3.5 Flash-Lite</td>
                                     <td><code>v1internal (REST)</code></td>
                                     <td>Domain Heuristic Fallback Active</td>
                                 </tr>
@@ -312,8 +341,180 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 5. AUDIT TRAIL TAB -->
+            <div class="tab-pane fade" id="tab-audit">
+                <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="brand-font text-white mb-1"><i class="bi bi-clock-history text-info me-2"></i>Security & Operational Audit Trail</h5>
+                            <p class="text-muted small mb-0">Immutable compliance log of administrative actions, authentication, and state mutations</p>
+                        </div>
+                        <button class="btn btn-outline-info btn-sm" onclick="loadAuditLogs()">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Logs
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="border-bottom border-secondary text-muted small">
+                                    <th>TIMESTAMP</th>
+                                    <th>ACTOR</th>
+                                    <th>ROLE</th>
+                                    <th>ACTION</th>
+                                    <th>RESOURCE</th>
+                                    <th>DETAILS</th>
+                                    <th>IP ADDRESS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-table-tbody">
+                                <tr><td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading audit trail...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. DRIVER PRESENCE TELEMETRY TAB -->
+            <div class="tab-pane fade" id="tab-presence">
+                <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="brand-font text-white mb-1"><i class="bi bi-broadcast text-success me-2"></i>Driver Presence & Real-Time Availability Roster</h5>
+                            <p class="text-muted small mb-0">Authoritative tracking of active driver connections, heartbeats, and assignment statuses</p>
+                        </div>
+                        <button class="btn btn-outline-success btn-sm" onclick="loadDriverPresence()">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Presence
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="border-bottom border-secondary text-muted small">
+                                    <th>DRIVER NAME</th>
+                                    <th>LICENSE</th>
+                                    <th>PRESENCE STATUS</th>
+                                    <th>LAST HEARTBEAT</th>
+                                    <th>ASSIGNMENT STATE</th>
+                                    <th>RATING</th>
+                                    <th>TRUST SCORE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="presence-table-tbody">
+                                <tr><td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading driver presence roster...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. REVIEWS & FEEDBACK TAB -->
+            <div class="tab-pane fade" id="tab-reviews">
+                <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="brand-font text-white mb-1"><i class="bi bi-star-half text-warning me-2"></i>Reviews & Feedback Management</h5>
+                            <p class="text-muted small mb-0">Authoritative customer evaluations, vehicle/driver satisfaction, and content moderation</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="review-search-input" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Search customer, vehicle, driver..." oninput="filterAdminReviews()" style="width: 240px;">
+                            <select id="review-rating-filter" class="form-select form-select-sm bg-dark text-white border-secondary" onchange="filterAdminReviews()" style="width: 140px;">
+                                <option value="ALL">All Ratings</option>
+                                <option value="5">5 Stars</option>
+                                <option value="4">4+ Stars</option>
+                                <option value="3">3+ Stars</option>
+                                <option value="LOW">2 Stars & below</option>
+                            </select>
+                            <button class="btn btn-outline-warning btn-sm" onclick="loadAdminReviews()">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="border-bottom border-secondary text-muted small">
+                                    <th>BOOKING REF</th>
+                                    <th>CUSTOMER</th>
+                                    <th>VEHICLE</th>
+                                    <th>DRIVER</th>
+                                    <th>OVERALL</th>
+                                    <th>VEHICLE</th>
+                                    <th>DRIVER</th>
+                                    <th>COMMENT</th>
+                                    <th>DATE</th>
+                                    <th class="text-end">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reviews-table-tbody">
+                                <tr><td colspan="10" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading reviews...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
+
+    <!-- View Review Detail Modal -->
+    <div class="modal fade" id="viewReviewDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-star-fill text-warning me-2"></i>Review Details & Moderation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <div class="small text-muted">Booking Reference:</div>
+                        <div id="modal-review-booking-ref" class="fw-bold text-white fs-6"></div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="small text-muted">Customer:</div>
+                            <div id="modal-review-customer" class="text-light fw-semibold"></div>
+                            <div id="modal-review-email" class="small text-muted"></div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small text-muted">Vehicle:</div>
+                            <div id="modal-review-vehicle" class="text-cyan fw-semibold"></div>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="small text-muted">Driver:</div>
+                            <div id="modal-review-driver" class="text-warning fw-semibold"></div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small text-muted">Submitted Date:</div>
+                            <div id="modal-review-date" class="text-light"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="small text-muted">Rating Breakdown:</div>
+                        <div class="d-flex gap-3 align-items-center mt-1">
+                            <span class="badge bg-warning text-dark px-2 py-1">Overall: <span id="modal-review-rating">5.0</span>★</span>
+                            <span class="badge bg-primary text-white px-2 py-1">Vehicle: <span id="modal-review-vehicle-rating">5.0</span>★</span>
+                            <span class="badge bg-info text-dark px-2 py-1">Driver: <span id="modal-review-driver-rating">-</span>★</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">Customer Written Comment:</div>
+                        <div id="modal-review-comment" class="p-3 bg-dark rounded border border-secondary text-light small fst-italic"></div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="modal-review-delete-btn" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash3 me-1"></i> Delete Review
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Review Decision Modal -->
     <div class="modal fade" id="reviewDecisionModal" tabindex="-1" aria-hidden="true">
@@ -356,16 +557,19 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js?v=2.3"></script>
+    <script src="../assets/js/auth.js?v=2.3"></script>
     <script>
         let allBookingsCache = [];
+        let adminReviewsCache = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.requireAuth(['ROLE_ADMIN'])) return;
 
             await loadAdminOverview();
             await loadVerifications();
+            await loadDriverPresence();
+            await loadAdminReviews();
             await loadUsers();
             await loadAllBookings();
             setupAdminEvents();
@@ -373,8 +577,25 @@
 
         async function loadAdminOverview() {
             try {
-                const fleetRes = await API.get('/fleet/dashboard');
-                document.getElementById('kpi-revenue').innerText = '₹' + (fleetRes.data ? fleetRes.data.totalRevenue.toLocaleString() : 0);
+                const summaryRes = await API.admin.getSummary();
+                if (summaryRes && summaryRes.data) {
+                    const s = summaryRes.data;
+                    document.getElementById('kpi-users').innerText = s.totalUsers || 0;
+                    document.getElementById('kpi-users-active').innerText = s.activeUsers || 0;
+                    document.getElementById('kpi-drivers').innerText = s.totalDrivers || 0;
+                    document.getElementById('kpi-drivers-online').innerText = s.onlineDrivers || 0;
+                    document.getElementById('kpi-drivers-busy').innerText = s.busyDrivers || 0;
+                    document.getElementById('online-drivers-badge').innerText = s.onlineDrivers || 0;
+                    document.getElementById('kpi-vehicles').innerText = s.totalVehicles || 0;
+                    document.getElementById('kpi-vehicles-avail').innerText = s.availableVehicles || 0;
+                    document.getElementById('kpi-vehicles-maint').innerText = s.maintenanceVehicles || 0;
+                    document.getElementById('kpi-bookings').innerText = s.totalBookings || 0;
+                    document.getElementById('kpi-bookings-active').innerText = s.activeBookings || 0;
+                    document.getElementById('kpi-bookings-completed').innerText = s.completedBookings || 0;
+                    document.getElementById('kpi-revenue').innerText = '₹' + Number(s.totalPaidRevenue || 0).toLocaleString('en-IN');
+                    document.getElementById('kpi-avg-rating').innerText = Number(s.averageRating || 5.0).toFixed(2) + '★';
+                    document.getElementById('review-count-badge').innerText = s.totalReviews || 0;
+                }
             } catch (err) {
                 console.error('Overview loading error:', err);
             }
@@ -424,37 +645,79 @@
 
         async function loadUsers() {
             try {
-                const res = await API.get('/auth/me'); // Checks connection
-                const driversRes = await API.get('/drivers');
-                document.getElementById('kpi-drivers').innerText = (driversRes.data || []).length;
-                document.getElementById('kpi-users').innerText = (driversRes.data || []).length + 4; // realistic estimation
+                const res = await API.get('/admin/users');
+                const users = res.data || [];
 
-                // Sample users representation
                 const tbody = document.getElementById('users-table-tbody');
-                const users = [
-                    { id: 1, name: 'System Administrator', email: 'admin@drivesphere.local', phone: '+91 9876543210', role: 'ROLE_ADMIN', active: true, date: '2026-08-01' },
-                    { id: 2, name: 'Vikram Mehta', email: 'fleet@drivesphere.local', phone: '+91 9876543211', role: 'ROLE_FLEET_MANAGER', active: true, date: '2026-08-05' },
-                    { id: 3, name: 'Rajesh Kumar', email: 'driver@drivesphere.local', phone: '+91 9876543212', role: 'ROLE_DRIVER', active: true, date: '2026-08-10' },
-                    { id: 4, name: 'Priya Sharma', email: 'customer@drivesphere.local', phone: '+91 9876543213', role: 'ROLE_CUSTOMER', active: true, date: '2026-08-15' }
-                ];
+                if (users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No users registered yet.</td></tr>`;
+                    return;
+                }
 
-                tbody.innerHTML = users.map(u => `
+                tbody.innerHTML = users.map(u => {
+                    const primaryRole = (u.roles && u.roles.length > 0) ? u.roles[0].replace('ROLE_', '') : 'CUSTOMER';
+                    return `
                     <tr>
-                        <td class="fw-bold text-white">${u.name}</td>
+                        <td class="fw-bold text-white">${u.fullName || (u.firstName + ' ' + (u.lastName || ''))}</td>
                         <td class="text-info">${u.email}</td>
-                        <td class="small text-muted">${u.phone}</td>
-                        <td><span class="badge bg-secondary">${u.role.replace('ROLE_', '')}</span></td>
-                        <td><span class="badge ${u.active ? 'bg-success' : 'bg-danger'}">${u.active ? 'Active' : 'Inactive'}</span></td>
-                        <td class="small text-muted">${u.date}</td>
+                        <td class="small text-muted">${u.phoneNumber || 'N/A'}</td>
+                        <td><span class="badge bg-secondary">${primaryRole}</span></td>
+                        <td><span class="badge ${u.active ? 'bg-success' : 'bg-danger'}">${u.active ? 'Active' : 'Disabled'}</span></td>
+                        <td class="small text-muted">${u.createdAt ? u.createdAt.slice(0, 10) : 'Active'}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="API.showToast('User status toggled', 'info')">
-                                Toggle
+                            <button class="btn btn-sm ${u.active ? 'btn-outline-danger' : 'btn-outline-success'} py-0 px-2" onclick="toggleUserStatus(${u.id})">
+                                ${u.active ? 'Deactivate' : 'Activate'}
                             </button>
                         </td>
                     </tr>
-                `).join('');
+                    `;
+                }).join('');
             } catch (err) {
                 console.error('Users load error:', err);
+            }
+        }
+
+        async function toggleUserStatus(userId) {
+            try {
+                await API.put('/admin/users/' + userId + '/toggle-status');
+                API.showToast('User status updated successfully', 'success');
+                await loadUsers();
+                await loadAdminOverview();
+            } catch (err) {
+                API.showToast(err.message, 'danger');
+            }
+        }
+
+        async function loadAuditLogs() {
+            const tbody = document.getElementById('audit-table-tbody');
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Refreshing audit trail...</td></tr>`;
+
+            try {
+                const res = await API.get('/admin/audit-logs');
+                const logs = res.data || [];
+
+                if (logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No audit entries recorded yet.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = logs.map(l => {
+                    const timeStr = l.createdAt ? new Date(l.createdAt).toLocaleString() : 'Recent';
+                    return `
+                    <tr>
+                        <td class="small text-muted font-monospace">${timeStr}</td>
+                        <td class="fw-semibold text-white">${l.actorEmail || 'SYSTEM'}</td>
+                        <td><span class="badge bg-secondary" style="font-size:0.7rem;">${(l.actorRole || 'USER').replace('ROLE_', '')}</span></td>
+                        <td><span class="badge bg-info-subtle text-info font-monospace">${l.action}</span></td>
+                        <td class="small text-secondary">${l.resourceType || ''} ${l.resourceId ? '#' + l.resourceId : ''}</td>
+                        <td class="small text-light text-break" style="max-width: 280px;">${l.details || ''}</td>
+                        <td class="small text-muted font-monospace">${l.ipAddress || 'Internal'}</td>
+                    </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('Audit logs load error:', err);
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Failed to load audit logs: ${err.message}</td></tr>`;
             }
         }
 
@@ -547,6 +810,10 @@
             if (diagTabBtn) {
                 diagTabBtn.addEventListener('shown.bs.tab', pingAdminHealth);
             }
+            const auditTabBtn = document.getElementById('tab-audit-btn');
+            if (auditTabBtn) {
+                auditTabBtn.addEventListener('shown.bs.tab', loadAuditLogs);
+            }
         }
 
         async function pingAdminHealth() {
@@ -557,7 +824,8 @@
             const output = document.getElementById('adminHealthJsonOutput');
 
             try {
-                const res = await fetch('http://localhost:8080/api/health');
+                const baseUrl = (typeof API !== 'undefined' && API.BASE_URL) ? API.BASE_URL : '/api';
+                const res = await fetch(`${baseUrl}/health`);
                 const duration = Math.round(performance.now() - start);
                 const data = await res.json();
 
@@ -573,6 +841,189 @@
                 statusText.innerText = 'HTTP Error / Standby';
                 latency.innerText = duration + ' ms';
                 output.innerText = JSON.stringify({ error: err.message }, null, 2);
+            }
+        }
+
+        // ==========================================
+        // DRIVER PRESENCE TELEMETRY
+        // ==========================================
+        async function loadDriverPresence() {
+            const tbody = document.getElementById('presence-table-tbody');
+            try {
+                const res = await API.admin.getDriverPresence();
+                const drivers = res.data || [];
+                if (drivers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No drivers registered in platform.</td></tr>`;
+                    return;
+                }
+                const now = new Date();
+                let onlineCount = 0;
+                tbody.innerHTML = drivers.map(d => {
+                    const isOnline = !!d.online;
+                    const isAvail = !!d.available;
+                    let lastSeenStr = 'Never';
+                    let isHeartbeatStale = true;
+                    if (d.lastSeenAt) {
+                        const seenDate = new Date(d.lastSeenAt);
+                        const diffSecs = Math.max(0, Math.round((now - seenDate) / 1000));
+                        if (diffSecs < 60) lastSeenStr = `${diffSecs}s ago`;
+                        else if (diffSecs < 3600) lastSeenStr = `${Math.floor(diffSecs / 60)}m ago`;
+                        else lastSeenStr = seenDate.toLocaleTimeString();
+                        isHeartbeatStale = diffSecs > 120;
+                    }
+
+                    let badgeHtml = '';
+                    if (!isOnline || isHeartbeatStale) {
+                        badgeHtml = '<span class="badge badge-presence-offline"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>OFFLINE</span>';
+                    } else if (!isAvail) {
+                        onlineCount++;
+                        badgeHtml = '<span class="badge badge-presence-busy"><i class="bi bi-record-circle-fill me-1" style="font-size:0.5rem;"></i>ONLINE — BUSY</span>';
+                    } else {
+                        onlineCount++;
+                        badgeHtml = '<span class="badge badge-presence-online"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>ONLINE — AVAILABLE</span>';
+                    }
+
+                    const trustScore = d.trustScore ? d.trustScore.overallScore : (d.experienceYears > 2 ? 85 : 75);
+                    const vehName = d.currentVehicleName || '<span class="text-muted">Unassigned</span>';
+
+                    return `
+                        <tr>
+                            <td class="fw-bold text-white"><i class="bi bi-person-fill text-primary me-2"></i>${d.fullName || 'Driver #' + d.id}</td>
+                            <td><code>${d.licenseNumber || '—'}</code></td>
+                            <td>${badgeHtml}</td>
+                            <td class="small text-muted"><i class="bi bi-clock me-1"></i>${lastSeenStr}</td>
+                            <td>${isAvail ? '<span class="text-success small">Ready for Assignment</span>' : '<span class="text-warning small">Assigned / On Trip</span>'}</td>
+                            <td><span class="text-warning fw-semibold">${Number(d.rating || 5.0).toFixed(1)}★</span> <small class="text-muted">(${d.totalTrips || 0})</small></td>
+                            <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">${trustScore} / 100</span></td>
+                        </tr>
+                    `;
+                }).join('');
+                document.getElementById('online-drivers-badge').innerText = onlineCount;
+            } catch (err) {
+                console.error('Failed to load driver presence:', err);
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Failed to load driver presence roster: ${err.message}</td></tr>`;
+            }
+        }
+
+        // ==========================================
+        // REVIEWS & FEEDBACK MANAGEMENT
+        // ==========================================
+        async function loadAdminReviews() {
+            const tbody = document.getElementById('reviews-table-tbody');
+            try {
+                const res = await API.admin.getReviews();
+                adminReviewsCache = res.data || [];
+                document.getElementById('review-count-badge').innerText = adminReviewsCache.length;
+                renderAdminReviews(adminReviewsCache);
+            } catch (err) {
+                console.error('Failed to load reviews:', err);
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-danger">Failed to load reviews: ${err.message}</td></tr>`;
+            }
+        }
+
+        function filterAdminReviews() {
+            const query = (document.getElementById('review-search-input').value || '').toLowerCase().trim();
+            const ratingFilter = document.getElementById('review-rating-filter').value;
+
+            let filtered = adminReviewsCache.filter(r => {
+                const matchesQuery = !query ||
+                    (r.bookingReference && r.bookingReference.toLowerCase().includes(query)) ||
+                    (r.customerName && r.customerName.toLowerCase().includes(query)) ||
+                    (r.customerEmail && r.customerEmail.toLowerCase().includes(query)) ||
+                    (r.vehicleName && r.vehicleName.toLowerCase().includes(query)) ||
+                    (r.driverName && r.driverName.toLowerCase().includes(query)) ||
+                    (r.comment && r.comment.toLowerCase().includes(query));
+
+                let matchesRating = true;
+                const score = Number(r.rating || 0);
+                if (ratingFilter === '5') matchesRating = score >= 5.0;
+                else if (ratingFilter === '4') matchesRating = score >= 4.0;
+                else if (ratingFilter === '3') matchesRating = score >= 3.0;
+                else if (ratingFilter === 'LOW') matchesRating = score < 3.0;
+
+                return matchesQuery && matchesRating;
+            });
+
+            renderAdminReviews(filtered);
+        }
+
+        function renderAdminReviews(list) {
+            const tbody = document.getElementById('reviews-table-tbody');
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-muted">No reviews matching the criteria.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(r => {
+                const dateStr = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—';
+                const commentExcerpt = r.comment ? (r.comment.length > 35 ? r.comment.substring(0, 35) + '...' : r.comment) : '<span class="text-muted fst-italic">No written comment</span>';
+                return `
+                    <tr>
+                        <td><code class="text-info">${r.bookingReference || 'DS-REF'}</code></td>
+                        <td>
+                            <div class="fw-semibold text-white">${r.customerName || 'Customer'}</div>
+                            <div class="small text-muted" style="font-size:0.75rem;">${r.customerEmail || ''}</div>
+                        </td>
+                        <td class="text-cyan">${r.vehicleName || 'Vehicle'}</td>
+                        <td>${r.driverName ? `<span class="text-warning">${r.driverName}</span>` : '<span class="text-muted">Self-drive</span>'}</td>
+                        <td><span class="badge bg-warning text-dark">${Number(r.rating || 5.0).toFixed(1)}★</span></td>
+                        <td><span class="small text-light">${Number(r.vehicleRating || 5.0).toFixed(1)}★</span></td>
+                        <td><span class="small text-light">${r.driverRating ? Number(r.driverRating).toFixed(1) + '★' : '—'}</span></td>
+                        <td class="small text-light">${commentExcerpt}</td>
+                        <td class="small text-muted">${dateStr}</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-info" onclick="openReviewDetailModal(${r.id})" title="View Complete Review">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteAdminReview(${r.id})" title="Delete / Moderate Review">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openReviewDetailModal(id) {
+            const r = adminReviewsCache.find(x => x.id === id);
+            if (!r) return;
+
+            document.getElementById('modal-review-booking-ref').innerText = r.bookingReference || `DS-BOOKING-${r.bookingId}`;
+            document.getElementById('modal-review-customer').innerText = r.customerName || 'Customer';
+            document.getElementById('modal-review-email').innerText = r.customerEmail || 'Confidential';
+            document.getElementById('modal-review-vehicle').innerText = r.vehicleName || 'Vehicle';
+            document.getElementById('modal-review-driver').innerText = r.driverName || 'No Driver Assigned';
+            document.getElementById('modal-review-date').innerText = r.createdAt ? new Date(r.createdAt).toLocaleString() : 'N/A';
+            document.getElementById('modal-review-rating').innerText = Number(r.rating || 5.0).toFixed(1);
+            document.getElementById('modal-review-vehicle-rating').innerText = Number(r.vehicleRating || 5.0).toFixed(1);
+            document.getElementById('modal-review-driver-rating').innerText = r.driverRating ? Number(r.driverRating).toFixed(1) : 'N/A';
+            document.getElementById('modal-review-comment').innerText = r.comment || 'No written text provided.';
+
+            const delBtn = document.getElementById('modal-review-delete-btn');
+            delBtn.onclick = async () => {
+                await deleteAdminReview(r.id);
+                const modalEl = document.getElementById('viewReviewDetailModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+            };
+
+            const modal = new bootstrap.Modal(document.getElementById('viewReviewDetailModal'));
+            modal.show();
+        }
+
+        async function deleteAdminReview(id) {
+            if (!confirm('Are you sure you want to permanently delete this customer review? Rating metrics will be automatically recalculated.')) {
+                return;
+            }
+            try {
+                await API.admin.deleteReview(id);
+                API.showToast('Review deleted and ratings recalculated successfully', 'success');
+                await loadAdminReviews();
+                await loadAdminOverview();
+            } catch (err) {
+                API.showToast('Failed to delete review: ' + err.message, 'danger');
             }
         }
     </script>

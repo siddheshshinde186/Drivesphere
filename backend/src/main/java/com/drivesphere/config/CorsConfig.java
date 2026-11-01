@@ -23,10 +23,20 @@ public class CorsConfig implements WebMvcConfigurer {
     @Value("${drivesphere.cors.allowed-origins:http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:5173,http://localhost:8080}")
     private String allowedOrigins;
 
+    private List<String> getAllowedOriginList() {
+        if (allowedOrigins == null || allowedOrigins.trim().isBlank()) {
+            return List.of("http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:3000", "http://localhost:5173", "http://localhost:8080");
+        }
+        return Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
+
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("*")
+                .allowedOrigins(getAllowedOriginList().toArray(new String[0]))
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
@@ -37,7 +47,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @NonNull
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOrigins(getAllowedOriginList());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

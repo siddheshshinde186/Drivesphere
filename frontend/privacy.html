@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DriveSphere Privacy Policy - How we collect, store, and protect your personal and location data.">
+    <title>Privacy Policy – DriveSphere Smart Mobility</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom Theme CSS & Theme Script -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/theme.js"></script>
+</head>
+<body class="bg-dark text-light">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-surface border-bottom border-secondary sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                <div class="brand-icon-wrapper p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25">
+                    <i class="bi bi-ev-front-fill text-info fs-4"></i>
+                </div>
+                <span class="fs-4 fw-bold brand-font text-white">Drive<span class="text-gradient">Sphere</span></span>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-secondary btn-sm" id="theme-toggle" title="Toggle Theme">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
+                <a href="login.html" class="btn btn-outline-primary btn-sm">Sign In</a>
+                <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container my-5 py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="card p-4 p-md-5 border-secondary bg-surface shadow-lg">
+                    <div class="d-flex align-items-center gap-2 text-primary small fw-semibold text-uppercase tracking-wider mb-2">
+                        <i class="bi bi-shield-check"></i> Data Governance
+                    </div>
+                    <h1 class="display-6 fw-bold text-white mb-3">Privacy & Data Protection Policy</h1>
+                    <p class="text-secondary small border-bottom border-secondary pb-3 mb-4">
+                        Effective: September 2026 &bull; Compliant with Digital Personal Data Protection (DPDP) Standards
+                    </p>
+
+                    <div class="content-section text-light">
+                        <h5 class="text-white mt-4 mb-2">1. Introduction & Overview</h5>
+                        <p class="text-secondary">
+                            DriveSphere Mobility Technologies Pvt. Ltd. values your trust and is committed to protecting your personal information. This Privacy Policy details the types of personal data we collect, why we collect it, how it is secured, and your rights regarding your data.
+                        </p>
+
+                        <h5 class="text-white mt-4 mb-2">2. Information We Collect</h5>
+                        <p class="text-secondary">
+                            We collect only the minimum required information to provide safe and reliable mobility services:
+                        </p>
+                        <ul class="text-secondary">
+                            <li><strong>Account Credentials:</strong> Full name, verified email address, phone number, and encrypted password hash (BCrypt).</li>
+                            <li><strong>Identity & Verification Data:</strong> Government driver license details, expiry date, address, and verification documents (stored in secure authorized cloud vaults).</li>
+                            <li><strong>Geographic & Telemetry Data:</strong> Real-time GPS location during active vehicle rentals or driver shifts for safety monitoring, emergency dispatch, and route planning.</li>
+                            <li><strong>Payment Metadata:</strong> Transaction identifiers and payment status via PCI-DSS compliant payment gateways (e.g. Razorpay). We never store raw credit card numbers or CVVs.</li>
+                        </ul>
+
+                        <h5 class="text-white mt-4 mb-2">3. How We Use Your Data</h5>
+                        <p class="text-secondary">
+                            Your information is utilized solely to:
+                        </p>
+                        <ul class="text-secondary">
+                            <li>Authenticate and secure platform access.</li>
+                            <li>Fulfill vehicle reservations and coordinate driver dispatch.</li>
+                            <li>Calculate Driver Trust Scores based on verified trips and passenger feedback.</li>
+                            <li>Send operational notifications (booking confirmations, email verification, password reset, and invoices).</li>
+                            <li>Prevent fraud, rate limiting abuses, and duplicate transactions.</li>
+                        </ul>
+
+                        <h5 class="text-white mt-4 mb-2">4. Data Security & Storage</h5>
+                        <p class="text-secondary">
+                            We implement industry-standard cryptographic practices:
+                        </p>
+                        <ul class="text-secondary">
+                            <li>Single-use tokens with cryptographic SHA-256 hashing for password resets and email verification.</li>
+                            <li>JWT authentication tokens with time-limited validity.</li>
+                            <li>Strict Role-Based Access Controls (RBAC) ensuring drivers and customers can only view their own records.</li>
+                            <li>Encrypted communication across all endpoints via HTTPS / TLS 1.3.</li>
+                        </ul>
+
+                        <h5 class="text-white mt-4 mb-2">5. User Rights & Account Deletion</h5>
+                        <p class="text-secondary">
+                            You have the right to inspect, correct, or request deletion of your personal account data. Upon account deactivation, active sessions are invalidated, and non-financial data is scrubbed in accordance with statutory retention regulations.
+                        </p>
+
+                        <h5 class="text-white mt-4 mb-2">6. Privacy Inquiries</h5>
+                        <p class="text-secondary">
+                            For privacy inquiries or data requests, contact our Data Protection Officer at <a href="mailto:privacy@drivesphere.com" class="text-primary">privacy@drivesphere.com</a>.
+                        </p>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-top border-secondary d-flex justify-content-between align-items-center">
+                        <a href="terms.html" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Terms of Service</a>
+                        <a href="refund-policy.html" class="btn btn-outline-primary btn-sm">Cancellation & Refunds <i class="bi bi-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 border-top border-secondary bg-surface text-center small text-secondary">
+        <div class="container">
+            &copy; 2026 DriveSphere Mobility Platform. All rights reserved. &bull; 
+            <a href="terms.html" class="text-secondary text-decoration-none mx-2">Terms</a> &bull; 
+            <a href="privacy.html" class="text-secondary text-decoration-none mx-2">Privacy</a> &bull; 
+            <a href="refund-policy.html" class="text-secondary text-decoration-none mx-2">Refund Policy</a>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

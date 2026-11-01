@@ -11,8 +11,9 @@
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Custom Theme CSS -->
+    <!-- Custom Theme CSS & Manager -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/theme.js"></script>
 </head>
 <body class="bg-dark text-light">
 
@@ -26,10 +27,17 @@
             </a>
 
             <div class="d-flex align-items-center gap-3 ms-auto">
-                <!-- Online Availability Switch -->
-                <div class="form-check form-switch d-flex align-items-center gap-2 p-0 m-0">
-                    <input class="form-check-input ms-0" type="checkbox" id="driver-availability-toggle" style="width: 44px; height: 22px;">
-                    <label class="form-check-label small fw-bold text-white mb-0" id="driver-status-label">Offline</label>
+                <!-- Presence Status Pill & Online/Offline Buttons -->
+                <div class="d-flex align-items-center gap-2">
+                    <span id="driver-presence-pill" class="badge badge-presence-offline py-2 px-3">
+                        <i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i><span id="driver-status-text">OFFLINE</span>
+                    </span>
+                    <button id="btn-go-online" class="btn btn-sm btn-success fw-semibold" onclick="handleGoOnline()">
+                        <i class="bi bi-broadcast me-1"></i>Go Online
+                    </button>
+                    <button id="btn-go-offline" class="btn btn-sm btn-outline-secondary fw-semibold d-none" onclick="handleGoOffline()">
+                        <i class="bi bi-power me-1"></i>Go Offline
+                    </button>
                 </div>
 
                 <!-- User Profile Dropdown -->
@@ -69,11 +77,11 @@
                         <img id="driver-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" 
                              class="rounded-circle border border-primary p-1 me-3" width="72" height="72" style="object-fit:cover;">
                         <div>
-                            <h4 id="driver-profile-name" class="brand-font text-white mb-0">Rajesh Kumar</h4>
-                            <div class="text-muted small" id="driver-license">DL: DL-0420180019283</div>
+                            <h4 id="driver-profile-name" class="brand-font text-white mb-0">Driver Partner</h4>
+                            <div class="text-muted small" id="driver-license">DL: —</div>
                             <div class="mt-1">
-                                <span id="driver-verif-badge" class="badge bg-success">VERIFIED</span>
-                                <span class="text-warning small ms-2"><i class="bi bi-star-fill me-1"></i><strong id="driver-rating">4.90</strong>/5.0</span>
+                                <span id="driver-verif-badge" class="badge bg-secondary">VERIFICATION PENDING</span>
+                                <span class="text-warning small ms-2"><i class="bi bi-star-fill me-1"></i><strong id="driver-rating">—</strong>/5.0</span>
                             </div>
                         </div>
                     </div>
@@ -82,38 +90,38 @@
                     <div class="p-3 bg-dark rounded-3 border border-secondary mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="small text-muted fw-bold text-uppercase"><i class="bi bi-shield-check text-info me-1"></i> Driver Trust Score</span>
-                            <span id="trust-level-badge" class="badge bg-success">EXCELLENT</span>
+                            <span id="trust-level-badge" class="badge bg-secondary">PENDING</span>
                         </div>
                         <div class="d-flex align-items-baseline mb-2">
-                            <h1 id="trust-score-number" class="brand-font text-gradient mb-0 me-2">92.5</h1>
+                            <h1 id="trust-score-number" class="brand-font text-gradient mb-0 me-2">—</h1>
                             <span class="text-muted small">/ 100</span>
                         </div>
                         <div class="progress bg-secondary mb-3" style="height: 10px;">
-                            <div id="trust-score-progress" class="progress-bar bg-primary" role="progressbar" style="width: 92.5%;"></div>
+                            <div id="trust-score-progress" class="progress-bar bg-primary" role="progressbar" style="width: 0%;"></div>
                         </div>
                         <div class="small text-muted" id="trust-score-explanation" style="font-size: 0.8rem; line-height: 1.4;">
-                            Evaluation Factors: Document Verification (25/25), Commercial Experience (20/20), Customer Feedback Rating (24.5/25), Trip Completion (24/20).
+                            Trust score will be calculated upon document verification and completed trip feedback.
                         </div>
                     </div>
 
-                    <!-- Quick Stats -->
+                    <!-- Real Driver Stats -->
                     <div class="row g-2 text-center">
                         <div class="col-4">
                             <div class="p-2 bg-dark rounded-3 border border-secondary">
-                                <div class="kpi-label" style="font-size: 0.72rem;">TOTAL TRIPS</div>
-                                <div id="stat-total-trips" class="fw-bold text-white fs-5">84</div>
+                                <div class="kpi-label text-muted" style="font-size: 0.72rem;">TOTAL TRIPS</div>
+                                <div id="stat-total-trips" class="fw-bold text-white fs-5">0</div>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="p-2 bg-dark rounded-3 border border-secondary">
-                                <div class="kpi-label" style="font-size: 0.72rem;">DAILY RATE</div>
-                                <div id="stat-daily-rate" class="fw-bold text-success fs-5">₹950</div>
+                                <div class="kpi-label text-muted" style="font-size: 0.72rem;">DAILY RATE</div>
+                                <div id="stat-daily-rate" class="fw-bold text-success fs-5">₹—</div>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="p-2 bg-dark rounded-3 border border-secondary">
-                                <div class="kpi-label" style="font-size: 0.72rem;">CANCELLATION</div>
-                                <div id="stat-cancel-rate" class="fw-bold text-info fs-5">1.2%</div>
+                                <div class="kpi-label text-muted" style="font-size: 0.72rem;">CANCELLATION</div>
+                                <div id="stat-cancel-rate" class="fw-bold text-info fs-5">0.0%</div>
                             </div>
                         </div>
                     </div>
@@ -158,23 +166,27 @@
                 <div class="modal-body p-4">
                     <form id="doc-upload-form">
                         <div class="mb-3">
-                            <label class="form-label small text-muted">Aadhaar / National ID Document URL</label>
-                            <input type="url" id="doc-id-url" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="https://..." value="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80">
+                            <label class="form-label small text-muted">Aadhaar / National ID Document (PDF or Image)</label>
+                            <input type="file" id="doc-id-file" class="form-control form-control-sm bg-dark text-white border-secondary mb-1" accept="image/*,application/pdf">
+                            <input type="url" id="doc-id-url" class="form-control form-control-sm bg-dark text-white border-secondary small" placeholder="Or document URL">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small text-muted">Commercial Driving License URL</label>
-                            <input type="url" id="doc-license-url" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="https://..." value="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80">
+                            <label class="form-label small text-muted">Commercial Driving License (PDF or Image)</label>
+                            <input type="file" id="doc-license-file" class="form-control form-control-sm bg-dark text-white border-secondary mb-1" accept="image/*,application/pdf">
+                            <input type="url" id="doc-license-url" class="form-control form-control-sm bg-dark text-white border-secondary small" placeholder="Or document URL">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small text-muted">Police Verification Certificate URL</label>
-                            <input type="url" id="doc-police-url" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="https://..." value="https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=600&q=80">
+                            <label class="form-label small text-muted">Police Verification Certificate</label>
+                            <input type="file" id="doc-police-file" class="form-control form-control-sm bg-dark text-white border-secondary mb-1" accept="image/*,application/pdf">
+                            <input type="url" id="doc-police-url" class="form-control form-control-sm bg-dark text-white border-secondary small" placeholder="Or document URL">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small text-muted">Medical & Eye Fitness Certificate URL</label>
-                            <input type="url" id="doc-medical-url" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="https://..." value="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80">
+                            <label class="form-label small text-muted">Medical & Eye Fitness Certificate</label>
+                            <input type="file" id="doc-medical-file" class="form-control form-control-sm bg-dark text-white border-secondary mb-1" accept="image/*,application/pdf">
+                            <input type="url" id="doc-medical-url" class="form-control form-control-sm bg-dark text-white border-secondary small" placeholder="Or document URL">
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
-                            <i class="bi bi-cloud-arrow-up me-2"></i>Submit for Admin Review
+                        <button type="submit" id="doc-submit-btn" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-cloud-arrow-up me-2"></i>Upload & Submit for Admin Review
                         </button>
                     </form>
                 </div>
@@ -184,10 +196,12 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js?v=2.3"></script>
+    <script src="../assets/js/auth.js?v=2.3"></script>
     <script>
         let currentDriver = null;
+        let heartbeatInterval = null;
+        let activeWatchId = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.requireAuth(['ROLE_DRIVER', 'ROLE_ADMIN'])) return;
@@ -196,18 +210,96 @@
             setupDriverEvents();
         });
 
+        function updatePresenceUI(online, available) {
+            const pill = document.getElementById('driver-presence-pill');
+            const text = document.getElementById('driver-status-text');
+            const btnOnline = document.getElementById('btn-go-online');
+            const btnOffline = document.getElementById('btn-go-offline');
+
+            if (!online) {
+                pill.className = 'badge badge-presence-offline py-2 px-3';
+                text.innerText = 'OFFLINE';
+                btnOnline.classList.remove('d-none');
+                btnOffline.classList.add('d-none');
+                stopHeartbeat();
+            } else if (available) {
+                pill.className = 'badge badge-presence-available py-2 px-3';
+                text.innerText = 'ONLINE — AVAILABLE';
+                btnOnline.classList.add('d-none');
+                btnOffline.classList.remove('d-none');
+                startHeartbeat();
+            } else {
+                pill.className = 'badge badge-presence-busy py-2 px-3';
+                text.innerText = 'ONLINE — BUSY';
+                btnOnline.classList.add('d-none');
+                btnOffline.classList.remove('d-none');
+                startHeartbeat();
+            }
+        }
+
+        function startHeartbeat() {
+            if (heartbeatInterval) return;
+            // Immediate pulse
+            API.drivers.sendHeartbeat().catch(err => console.debug('Heartbeat initial pulse:', err));
+            // 35s recurring interval
+            heartbeatInterval = setInterval(async () => {
+                try {
+                    await API.drivers.sendHeartbeat();
+                } catch (err) {
+                    console.warn('Driver heartbeat error:', err);
+                }
+            }, 35000);
+        }
+
+        function stopHeartbeat() {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+        }
+
+        async function handleGoOnline() {
+            try {
+                const res = await API.drivers.setOnlineStatus(true);
+                currentDriver = res.data;
+                updatePresenceUI(currentDriver.online, currentDriver.available);
+                API.showToast('You are now Online and available for dispatch.', 'success');
+            } catch (err) {
+                API.showToast(err.message || 'Failed to go online.', 'danger');
+            }
+        }
+
+        async function handleGoOffline() {
+            try {
+                const res = await API.drivers.setOnlineStatus(false);
+                currentDriver = res.data;
+                updatePresenceUI(currentDriver.online, currentDriver.available);
+                API.showToast('You are now Offline. You will not receive new dispatch requests.', 'info');
+            } catch (err) {
+                API.showToast(err.message || 'Failed to go offline.', 'danger');
+            }
+        }
+
         async function loadDriverProfile() {
             try {
                 const res = await API.get('/drivers/me');
                 currentDriver = res.data;
 
-                document.getElementById('nav-driver-name').innerText = currentDriver.fullName;
-                document.getElementById('driver-profile-name').innerText = currentDriver.fullName;
-                document.getElementById('driver-license').innerText = 'DL: ' + currentDriver.licenseNumber;
-                document.getElementById('driver-rating').innerText = currentDriver.rating;
-                document.getElementById('stat-total-trips').innerText = currentDriver.totalTrips;
-                document.getElementById('stat-daily-rate').innerText = '₹' + currentDriver.dailyRate;
-                document.getElementById('stat-cancel-rate').innerText = currentDriver.cancellationRate + '%';
+                document.getElementById('nav-driver-name').innerText = currentDriver.fullName || 'Driver Partner';
+                document.getElementById('driver-profile-name').innerText = currentDriver.fullName || 'Driver Partner';
+                document.getElementById('driver-license').innerText = 'DL: ' + (currentDriver.licenseNumber || '—');
+                
+                // Real rating - no fake 4.9
+                const ratingEl = document.getElementById('driver-rating');
+                if (currentDriver.rating && Number(currentDriver.rating) > 0) {
+                    ratingEl.innerText = Number(currentDriver.rating).toFixed(1);
+                } else {
+                    ratingEl.innerText = 'No ratings yet';
+                }
+
+                document.getElementById('stat-total-trips').innerText = currentDriver.totalTrips || 0;
+                document.getElementById('stat-daily-rate').innerText = currentDriver.dailyRate ? '₹' + currentDriver.dailyRate : '₹—';
+                document.getElementById('stat-cancel-rate').innerText = (currentDriver.cancellationRate || 0) + '%';
 
                 if (currentDriver.profilePhotoUrl) {
                     document.getElementById('driver-avatar').src = currentDriver.profilePhotoUrl;
@@ -215,7 +307,7 @@
 
                 // Verification status
                 const vBadge = document.getElementById('driver-verif-badge');
-                vBadge.innerText = currentDriver.verificationStatus;
+                vBadge.innerText = currentDriver.verificationStatus || 'PENDING';
                 if (currentDriver.verificationStatus === 'APPROVED') {
                     vBadge.className = 'badge bg-success';
                     document.getElementById('verif-alert-banner').classList.add('d-none');
@@ -224,20 +316,21 @@
                     document.getElementById('verif-alert-banner').classList.remove('d-none');
                 }
 
-                // Availability toggle
-                const availToggle = document.getElementById('driver-availability-toggle');
-                const statusLabel = document.getElementById('driver-status-label');
-                availToggle.checked = currentDriver.available;
-                statusLabel.innerText = currentDriver.available ? 'Online (Available)' : 'Offline';
-                statusLabel.className = currentDriver.available ? 'small fw-bold text-success' : 'small fw-bold text-muted';
+                // Presence UI
+                updatePresenceUI(currentDriver.online, currentDriver.available);
 
                 // Trust Score
-                if (currentDriver.trustScore) {
+                if (currentDriver.trustScore && currentDriver.trustScore.overallScore != null) {
                     const ts = currentDriver.trustScore;
                     document.getElementById('trust-score-number').innerText = ts.overallScore;
                     document.getElementById('trust-level-badge').innerText = ts.trustLevel;
-                    document.getElementById('trust-score-progress').style.width = ts.overallScore + '%';
-                    document.getElementById('trust-score-explanation').innerText = ts.explanation;
+                    document.getElementById('trust-score-progress').style.width = Math.min(100, Math.max(0, ts.overallScore)) + '%';
+                    document.getElementById('trust-score-explanation').innerText = ts.explanation || 'Calculated from completed trip ratings, cancellations, and verification status.';
+                } else {
+                    document.getElementById('trust-score-number').innerText = '—';
+                    document.getElementById('trust-level-badge').innerText = 'PENDING';
+                    document.getElementById('trust-score-progress').style.width = '0%';
+                    document.getElementById('trust-score-explanation').innerText = 'Trust score requires completed bookings and document verification.';
                 }
 
                 await loadAssignedTrips();
@@ -263,13 +356,28 @@
                         <td><span class="font-monospace text-info">${t.bookingReference}</span></td>
                         <td>${t.vehicle ? t.vehicle.displayName : 'Vehicle'}</td>
                         <td>${t.customer ? t.customer.fullName : 'Customer'}</td>
-                        <td class="small text-muted">${t.pickupLocation} &rarr; ${t.dropLocation}</td>
+                        <td class="small text-muted">${t.pickupLocation || '—'} &rarr; ${t.dropLocation || '—'}</td>
                         <td class="small text-white">${t.startDateTime ? t.startDateTime.replace('T', ' ') : ''}</td>
                         <td><span class="badge ${t.bookingStatus === 'ACTIVE' ? 'bg-success' : t.bookingStatus === 'CONFIRMED' ? 'bg-primary' : 'bg-secondary'}">${t.bookingStatus}</span></td>
                         <td>
-                            ${t.bookingStatus === 'CONFIRMED' ? `<button class="btn btn-sm btn-success" onclick="startTrip(${t.id})">Start Trip</button>` : ''}
-                            ${t.bookingStatus === 'ACTIVE' ? `<button class="btn btn-sm btn-warning text-dark" onclick="completeTrip(${t.id})">Complete</button>` : ''}
-                            ${t.bookingStatus === 'COMPLETED' ? `<span class="badge bg-secondary">Completed</span>` : ''}
+                            <div class="btn-group btn-group-sm">
+                                ${t.bookingStatus === 'CONFIRMED' ? `<button class="btn btn-sm btn-success" onclick="startTrip(${t.id})"><i class="bi bi-play-fill me-1"></i>Start Trip</button>` : ''}
+                                ${t.bookingStatus === 'ACTIVE' ? `
+                                    ${activeGpsBookingId === t.id ? `
+                                        <button class="btn btn-sm btn-danger text-white animate-pulse" onclick="stopLiveGpsStreaming(${t.id})" title="Stop continuous GPS streaming">
+                                            <i class="bi bi-stop-circle-fill me-1"></i>Stop GPS
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-sm btn-info text-white" onclick="startLiveGpsStreaming(${t.id}, ${t.vehicle ? t.vehicle.id : 'null'})" title="Broadcast continuous device GPS coordinates">
+                                            <i class="bi bi-geo-alt-fill me-1"></i>Start GPS
+                                        </button>
+                                    `}
+                                    <button class="btn btn-sm btn-warning text-dark" onclick="completeTrip(${t.id})">
+                                        <i class="bi bi-flag-fill me-1"></i>Complete
+                                    </button>
+                                ` : ''}
+                                ${t.bookingStatus === 'COMPLETED' ? `<span class="badge bg-secondary">Completed</span>` : ''}
+                            </div>
                         </td>
                     </tr>
                 `).join('');
@@ -278,42 +386,144 @@
             }
         }
 
-        function setupDriverEvents() {
-            // Availability Toggle
-            document.getElementById('driver-availability-toggle').addEventListener('change', async (e) => {
-                if (!currentDriver) return;
-                try {
-                    const res = await API.put('/drivers/' + currentDriver.id + '/availability');
-                    currentDriver.available = res.data.available;
-                    const statusLabel = document.getElementById('driver-status-label');
-                    statusLabel.innerText = currentDriver.available ? 'Online (Available)' : 'Offline';
-                    statusLabel.className = currentDriver.available ? 'small fw-bold text-success' : 'small fw-bold text-muted';
-                    API.showToast('Availability status updated to ' + (currentDriver.available ? 'Online' : 'Offline'), 'info');
-                } catch (err) {
-                    e.target.checked = !e.target.checked;
-                    API.showToast(err.message, 'danger');
+        let activeGpsWatchId = null;
+        let activeGpsBookingId = null;
+        let lastGpsSentTime = 0;
+
+        async function startLiveGpsStreaming(bookingId, vehicleId) {
+            if (!navigator.geolocation) {
+                API.showToast('Geolocation is not supported by your browser.', 'warning');
+                return;
+            }
+
+            if (activeGpsWatchId) {
+                stopLiveGpsStreaming(activeGpsBookingId);
+            }
+
+            API.showToast('Connecting to device GPS sensor for continuous telemetry...', 'info');
+
+            try {
+                // Ensure trip tracking entity exists for this booking
+                const tripRes = await API.trips.getByBooking(bookingId);
+                const trip = tripRes.data;
+                if (!trip) {
+                    API.showToast('No active trip tracking entity found for booking.', 'warning');
+                    return;
                 }
-            });
+
+                activeGpsBookingId = bookingId;
+                renderAssignedTrips(); // update button state to Stop
+
+                activeGpsWatchId = navigator.geolocation.watchPosition(async (pos) => {
+                    const now = Date.now();
+                    // Throttle GPS updates to once every 5 seconds to prevent spamming
+                    if (now - lastGpsSentTime < 5000) {
+                        return;
+                    }
+                    lastGpsSentTime = now;
+
+                    try {
+                        const speedKmh = (pos.coords.speed != null && pos.coords.speed >= 0)
+                                ? (pos.coords.speed * 3.6).toFixed(1)
+                                : 0;
+                        const heading = (pos.coords.heading != null && !isNaN(pos.coords.heading))
+                                ? pos.coords.heading.toFixed(1)
+                                : 0;
+
+                        await API.trips.updateLocation({
+                            tripId: trip.id,
+                            vehicleId: vehicleId,
+                            latitude: pos.coords.latitude,
+                            longitude: pos.coords.longitude,
+                            speedKmh: speedKmh,
+                            headingDegrees: heading
+                        });
+
+                        console.log(`[GPS Watch] Broadcasted coords: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} at ${speedKmh} km/h`);
+                    } catch (err) {
+                        console.warn('GPS location push failed:', err.message);
+                    }
+                }, (err) => {
+                    console.error('Device GPS watch error:', err);
+                    API.showToast('Device GPS error: ' + err.message, 'warning');
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 3000
+                });
+
+                API.showToast('Live GPS streaming active! Coordinates are broadcasting every ~5s.', 'success');
+            } catch (err) {
+                API.showToast('Could not initiate GPS streaming: ' + err.message, 'danger');
+                stopLiveGpsStreaming(bookingId);
+            }
+        }
+
+        function stopLiveGpsStreaming(bookingId) {
+            if (activeGpsWatchId !== null) {
+                navigator.geolocation.clearWatch(activeGpsWatchId);
+                activeGpsWatchId = null;
+            }
+            activeGpsBookingId = null;
+            renderAssignedTrips();
+            API.showToast('Live GPS streaming paused for trip.', 'info');
+        }
+
+        window.startLiveGpsStreaming = startLiveGpsStreaming;
+        window.stopLiveGpsStreaming = stopLiveGpsStreaming;
+        window.addEventListener('beforeunload', () => {
+            if (activeGpsWatchId !== null) {
+                navigator.geolocation.clearWatch(activeGpsWatchId);
+            }
+        });
+
+        function setupDriverEvents() {
+            async function uploadFileIfNeeded(fileInputId, urlInputId, documentType) {
+                const fileInput = document.getElementById(fileInputId);
+                if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    formData.append('documentType', documentType);
+                    const res = await API.upload('/documents/upload', formData);
+                    if (res.data && res.data.fileDownloadUri) {
+                        document.getElementById(urlInputId).value = res.data.fileDownloadUri;
+                        return res.data.fileDownloadUri;
+                    }
+                }
+                return document.getElementById(urlInputId).value.trim();
+            }
 
             // Document Upload Form
             document.getElementById('doc-upload-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!currentDriver) return;
 
+                const submitBtn = document.getElementById('doc-submit-btn');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading documents...';
+
                 try {
+                    const idUrl = await uploadFileIfNeeded('doc-id-file', 'doc-id-url', 'IDENTITY');
+                    const licenseUrl = await uploadFileIfNeeded('doc-license-file', 'doc-license-url', 'DRIVING_LICENSE');
+                    const policeUrl = await uploadFileIfNeeded('doc-police-file', 'doc-police-url', 'POLICE_VERIFICATION');
+                    const medicalUrl = await uploadFileIfNeeded('doc-medical-file', 'doc-medical-url', 'MEDICAL_FITNESS');
+
                     const payload = {
-                        identityDocUrl: document.getElementById('doc-id-url').value.trim(),
-                        licenseDocUrl: document.getElementById('doc-license-url').value.trim(),
-                        policeVerificationDocUrl: document.getElementById('doc-police-url').value.trim(),
-                        medicalFitnessDocUrl: document.getElementById('doc-medical-url').value.trim()
+                        identityDocUrl: idUrl,
+                        licenseDocUrl: licenseUrl,
+                        policeVerificationDocUrl: policeUrl,
+                        medicalFitnessDocUrl: medicalUrl
                     };
 
                     await API.post('/verifications/driver/' + currentDriver.id, payload);
                     bootstrap.Modal.getInstance(document.getElementById('uploadDocModal')).hide();
-                    API.showToast('Verification documents submitted for administrator review!', 'success');
+                    API.showToast('Verification documents uploaded & submitted for admin review!', 'success');
                     await loadDriverProfile();
                 } catch (err) {
                     API.showToast(err.message, 'danger');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-cloud-arrow-up me-2"></i>Upload & Submit for Admin Review';
                 }
             });
         }
@@ -322,7 +532,7 @@
             try {
                 await API.post('/bookings/' + bookingId + '/pickup');
                 API.showToast('Trip started! Passenger pickup recorded.', 'success');
-                await loadAssignedTrips();
+                await loadDriverProfile();
             } catch (err) {
                 API.showToast(err.message, 'danger');
             }

@@ -40,16 +40,36 @@ public class DriverVerificationService {
     }
 
     @Transactional(readOnly = true)
-    public DriverVerificationDto getVerificationByDriverId(Long driverId) {
-        return verificationRepository.findByDriverId(driverId)
+    public DriverVerificationDto getVerificationByDriverId(Long driverId, Long currentUserId, boolean isAdmin) {
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + driverId));
+
+        if (!isAdmin) {
+            if (driver.getUser() == null || !driver.getUser().getId().equals(currentUserId)) {
+                throw new org.springframework.security.access.AccessDeniedException("Access denied: You can only view your own verification record.");
+            }
+        }
+
+        return verificationRepository.findByDriver(driver)
                 .map(mapper::toDriverVerificationDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Verification record not found for driver id: " + driverId));
     }
 
+    @Transactional(readOnly = true)
+    public DriverVerificationDto getVerificationByDriverId(Long driverId) {
+        return getVerificationByDriverId(driverId, null, true);
+    }
+
     @Transactional
-    public DriverVerificationDto submitVerificationDocuments(Long driverId, DriverVerificationDto dto) {
+    public DriverVerificationDto submitVerificationDocuments(Long driverId, DriverVerificationDto dto, Long currentUserId, boolean isAdmin) {
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + driverId));
+
+        if (!isAdmin) {
+            if (driver.getUser() == null || !driver.getUser().getId().equals(currentUserId)) {
+                throw new org.springframework.security.access.AccessDeniedException("Access denied: You can only submit verification documents for your own driver profile.");
+            }
+        }
 
         DriverVerification verification = verificationRepository.findByDriver(driver)
                 .orElse(DriverVerification.builder().driver(driver).build());

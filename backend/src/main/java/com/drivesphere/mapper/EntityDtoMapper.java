@@ -5,6 +5,7 @@ import com.drivesphere.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +37,10 @@ public class EntityDtoMapper {
                         : Collections.emptySet())
                 .active(user.isActive())
                 .verified(user.isVerified())
-                .createdAt(user.getCreatedAt())
+                .emailVerified(user.isEmailVerified())
+                .preferredVehicleType(user.getPreferredVehicleType())
+                .driverPreference(user.getDriverPreference())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt() : java.time.Instant.now())
                 .build();
     }
 
@@ -46,6 +50,38 @@ public class EntityDtoMapper {
         List<String> imageUrls = vehicle.getImages() != null
                 ? vehicle.getImages().stream().map(VehicleImage::getImageUrl).collect(Collectors.toList())
                 : Collections.emptyList();
+
+        String serviceStatus;
+        BigDecimal kmUntilNext = null;
+        Long daysUntilNext = null;
+        java.time.LocalDate estimatedNextServiceDate = null;
+
+        if (vehicle.getStatus() == VehicleStatus.MAINTENANCE) {
+            serviceStatus = "UNDER_MAINTENANCE";
+        } else if (vehicle.getLastServiceOdometerKm() == null && vehicle.getLastServiceDate() == null && vehicle.getCurrentOdometerKm() == null) {
+            serviceStatus = "NO_BASELINE";
+        } else {
+            BigDecimal baselineKm = vehicle.getLastServiceOdometerKm() != null ? vehicle.getLastServiceOdometerKm() : BigDecimal.ZERO;
+            BigDecimal currentKm = vehicle.getCurrentOdometerKm() != null ? vehicle.getCurrentOdometerKm() : BigDecimal.ZERO;
+            BigDecimal kmTraveledSinceService = currentKm.compareTo(baselineKm) >= 0 ? currentKm.subtract(baselineKm) : BigDecimal.ZERO;
+            kmUntilNext = BigDecimal.valueOf(10000).subtract(kmTraveledSinceService);
+
+            java.time.LocalDate baselineDate = vehicle.getLastServiceDate() != null
+                    ? vehicle.getLastServiceDate()
+                    : (vehicle.getCreatedAt() != null ? java.time.LocalDate.ofInstant(vehicle.getCreatedAt(), java.time.ZoneId.systemDefault()) : java.time.LocalDate.now());
+            estimatedNextServiceDate = baselineDate.plusMonths(6);
+            daysUntilNext = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), estimatedNextServiceDate);
+
+            if (kmUntilNext.compareTo(BigDecimal.ZERO) < 0 || daysUntilNext < 0) {
+                serviceStatus = "OVERDUE";
+            } else if (kmUntilNext.compareTo(BigDecimal.ZERO) == 0 || daysUntilNext == 0) {
+                serviceStatus = "SERVICE_DUE";
+            } else if (kmUntilNext.compareTo(BigDecimal.valueOf(1000)) <= 0 || daysUntilNext <= 30) {
+                serviceStatus = "SERVICE_DUE_SOON";
+            } else {
+                serviceStatus = "SERVICE_UP_TO_DATE";
+            }
+        }
 
         return VehicleDto.builder()
                 .id(vehicle.getId())
@@ -59,6 +95,7 @@ public class EntityDtoMapper {
                 .transmission(vehicle.getTransmission())
                 .seatingCapacity(vehicle.getSeatingCapacity())
                 .mileage(vehicle.getMileage())
+                .rangeKm(vehicle.getRangeKm())
                 .batteryCapacityKwh(vehicle.getBatteryCapacityKwh())
                 .fuelTankCapacityL(vehicle.getFuelTankCapacityL())
                 .rentalPricePerDay(vehicle.getRentalPricePerDay())
@@ -70,6 +107,12 @@ public class EntityDtoMapper {
                 .status(vehicle.getStatus())
                 .available(vehicle.isAvailable())
                 .currentOdometerKm(vehicle.getCurrentOdometerKm())
+                .lastServiceOdometerKm(vehicle.getLastServiceOdometerKm())
+                .lastServiceDate(vehicle.getLastServiceDate())
+                .serviceStatus(serviceStatus)
+                .kmUntilNextService(kmUntilNext)
+                .daysUntilNextService(daysUntilNext)
+                .estimatedNextServiceDate(estimatedNextServiceDate)
                 .primaryImageUrl(vehicle.getPrimaryImageUrl())
                 .imageUrls(imageUrls)
                 .categoryId(vehicle.getCategory() != null ? vehicle.getCategory().getId() : null)
@@ -77,6 +120,46 @@ public class EntityDtoMapper {
                 .averageRating(vehicle.getAverageRating())
                 .totalRatings(vehicle.getTotalRatings())
                 .createdAt(vehicle.getCreatedAt())
+                .build();
+    }
+
+    public com.drivesphere.dto.PublicVehicleDto toPublicVehicleDto(Vehicle vehicle) {
+        if (vehicle == null) return null;
+
+        List<String> imageUrls = vehicle.getImages() != null
+                ? vehicle.getImages().stream().map(VehicleImage::getImageUrl).collect(Collectors.toList())
+                : Collections.emptyList();
+
+        String primaryImg = vehicle.getPrimaryImageUrl();
+        if ((primaryImg == null || primaryImg.isBlank()) && !imageUrls.isEmpty()) {
+            primaryImg = imageUrls.get(0);
+        }
+
+        return com.drivesphere.dto.PublicVehicleDto.builder()
+                .id(vehicle.getId())
+                .brand(vehicle.getBrand())
+                .model(vehicle.getModel())
+                .year(vehicle.getYear())
+                .vehicleType(vehicle.getVehicleType())
+                .fuelType(vehicle.getFuelType())
+                .transmission(vehicle.getTransmission())
+                .seatingCapacity(vehicle.getSeatingCapacity())
+                .mileage(vehicle.getMileage())
+                .rangeKm(vehicle.getRangeKm())
+                .batteryCapacityKwh(vehicle.getBatteryCapacityKwh())
+                .fuelTankCapacityL(vehicle.getFuelTankCapacityL())
+                .rentalPricePerDay(vehicle.getRentalPricePerDay())
+                .rentalPricePerHour(vehicle.getRentalPricePerHour())
+                .description(vehicle.getDescription())
+                .location(vehicle.getLocation())
+                .status(vehicle.getStatus())
+                .available(vehicle.isAvailable())
+                .primaryImageUrl(primaryImg)
+                .imageUrls(imageUrls)
+                .categoryId(vehicle.getCategory() != null ? vehicle.getCategory().getId() : null)
+                .categoryName(vehicle.getCategory() != null ? vehicle.getCategory().getName() : null)
+                .averageRating(vehicle.getAverageRating())
+                .totalRatings(vehicle.getTotalRatings() != null ? vehicle.getTotalRatings() : 0)
                 .build();
     }
 
@@ -141,6 +224,8 @@ public class EntityDtoMapper {
                 .totalTrips(driver.getTotalTrips())
                 .cancellationRate(driver.getCancellationRate())
                 .available(driver.isAvailable())
+                .online(driver.isOnline())
+                .lastSeenAt(driver.getLastSeenAt())
                 .dailyRate(driver.getDailyRate())
                 .languages(driver.getLanguages())
                 .address(driver.getAddress())
@@ -182,8 +267,20 @@ public class EntityDtoMapper {
                 .pickupTime(booking.getPickupTime())
                 .returnTime(booking.getReturnTime())
                 .notes(booking.getNotes())
+                .pickupEligible(isBookingPickupEligible(booking))
                 .createdAt(booking.getCreatedAt())
                 .build();
+    }
+
+    private boolean isBookingPickupEligible(Booking booking) {
+        if (booking == null) return false;
+        if (booking.getBookingStatus() != BookingStatus.CONFIRMED) return false;
+        if (booking.getPaymentStatus() != PaymentStatus.PAID) return false;
+        if (booking.getStartDateTime() == null) return false;
+        LocalDateTime now = LocalDateTime.now();
+        // Permitted pickup window: eligible if within 2 hours of start time or after start time, and before end time
+        return !now.isBefore(booking.getStartDateTime().minusHours(2))
+                && (booking.getEndDateTime() == null || now.isBefore(booking.getEndDateTime()));
     }
 
     public TripDto toTripDto(Trip trip) {
@@ -219,6 +316,7 @@ public class EntityDtoMapper {
                 .startTime(trip.getStartTime())
                 .endTime(trip.getEndTime())
                 .simulationStep(trip.getSimulationStep())
+                .lastUpdated(trip.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(trip.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 
@@ -250,6 +348,9 @@ public class EntityDtoMapper {
         if (r == null) return null;
 
         String custName = r.getCustomer() != null ? r.getCustomer().getFullName() : "Customer";
+        String custEmail = r.getCustomer() != null ? r.getCustomer().getEmail() : null;
+        String bStatus = r.getBooking() != null && r.getBooking().getBookingStatus() != null
+                ? r.getBooking().getBookingStatus().name() : null;
         String vehName = r.getVehicle() != null
                 ? r.getVehicle().getBrand() + " " + r.getVehicle().getModel() : "Vehicle";
         String driverName = r.getDriver() != null && r.getDriver().getUser() != null
@@ -261,12 +362,17 @@ public class EntityDtoMapper {
                 .bookingReference(r.getBooking() != null ? r.getBooking().getBookingReference() : null)
                 .customerId(r.getCustomer() != null ? r.getCustomer().getId() : null)
                 .customerName(custName)
+                .customerEmail(custEmail)
+                .bookingStatus(bStatus)
                 .vehicleId(r.getVehicle() != null ? r.getVehicle().getId() : null)
                 .vehicleName(vehName)
                 .driverId(r.getDriver() != null ? r.getDriver().getId() : null)
                 .driverName(driverName)
                 .rating(r.getRating())
                 .vehicleRating(r.getVehicleRating())
+                .conditionRating(r.getConditionRating())
+                .cleanlinessRating(r.getCleanlinessRating())
+                .comfortRating(r.getComfortRating())
                 .driverRating(r.getDriverRating())
                 .comment(r.getComment())
                 .createdAt(r.getCreatedAt())

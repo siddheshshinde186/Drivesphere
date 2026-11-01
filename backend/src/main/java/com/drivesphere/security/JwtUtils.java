@@ -29,6 +29,29 @@ public class JwtUtils {
     @Value("${drivesphere.jwt.expiration-ms:86400000}")
     private long jwtExpirationMs;
 
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
+    @jakarta.annotation.PostConstruct
+    public void validateSecretConfiguration() {
+        if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
+            if ("404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970".equals(jwtSecret)) {
+                throw new IllegalStateException("CRITICAL SECURITY ERROR: Production environment is using default insecure JWT secret. Please configure DRIVESPHERE_JWT_SECRET or JWT_SECRET.");
+            }
+            if (jwtSecret == null || jwtSecret.trim().length() < 32) {
+                throw new IllegalStateException("CRITICAL SECURITY ERROR: Production JWT secret must be at least 32 characters (256 bits).");
+            }
+        }
+    }
+
+    public void setJwtSecret(String jwtSecret) {
+        this.jwtSecret = jwtSecret;
+    }
+
+    public void setActiveProfile(String activeProfile) {
+        this.activeProfile = activeProfile;
+    }
+
     private SecretKey getSigningKey() {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -71,5 +94,9 @@ public class JwtUtils {
             logger.error("JWT parsing error: {}", e.getMessage());
         }
         return false;
+    }
+
+    public long getJwtExpirationMs() {
+        return jwtExpirationMs;
     }
 }

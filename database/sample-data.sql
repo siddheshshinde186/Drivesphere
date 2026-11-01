@@ -45,8 +45,8 @@ INSERT INTO driver_verifications (id, driver_id, identity_doc_url, license_doc_u
 ON DUPLICATE KEY UPDATE status = VALUES(status);
 
 INSERT INTO driver_trust_scores (id, driver_id, overall_score, trust_level, verification_factor, experience_factor, rating_factor, completion_factor, incident_penalty, explanation, last_calculated_at) VALUES
-(2, 2, 88.20, 'EXCELLENT', 25.00, 17.50, 24.20, 22.00, 0.50, 'Driver Trust Score: 88.2/100 (EXCELLENT). High passenger satisfaction with 62 completed journeys and low cancellation rate.', NOW()),
-(3, 3, 62.00, 'AVERAGE', 12.00, 10.50, 23.50, 16.00, 0.00, 'Driver Trust Score: 62.0/100 (AVERAGE). Document verification under review. Provisional academic safety score.', NOW())
+(2, 2, 86.35, 'EXCELLENT', 25.00, 17.50, 24.25, 20.00, 0.40, 'Driver Trust Score: 86.4/100 (EXCELLENT). Breakdown: Document Verification (25.0/25), Professional Experience (17.5/20), Customer Feedback Rating (24.3/25), Trip Completion (20.0/20), Cancellation Deduction (-0.4). Note: Algorithmic academic reliability metric, not an official government license certification.', NOW()),
+(3, 3, 60.75, 'AVERAGE', 12.00, 10.50, 23.50, 16.00, 1.25, 'Driver Trust Score: 60.8/100 (AVERAGE). Breakdown: Document Verification (12.0/25), Professional Experience (10.5/20), Customer Feedback Rating (23.5/25), Trip Completion (16.0/20), Cancellation Deduction (-1.3). Note: Algorithmic academic reliability metric, not an official government license certification.', NOW())
 ON DUPLICATE KEY UPDATE overall_score = VALUES(overall_score);
 
 -- -------------------------------------------------------------------

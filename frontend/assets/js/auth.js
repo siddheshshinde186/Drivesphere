@@ -70,6 +70,10 @@ const Auth = {
     },
 
     logout() {
+        const refreshToken = API.getRefreshToken();
+        if (refreshToken) {
+            API.post('/auth/logout', { refreshToken }).catch(() => {});
+        }
         API.clearSession();
         window.location.href = '../login.html?logged_out=true';
     },
@@ -101,5 +105,29 @@ const Auth = {
                 <a href="register.html" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Register</a>
             `;
         }
+    },
+
+    initPasswordToggles() {
+        document.addEventListener('click', (e) => {
+            const toggleBtn = e.target.closest('.toggle-password-btn');
+            if (!toggleBtn) return;
+            e.preventDefault();
+            const targetId = toggleBtn.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            if (!input) return;
+
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            const icon = toggleBtn.querySelector('i');
+            if (icon) {
+                icon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+            }
+            toggleBtn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+            toggleBtn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+        });
     }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    Auth.initPasswordToggles();
+});

@@ -15,6 +15,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByDriverIdOrderByCreatedAtDesc(Long driverId);
     Optional<Review> findByBookingId(Long bookingId);
 
+    List<Review> findAllByOrderByCreatedAtDesc();
+
+    @Query("SELECT AVG(r.rating) FROM Review r")
+    BigDecimal findOverallAverageRating();
+
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.vehicle.id = :vehicleId")
     BigDecimal findAverageRatingByVehicle(Long vehicleId);
 

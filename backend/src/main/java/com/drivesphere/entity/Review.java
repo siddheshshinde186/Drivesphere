@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 public class Review extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", nullable = false)
+    @JoinColumn(name = "booking_id", nullable = false, unique = true)
     private Booking booking;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,6 +35,15 @@ public class Review extends BaseEntity {
 
     @Column(name = "vehicle_rating", precision = 3, scale = 2, nullable = false)
     private BigDecimal vehicleRating;
+
+    @Column(name = "condition_rating", precision = 3, scale = 2)
+    private BigDecimal conditionRating;
+
+    @Column(name = "cleanliness_rating", precision = 3, scale = 2)
+    private BigDecimal cleanlinessRating;
+
+    @Column(name = "comfort_rating", precision = 3, scale = 2)
+    private BigDecimal comfortRating;
 
     @Column(name = "driver_rating", precision = 3, scale = 2)
     private BigDecimal driverRating;

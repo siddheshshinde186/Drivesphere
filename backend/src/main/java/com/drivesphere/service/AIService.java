@@ -35,15 +35,34 @@ public class AIService {
 
     @Transactional(readOnly = true)
     public AiRecommendationResponse recommendVehicles(AiRecommendationRequest request) {
-        // 1. Retrieve operational available vehicles from database (source of truth)
-        List<Vehicle> operational = vehicleRepository.findOperationalAvailableVehicles();
-        if (operational.isEmpty()) {
-            operational = vehicleRepository.findAll();
-        }
-
         int requestedPassengers = request.getPassengers() != null && request.getPassengers() > 0
                 ? request.getPassengers()
                 : 1;
+
+        // 1. Retrieve operational available vehicles from database (source of truth)
+        // If rental period is supplied, strictly check period availability
+        List<Vehicle> operational;
+        if (request.getStartDateTime() != null && request.getEndDateTime() != null) {
+            operational = vehicleRepository.findAvailableVehiclesForPeriod(request.getStartDateTime(), request.getEndDateTime());
+        } else {
+            operational = vehicleRepository.findOperationalAvailableVehicles();
+        }
+
+        // Hard constraint: Never fall back to findAll(). If operational fleet is empty, return NO_FLEET_AVAILABLE
+        if (operational == null || operational.isEmpty()) {
+            String explanation = (request.getStartDateTime() != null && request.getEndDateTime() != null)
+                    ? "No operational vehicles are available for the selected dates. Please choose alternative dates or contact support."
+                    : "No operational vehicles are currently available in the active fleet.";
+            return AiRecommendationResponse.builder()
+                    .requestedPassengers(requestedPassengers)
+                    .multiVehicleRequired(false)
+                    .totalAvailableFleetCapacity(0)
+                    .status("NO_FLEET_AVAILABLE")
+                    .recommendations(Collections.emptyList())
+                    .summaryExplanation(explanation)
+                    .generatedByGemini(false)
+                    .build();
+        }
 
         int totalFleetCapacity = operational.stream().mapToInt(Vehicle::getSeatingCapacity).sum();
 
@@ -67,51 +86,67 @@ public class AIService {
                     .build();
         }
 
-        // 2. Identify single-vehicle candidates that strictly satisfy seating capacity (seatingCapacity >= requestedPassengers)
+        // 2. Identify single-vehicle candidates that strictly satisfy seating capacity and budget
         List<Vehicle> singleCandidates = operational.stream()
                 .filter(v -> v.getSeatingCapacity() >= requestedPassengers)
+                .filter(v -> request.getMaxBudgetPerDay() == null || v.getRentalPricePerDay().compareTo(request.getMaxBudgetPerDay()) <= 0)
                 .collect(Collectors.toList());
 
         List<VehicleRecommendationDto> recommendations = new ArrayList<>();
-        boolean multiVehicleRequired = singleCandidates.isEmpty();
+        boolean multiVehicleRequired = singleCandidates.isEmpty() && requestedPassengers > 7;
 
-        // If single vehicles can accommodate all passengers (e.g. 1 to 5 passengers, or 6-7 passengers for 7-seaters)
+        // If single vehicles can accommodate all passengers
         if (!singleCandidates.isEmpty()) {
             for (Vehicle v : singleCandidates) {
-                int score = 80;
+                int score = 75;
                 String reason;
                 String suitableFor;
 
-                // Exact or tight seat fit gets higher matching relevance
+                // Seating proximity criteria
                 if (v.getSeatingCapacity() == requestedPassengers) {
                     score += 15;
                 } else if (v.getSeatingCapacity() - requestedPassengers <= 2) {
                     score += 8;
+                } else {
+                    score += 3;
                 }
 
+                // Vehicle Type & Performance Criteria
                 if (v.getVehicleType().name().contains("ELECTRIC")) {
-                    score += 10;
+                    score += 8;
                     reason = "Zero-emissions EV with 310+ km range, ideal for eco-friendly modern urban & regional highway touring.";
                     suitableFor = "Eco-Conscious Commuters & Tech Enthusiasts";
                 } else if (v.getVehicleType().name().contains("SUV")) {
-                    score += 9;
+                    score += 8;
                     reason = "Commanding high ground clearance, 7-passenger capability, and expansive cargo bay for family roadtrips.";
                     suitableFor = "Family Roadtrips & Group Expeditions";
                 } else if (v.getVehicleType().name().contains("LUXURY")) {
-                    score += 7;
+                    score += 6;
                     reason = "Executive leather cabin appointments, active sound damping, and prestige ride dynamics.";
                     suitableFor = "Executive Business Travel & VIP Events";
                 } else {
-                    score += 6;
+                    score += 5;
                     reason = "Exceptional hybrid/petrol fuel economy and effortless highway cruise value.";
                     suitableFor = "City Commutes & Highway Value";
                 }
 
+                // Fuel & Transmission preference matches
                 if (request.getFuelPreference() != null && request.getFuelPreference() == v.getFuelType()) {
-                    score += 6;
+                    score += 8;
+                }
+                if (request.getTransmissionPreference() != null && request.getTransmissionPreference() == v.getTransmission()) {
+                    score += 4;
                 }
 
-                int matchPercent = Math.min(99, Math.max(75, score));
+                // Budget value criteria
+                if (request.getMaxBudgetPerDay() != null) {
+                    BigDecimal budgetThreshold = request.getMaxBudgetPerDay().multiply(BigDecimal.valueOf(0.85));
+                    if (v.getRentalPricePerDay().compareTo(budgetThreshold) <= 0) {
+                        score += 5;
+                    }
+                }
+
+                int matchPercent = Math.min(99, Math.max(70, score));
 
                 recommendations.add(VehicleRecommendationDto.builder()
                         .vehicle(mapper.toVehicleDto(v))
@@ -144,22 +179,48 @@ public class AIService {
             recommendations.sort(Comparator.comparingInt((VehicleRecommendationDto r) -> r.getMatchPercentage() != null ? r.getMatchPercentage() : 0).reversed());
         }
 
-        // 3. If multi-vehicle is required (requestedPassengers > 7 or no single vehicle fits)
-        // Also provide multi-vehicle combination if passengers >= 6 and requested
-        if (multiVehicleRequired || requestedPassengers >= 6) {
-            List<VehicleRecommendationDto> multiCombos = buildMultiVehicleCombinations(operational, requestedPassengers);
-            if (multiVehicleRequired) {
-                // When single vehicles cannot accommodate (e.g. 10 or 15 passengers), multi-vehicle options MUST take over!
+        // 3. If multi-vehicle is required or for large groups (>= 6)
+        if (singleCandidates.isEmpty() || requestedPassengers >= 6) {
+            List<VehicleRecommendationDto> multiCombos = buildMultiVehicleCombinations(
+                    operational, requestedPassengers, request.getMaxBudgetPerDay(), request.getTripType(), request.getFuelPreference()
+            );
+            if (singleCandidates.isEmpty()) {
+                multiVehicleRequired = true;
                 recommendations.clear();
                 recommendations.addAll(multiCombos);
             } else if (recommendations.size() < 4) {
-                // If single 7-seaters fit (e.g. 6 passengers), also append a 2-vehicle option as alternative
                 recommendations.addAll(multiCombos.stream().limit(1).collect(Collectors.toList()));
             }
         }
 
+        // If after filtering by capacity, budget, and operational status, NO recommendations remain:
+        if (recommendations.isEmpty()) {
+            String explanation;
+            if (request.getMaxBudgetPerDay() != null) {
+                explanation = String.format(
+                        "No operational vehicles or combinations satisfy your requirement for %d passengers within the daily budget limit of ₹%s. "
+                        + "Please consider adjusting your budget or passenger count.",
+                        requestedPassengers, request.getMaxBudgetPerDay()
+                );
+            } else {
+                explanation = String.format(
+                        "No suitable fleet combination in our active inventory could accommodate %d passengers. Please contact support.",
+                        requestedPassengers
+                );
+            }
+            return AiRecommendationResponse.builder()
+                    .requestedPassengers(requestedPassengers)
+                    .multiVehicleRequired(multiVehicleRequired)
+                    .totalAvailableFleetCapacity(totalFleetCapacity)
+                    .status("NO_FLEET_AVAILABLE")
+                    .recommendations(Collections.emptyList())
+                    .summaryExplanation(explanation)
+                    .generatedByGemini(false)
+                    .build();
+        }
+
         // 4. Generate factually accurate AI summary explanation
-        String summaryExplanation = generateFactualSummary(requestedPassengers, recommendations, multiVehicleRequired);
+        SummaryResult summary = generateFactualSummary(requestedPassengers, recommendations, multiVehicleRequired);
 
         return AiRecommendationResponse.builder()
                 .requestedPassengers(requestedPassengers)
@@ -167,121 +228,133 @@ public class AIService {
                 .totalAvailableFleetCapacity(totalFleetCapacity)
                 .status("SUCCESS")
                 .recommendations(recommendations.stream().limit(4).collect(Collectors.toList()))
-                .summaryExplanation(summaryExplanation)
-                .generatedByGemini(geminiClient.isConfigured())
+                .summaryExplanation(summary.getExplanation())
+                .generatedByGemini(summary.isGeneratedByGemini())
                 .build();
     }
 
-    private List<VehicleRecommendationDto> buildMultiVehicleCombinations(List<Vehicle> operational, int requestedPassengers) {
-        List<VehicleRecommendationDto> combos = new ArrayList<>();
+    @lombok.Value
+    public static class SummaryResult {
+        String explanation;
+        boolean generatedByGemini;
+    }
 
+    private List<VehicleRecommendationDto> buildMultiVehicleCombinations(
+            List<Vehicle> operational, int requestedPassengers, BigDecimal maxBudgetPerDay,
+            String tripType, FuelType fuelPref) {
+
+        List<VehicleRecommendationDto> combos = new ArrayList<>();
+        Set<String> seenSignatures = new HashSet<>();
+
+        // Group operational vehicles by seating capacity: distinct physical units
         List<Vehicle> sevenSeaters = operational.stream().filter(v -> v.getSeatingCapacity() == 7).collect(Collectors.toList());
         List<Vehicle> fiveSeaters = operational.stream().filter(v -> v.getSeatingCapacity() == 5).collect(Collectors.toList());
 
-        // Combination 1: Premium High-Capacity SUV & EV Mix (e.g. 2 x 7-seater + 1 x 5-seater for 15, or 2 x 7-seater for 10)
-        List<Vehicle> combo1Vehicles = new ArrayList<>();
-        int capacity1 = 0;
-        BigDecimal dailyRate1 = BigDecimal.ZERO;
+        // Combination 1: High-Capacity Balanced Convoy (7-seaters first, then 5-seaters)
+        List<Vehicle> combo1 = new ArrayList<>();
+        Set<Long> usedIds1 = new HashSet<>();
+        int cap1 = 0;
+        BigDecimal cost1 = BigDecimal.ZERO;
 
         for (Vehicle v : sevenSeaters) {
-            if (capacity1 < requestedPassengers) {
-                combo1Vehicles.add(v);
-                capacity1 += v.getSeatingCapacity();
-                dailyRate1 = dailyRate1.add(v.getRentalPricePerDay());
+            if (cap1 < requestedPassengers && !usedIds1.contains(v.getId())) {
+                combo1.add(v);
+                usedIds1.add(v.getId());
+                cap1 += v.getSeatingCapacity();
+                cost1 = cost1.add(v.getRentalPricePerDay());
             }
         }
         for (Vehicle v : fiveSeaters) {
-            if (capacity1 < requestedPassengers) {
-                combo1Vehicles.add(v);
-                capacity1 += v.getSeatingCapacity();
-                dailyRate1 = dailyRate1.add(v.getRentalPricePerDay());
+            if (cap1 < requestedPassengers && !usedIds1.contains(v.getId())) {
+                combo1.add(v);
+                usedIds1.add(v.getId());
+                cap1 += v.getSeatingCapacity();
+                cost1 = cost1.add(v.getRentalPricePerDay());
             }
         }
 
-        if (capacity1 >= requestedPassengers && !combo1Vehicles.isEmpty()) {
-            combos.add(createMultiVehicleDto(
-                    combo1Vehicles,
-                    capacity1,
-                    dailyRate1,
-                    94,
-                    "Optimal Executive & SUV Convoy",
-                    String.format("Recommended multi-vehicle configuration to comfortably transport %d passengers with extensive luggage space.", requestedPassengers)
-            ));
+        if (cap1 >= requestedPassengers && !combo1.isEmpty()) {
+            boolean budgetOk = (maxBudgetPerDay == null || cost1.compareTo(maxBudgetPerDay) <= 0);
+            if (budgetOk) {
+                String sig = getComboSignature(combo1);
+                seenSignatures.add(sig);
+                combos.add(createMultiVehicleDto(
+                        combo1, cap1, cost1, 94,
+                        "Optimal Executive & SUV Convoy",
+                        String.format("Recommended multi-vehicle configuration to comfortably transport %d passengers with extensive luggage space.", requestedPassengers)
+                ));
+            }
         }
 
-        // Combination 2: Budget & High-Efficiency Hybrid/EV Convoy
-        List<Vehicle> combo2Vehicles = new ArrayList<>();
-        int capacity2 = 0;
-        BigDecimal dailyRate2 = BigDecimal.ZERO;
-
-        // Start with high-efficiency 5-seaters (e.g. City Hybrid, Nexon EV)
+        // Combination 2: Budget-Optimized Convoy (sorted by price ascending)
         List<Vehicle> sortedByPrice = operational.stream()
                 .sorted(Comparator.comparing(Vehicle::getRentalPricePerDay))
                 .collect(Collectors.toList());
 
+        List<Vehicle> combo2 = new ArrayList<>();
+        Set<Long> usedIds2 = new HashSet<>();
+        int cap2 = 0;
+        BigDecimal cost2 = BigDecimal.ZERO;
+
         for (Vehicle v : sortedByPrice) {
-            if (capacity2 < requestedPassengers) {
-                combo2Vehicles.add(v);
-                capacity2 += v.getSeatingCapacity();
-                dailyRate2 = dailyRate2.add(v.getRentalPricePerDay());
+            if (cap2 < requestedPassengers && !usedIds2.contains(v.getId())) {
+                combo2.add(v);
+                usedIds2.add(v.getId());
+                cap2 += v.getSeatingCapacity();
+                cost2 = cost2.add(v.getRentalPricePerDay());
             }
         }
 
-        if (capacity2 >= requestedPassengers && !combo2Vehicles.isEmpty()) {
-            combos.add(createMultiVehicleDto(
-                    combo2Vehicles,
-                    capacity2,
-                    dailyRate2,
-                    90,
-                    "High-Efficiency & Budget-Optimized Fleet",
-                    String.format("Economical multi-vehicle convoy for %d passengers combining high fuel-efficiency and low operational cost.", requestedPassengers)
-            ));
+        if (cap2 >= requestedPassengers && !combo2.isEmpty()) {
+            boolean budgetOk = (maxBudgetPerDay == null || cost2.compareTo(maxBudgetPerDay) <= 0);
+            String sig = getComboSignature(combo2);
+            if (budgetOk && !seenSignatures.contains(sig)) {
+                seenSignatures.add(sig);
+                combos.add(createMultiVehicleDto(
+                        combo2, cap2, cost2, 90,
+                        "High-Efficiency & Budget-Optimized Fleet",
+                        String.format("Economical multi-vehicle convoy for %d passengers combining high fuel-efficiency and low operational cost.", requestedPassengers)
+                ));
+            }
         }
 
-        // Combination 3: Uniform Model Multi-Vehicle Check (e.g. 3 x Tata Nexon EV)
-        Vehicle nexonEv = operational.stream().filter(v -> v.getModel().contains("Nexon EV")).findFirst().orElse(null);
-        if (nexonEv != null) {
-            int neededUnits = (int) Math.ceil((double) requestedPassengers / nexonEv.getSeatingCapacity());
-            int totalNexonSeats = neededUnits * nexonEv.getSeatingCapacity();
-            BigDecimal nexonFleetCost = nexonEv.getRentalPricePerDay().multiply(BigDecimal.valueOf(neededUnits));
+        // Combination 3: Eco-Friendly EV / Hybrid Convoy
+        List<Vehicle> ecoVehicles = operational.stream()
+                .filter(v -> v.getFuelType() == FuelType.ELECTRIC || v.getFuelType() == FuelType.HYBRID)
+                .collect(Collectors.toList());
 
-            long availableNexonCount = operational.stream()
-                    .filter(v -> v.getModel().contains("Nexon EV"))
-                    .count();
+        List<Vehicle> combo3 = new ArrayList<>();
+        Set<Long> usedIds3 = new HashSet<>();
+        int cap3 = 0;
+        BigDecimal cost3 = BigDecimal.ZERO;
 
-            boolean isAvailable = availableNexonCount >= neededUnits;
-            String availNote = isAvailable
-                    ? String.format("%d Units Available in Fleet", neededUnits)
-                    : String.format("Only %d Tata Nexon EV is currently available in the regional fleet. A complete %d-passenger fleet could not be formed using this vehicle alone.", availableNexonCount, requestedPassengers);
+        for (Vehicle v : ecoVehicles) {
+            if (cap3 < requestedPassengers && !usedIds3.contains(v.getId())) {
+                combo3.add(v);
+                usedIds3.add(v.getId());
+                cap3 += v.getSeatingCapacity();
+                cost3 = cost3.add(v.getRentalPricePerDay());
+            }
+        }
 
-            combos.add(VehicleRecommendationDto.builder()
-                    .vehicle(mapper.toVehicleDto(nexonEv))
-                    .vehicleCount(neededUnits)
-                    .totalSeatsCapacity(totalNexonSeats)
-                    .perVehicleDailyRate(nexonEv.getRentalPricePerDay())
-                    .totalDailyRental(nexonFleetCost)
-                    .seatingCalculation(String.format("%s x %d Vehicles (%d seats x %d = %d total seats)", nexonEv.getModel(), neededUnits, nexonEv.getSeatingCapacity(), neededUnits, totalNexonSeats))
-                    .multiVehicle(true)
-                    .available(isAvailable)
-                    .availabilityNote(availNote)
-                    .matchPercentage(isAvailable ? 92 : 72)
-                    .matchReason(String.format("All-electric fleet (%d vehicles). %s", neededUnits, availNote))
-                    .bestUsedFor("Zero-Emission Pure Electric Convoy")
-                    .estimatedCost(nexonFleetCost)
-                    .fleetItems(List.of(
-                            FleetItemDto.builder()
-                                    .vehicle(mapper.toVehicleDto(nexonEv))
-                                    .quantity(neededUnits)
-                                    .seatsPerVehicle(nexonEv.getSeatingCapacity())
-                                    .totalSeats(totalNexonSeats)
-                                    .dailyRatePerVehicle(nexonEv.getRentalPricePerDay())
-                                    .subtotalDailyRate(nexonFleetCost)
-                                    .build()
-                    ))
-                    .build());
+        if (cap3 >= requestedPassengers && !combo3.isEmpty()) {
+            boolean budgetOk = (maxBudgetPerDay == null || cost3.compareTo(maxBudgetPerDay) <= 0);
+            String sig = getComboSignature(combo3);
+            if (budgetOk && !seenSignatures.contains(sig)) {
+                seenSignatures.add(sig);
+                combos.add(createMultiVehicleDto(
+                        combo3, cap3, cost3, 92,
+                        "Zero-Emission & Hybrid Green Convoy",
+                        String.format("Eco-conscious multi-vehicle convoy for %d passengers utilizing real operational EV and Hybrid fleet units.", requestedPassengers)
+                ));
+            }
         }
 
         return combos;
+    }
+
+    private String getComboSignature(List<Vehicle> list) {
+        return list.stream().map(v -> String.valueOf(v.getId())).sorted().collect(Collectors.joining("-"));
     }
 
     private VehicleRecommendationDto createMultiVehicleDto(
@@ -298,15 +371,23 @@ public class AIService {
                 .map(e -> e.getValue().size() + " x " + e.getKey())
                 .collect(Collectors.joining(" + ")) + " = " + totalSeats + " total seats";
 
-        List<FleetItemDto> items = vehicles.stream()
-                .map(v -> FleetItemDto.builder()
-                        .vehicle(mapper.toVehicleDto(v))
-                        .quantity(1)
-                        .seatsPerVehicle(v.getSeatingCapacity())
-                        .totalSeats(v.getSeatingCapacity())
-                        .dailyRatePerVehicle(v.getRentalPricePerDay())
-                        .subtotalDailyRate(v.getRentalPricePerDay())
-                        .build())
+        Map<String, List<Vehicle>> groupedByModel = vehicles.stream()
+                .collect(Collectors.groupingBy(Vehicle::getModel, LinkedHashMap::new, Collectors.toList()));
+
+        List<FleetItemDto> items = groupedByModel.values().stream()
+                .map(vList -> {
+                    Vehicle v = vList.get(0);
+                    int qty = vList.size();
+                    BigDecimal subtotal = v.getRentalPricePerDay().multiply(BigDecimal.valueOf(qty));
+                    return FleetItemDto.builder()
+                            .vehicle(mapper.toVehicleDto(v))
+                            .quantity(qty)
+                            .seatsPerVehicle(v.getSeatingCapacity())
+                            .totalSeats(v.getSeatingCapacity() * qty)
+                            .dailyRatePerVehicle(v.getRentalPricePerDay())
+                            .subtotalDailyRate(subtotal)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return VehicleRecommendationDto.builder()
@@ -318,7 +399,7 @@ public class AIService {
                 .seatingCalculation(calculation)
                 .multiVehicle(true)
                 .available(true)
-                .availabilityNote(String.format("All %d Vehicles Operational & Available", vehicles.size()))
+                .availabilityNote(String.format("All %d distinct vehicle units are operational & available in fleet", vehicles.size()))
                 .matchPercentage(matchPercent)
                 .matchReason(reason)
                 .bestUsedFor(bestFor)
@@ -327,9 +408,9 @@ public class AIService {
                 .build();
     }
 
-    private String generateFactualSummary(int passengers, List<VehicleRecommendationDto> recommendations, boolean isMultiVehicle) {
+    private SummaryResult generateFactualSummary(int passengers, List<VehicleRecommendationDto> recommendations, boolean isMultiVehicle) {
         if (recommendations.isEmpty()) {
-            return String.format("No suitable fleet combination found for %d passengers.", passengers);
+            return new SummaryResult(String.format("No suitable fleet combination found for %d passengers.", passengers), false);
         }
 
         VehicleRecommendationDto topPick = recommendations.get(0);
@@ -349,9 +430,12 @@ public class AIService {
                         passengers, passengers, topPick.getVehicleCount(), topPick.getSeatingCalculation(),
                         topPick.getTotalSeatsCapacity(), topPick.getTotalDailyRental()
                 );
-                return geminiClient.generateContent(prompt, fallback);
+                GeminiClient.GeminiResult result = geminiClient.executePrompt(prompt);
+                if (result.isSuccess() && result.getText() != null) {
+                    return new SummaryResult(result.getText(), true);
+                }
             }
-            return fallback;
+            return new SummaryResult(fallback, false);
         } else {
             // Single vehicle recommendation
             String fallback = String.format(
@@ -366,9 +450,12 @@ public class AIService {
                         + "In 2 concise, factually accurate sentences, explain why this vehicle fits their group.",
                         passengers, topPick.getVehicle().getDisplayName(), topPick.getVehicle().getSeatingCapacity(), topPick.getVehicle().getRentalPricePerDay()
                 );
-                return geminiClient.generateContent(prompt, fallback);
+                GeminiClient.GeminiResult result = geminiClient.executePrompt(prompt);
+                if (result.isSuccess() && result.getText() != null) {
+                    return new SummaryResult(result.getText(), true);
+                }
             }
-            return fallback;
+            return new SummaryResult(fallback, false);
         }
     }
 
@@ -413,13 +500,24 @@ public class AIService {
         // 5. General Platform Questions & Domain Intelligence
         String structuredReply = generateChatbotFallback(userMsg);
         String reply = structuredReply;
+        boolean fallbackMode = true;
+        String modelProvider;
 
-        if (geminiClient.isConfigured()) {
+        if (!geminiClient.isConfigured()) {
+            modelProvider = "Heuristic Mobility Engine [Offline Mode]";
+        } else {
             String prompt = "You are DriveSphere AI Concierge, a knowledgeable, polite smart mobility assistant for the DriveSphere Fleet Platform. "
                     + "DriveSphere offers verified self-drive vehicles, professional driver hiring with Driver Trust Scores (0-100), smart trip routing with Open-Meteo weather, and test payments. "
                     + "User asks: \"" + userMsg + "\". "
                     + "Provide a helpful, precise 2-3 sentence response. Suggest next steps.";
-            reply = geminiClient.generateContent(prompt, structuredReply);
+            GeminiClient.GeminiResult geminiResult = geminiClient.executePrompt(prompt);
+            if (geminiResult.isSuccess() && geminiResult.getText() != null) {
+                reply = geminiResult.getText();
+                fallbackMode = false;
+                modelProvider = geminiClient.getModelDisplayName();
+            } else {
+                modelProvider = "Heuristic Mobility Engine [Gemini Fallback]";
+            }
         }
 
         List<String> suggestions = getContextualSuggestions(userMsg);
@@ -427,7 +525,8 @@ public class AIService {
         return AiChatResponse.builder()
                 .reply(reply)
                 .suggestedQuestions(suggestions)
-                .fallbackMode(!geminiClient.isConfigured())
+                .fallbackMode(fallbackMode)
+                .modelProvider(modelProvider)
                 .build();
     }
 
@@ -579,7 +678,12 @@ public class AIService {
         );
 
         String finalReply = structuredReply;
-        if (geminiClient.isConfigured()) {
+        boolean fallbackMode = true;
+        String modelProvider;
+
+        if (!geminiClient.isConfigured()) {
+            modelProvider = "OpenRouteService Highway Engine [Direct Routing]";
+        } else {
             String factPrompt = String.format(
                     "You are DriveSphere AI Concierge. The customer asked: \"%s\". "
                     + "Our live routing engine calculated the exact facts: "
@@ -587,7 +691,14 @@ public class AIService {
                     + "In 2-3 friendly, factual sentences, answer the customer's question using these EXACT figures. DO NOT change or invent any numbers.",
                     userMsg, originName, destName, distKm, durationStr, evKwh, evCost, iceLiters, iceCost
             );
-            finalReply = geminiClient.generateContent(factPrompt, structuredReply);
+            GeminiClient.GeminiResult geminiResult = geminiClient.executePrompt(factPrompt);
+            if (geminiResult.isSuccess() && geminiResult.getText() != null) {
+                finalReply = geminiResult.getText();
+                fallbackMode = false;
+                modelProvider = geminiClient.getModelDisplayName() + " (with ORS Routing)";
+            } else {
+                modelProvider = "OpenRouteService Highway Engine [Gemini Fallback]";
+            }
         }
 
         return AiChatResponse.builder()
@@ -598,7 +709,8 @@ public class AIService {
                         "Which car is best for highway trips?",
                         "Can I rent an EV for this route?"
                 ))
-                .fallbackMode(!geminiClient.isConfigured())
+                .fallbackMode(fallbackMode)
+                .modelProvider(modelProvider)
                 .build();
     }
 
@@ -644,7 +756,8 @@ public class AIService {
                         "How does Driver Trust Score work?",
                         "Can I rent an EV?"
                 ))
-                .fallbackMode(!geminiClient.isConfigured())
+                .fallbackMode(true)
+                .modelProvider("Open-Meteo Weather Intelligence")
                 .build();
     }
 
@@ -691,7 +804,8 @@ public class AIService {
                         "Can I rent an EV?",
                         "What documents are needed for rental?"
                 ))
-                .fallbackMode(!geminiClient.isConfigured())
+                .fallbackMode(true)
+                .modelProvider("DriveSphere Seating & Fleet Capacity Engine")
                 .build();
     }
 
@@ -746,7 +860,7 @@ public class AIService {
         if (lower.contains("family") || lower.contains("group") || lower.contains("passenger") || lower.contains("seat") || lower.contains("7 seater") || lower.contains("kids")) {
             return "For family roadtrips (5 to 7 passengers), our top recommendation is the **Mahindra XUV700 AX7 Luxury** (7 seats, Rs. 3,600/day) or the **Toyota Fortuner Legender 4x4** (7 seats, Rs. 4,800/day). Both provide spacious 3-row seating, panoramic views, ADAS safety, and expansive luggage space. For groups larger than 7, our AI Fleet Matcher automatically schedules a multi-vehicle convoy!";
         } else if (lower.contains("driver") || lower.contains("hire") || lower.contains("chauffeur") || lower.contains("trust score")) {
-            return "At DriveSphere, you can hire verified professional drivers at Rs. 950/day. Each driver is evaluated through our **Driver Trust Score (0-100)** based on: Government License Verification (25%), Commercial Driving Skill Assessment (25%), Customer Ratings (25%), and On-Time Trip Records (25%). Only approved drivers with a score >= 75 can be assigned.";
+            return "At DriveSphere, you can hire verified professional drivers starting at Rs. 950/day. Each driver is evaluated through our **Driver Trust Score (0-100)** based on: Document Verification (up to 25 pts), Professional Experience (up to 20 pts), Customer Ratings (up to 25 pts), Trip Completion (up to 20 pts), and Cancellation/Incident Deductions (up to -10 pts). Only approved drivers with verified status can be assigned to customer trips.";
         } else if (lower.contains("electric") || lower.contains("ev") || lower.contains("charging") || lower.contains("battery") || lower.contains("nexon")) {
             return "Our electric fleet includes the **Tata Nexon EV Empowered** (312 km range) and **Hyundai Ioniq 5 EV** (400+ km range). Trip energy consumption is calculated strictly in **kWh** (at Rs. 12.00/kWh) rather than fuel litres. Our Smart Trip Planner also monitors your remaining battery range and recommends highway charging stops.";
         } else if (lower.contains("car") || lower.contains("vehicle") || lower.contains("fleet") || lower.contains("recommend") || lower.contains("suv") || lower.contains("sedan") || lower.contains("luxury")) {

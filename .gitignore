@@ -57,7 +57,21 @@ Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
+# Temporary & Scratch Files
+scratch/
+uploads/
+backend/uploads/
+
 # Node / Frontend dependencies (if future tooling added)
 node_modules/
 dist/
 .cache/
+
+# SSL / TLS Certificates & Private Keys
+certs/
+*.pem
+*.key
+*.crt
+*.csr
+*.pfx
+*.p12

@@ -24,6 +24,8 @@ public class DriverDto {
     private Integer totalTrips;
     private BigDecimal cancellationRate;
     private boolean available;
+    private boolean online;
+    private java.time.LocalDateTime lastSeenAt;
     private BigDecimal dailyRate;
     private String languages;
     private String address;

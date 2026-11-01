@@ -20,13 +20,19 @@ public class HealthController {
     @Value("${spring.application.name:drivesphere-backend}")
     private String applicationName;
 
+    @Value("${spring.profiles.active:development}")
+    private String activeProfile;
+
+    @Value("${drivesphere.app.version:1.0.0}")
+    private String appVersion;
+
     @GetMapping
     public ResponseEntity<ApiResponse<HealthResponse>> checkHealth() {
         HealthResponse health = HealthResponse.builder()
                 .status("UP")
                 .service(applicationName)
-                .version("1.0.0-SNAPSHOT")
-                .environment("development")
+                .version(appVersion)
+                .environment(activeProfile)
                 .timestamp(Instant.now())
                 .build();
 

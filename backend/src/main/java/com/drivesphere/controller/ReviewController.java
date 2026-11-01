@@ -34,6 +34,31 @@ public class ReviewController {
                 .body(ApiResponse.success(review, "Review submitted successfully. Thank you for your feedback!"));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ReviewDto>> updateReview(@PathVariable Long id, @Valid @RequestBody ReviewCreateRequest request) {
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+
+        ReviewDto review = reviewService.updateReview(id, currentUser.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success(review, "Review updated successfully."));
+    }
+
+    @GetMapping("/booking/{bookingId}")
+    public ResponseEntity<ApiResponse<ReviewDto>> getBookingReview(@PathVariable Long bookingId) {
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+        boolean isStaff = currentUser.isStaff();
+
+        return ResponseEntity.ok(ApiResponse.success(
+                reviewService.getReviewByBooking(bookingId, currentUser.getId(), isStaff),
+                "Booking review retrieved"
+        ));
+    }
+
     @GetMapping("/vehicle/{vehicleId}")
     public ResponseEntity<ApiResponse<List<ReviewDto>>> getVehicleReviews(@PathVariable Long vehicleId) {
         return ResponseEntity.ok(ApiResponse.success(

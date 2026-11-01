@@ -35,6 +35,12 @@ public class User extends BaseEntity {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    @Column(name = "preferred_vehicle_type", length = 50)
+    private String preferredVehicleType;
+
+    @Column(name = "driver_preference", length = 50)
+    private String driverPreference;
+
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
@@ -42,6 +48,10 @@ public class User extends BaseEntity {
     @Builder.Default
     @Column(name = "is_verified", nullable = false)
     private boolean verified = false;
+
+    @Builder.Default
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
 
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
@@ -57,6 +67,6 @@ public class User extends BaseEntity {
     }
 
     public boolean hasRole(RoleType roleType) {
-        return roles.stream().anyMatch(r -> r.getName() == roleType);
+        return roles != null && roles.stream().anyMatch(r -> r != null && r.getName() == roleType);
     }
 }

@@ -25,6 +25,7 @@ public class BookingController {
     private final BookingService bookingService;
     private final RentalService rentalService;
     private final AuthService authService;
+    private final com.drivesphere.service.InvoiceService invoiceService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<BookingDto>> createBooking(@Valid @RequestBody BookingCreateRequest request) {
@@ -40,7 +41,28 @@ public class BookingController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<BookingDto>> getBookingById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(bookingService.getBookingById(id), "Booking details"));
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+        boolean isStaff = currentUser.isStaff();
+        return ResponseEntity.ok(ApiResponse.success(
+                bookingService.getBookingById(id, currentUser.getId(), isStaff),
+                "Booking details"
+        ));
+    }
+
+    @GetMapping("/{id}/invoice")
+    public ResponseEntity<ApiResponse<com.drivesphere.dto.InvoiceDto>> getInvoice(@PathVariable Long id) {
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+        boolean isStaff = currentUser.isStaff();
+        return ResponseEntity.ok(ApiResponse.success(
+                invoiceService.generateInvoice(id, currentUser.getId(), isStaff),
+                "Booking invoice generated"
+        ));
     }
 
     @GetMapping("/my")
@@ -58,8 +80,13 @@ public class BookingController {
     @GetMapping("/driver/{driverId}")
     @PreAuthorize("hasAnyRole('DRIVER', 'ADMIN', 'FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<List<BookingDto>>> getDriverBookings(@PathVariable Long driverId) {
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+        boolean isStaff = currentUser.isStaff();
         return ResponseEntity.ok(ApiResponse.success(
-                bookingService.getDriverBookings(driverId),
+                bookingService.getDriverBookings(driverId, currentUser.getId(), isStaff),
                 "Driver assigned bookings"
         ));
     }
@@ -84,23 +111,35 @@ public class BookingController {
     }
 
     @PostMapping("/{id}/pickup")
-    @PreAuthorize("hasAnyRole('FLEET_MANAGER', 'ADMIN', 'DRIVER')")
+    @PreAuthorize("hasAnyRole('FLEET_MANAGER', 'ADMIN', 'DRIVER', 'CUSTOMER') or hasAnyAuthority('ROLE_FLEET_MANAGER', 'ROLE_ADMIN', 'ROLE_DRIVER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ApiResponse<BookingDto>> pickupVehicle(
             @PathVariable Long id,
-            @RequestBody(required = false) RentalActionRequest request) {
+            @Valid @RequestBody(required = false) RentalActionRequest request) {
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+        boolean isStaff = currentUser.isStaff();
+
         return ResponseEntity.ok(ApiResponse.success(
-                rentalService.pickupVehicle(id, request),
+                rentalService.pickupVehicle(id, request, currentUser.getId(), isStaff),
                 "Vehicle pickup recorded. Rental is now active."
         ));
     }
 
     @PostMapping("/{id}/return")
-    @PreAuthorize("hasAnyRole('FLEET_MANAGER', 'ADMIN', 'DRIVER')")
+    @PreAuthorize("hasAnyRole('FLEET_MANAGER', 'ADMIN', 'DRIVER', 'CUSTOMER') or hasAnyAuthority('ROLE_FLEET_MANAGER', 'ROLE_ADMIN', 'ROLE_DRIVER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ApiResponse<BookingDto>> returnVehicle(
             @PathVariable Long id,
-            @RequestBody(required = false) RentalActionRequest request) {
+            @Valid @RequestBody(required = false) RentalActionRequest request) {
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+        boolean isStaff = currentUser.isStaff();
+
         return ResponseEntity.ok(ApiResponse.success(
-                rentalService.returnVehicle(id, request),
+                rentalService.returnVehicle(id, request, currentUser.getId(), isStaff),
                 "Vehicle returned. Rental completed."
         ));
     }

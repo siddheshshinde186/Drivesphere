@@ -11,8 +11,9 @@
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Custom Theme CSS -->
+    <!-- Custom Theme CSS & Manager -->
     <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/theme.js"></script>
 </head>
 <body class="bg-dark text-light d-flex flex-column min-vh-100 justify-content-between">
 
@@ -23,8 +24,8 @@
                 <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
                 <span class="brand-font fs-4 text-gradient">DriveSphere</span>
             </a>
-            <div class="d-flex align-items-center">
-                <a href="index.html" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-house me-1"></i>Home</a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="index.html" class="btn btn-outline-secondary btn-sm me-1"><i class="bi bi-house me-1"></i>Home</a>
                 <a href="login.html" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-in-right me-1"></i>Sign In</a>
             </div>
         </div>
@@ -43,7 +44,29 @@
                         <p class="text-muted small">Join DriveSphere for smart rentals or register as a verified driver</p>
                     </div>
 
-                    <div id="reg-alert" class="alert alert-danger d-none py-2 px-3 small" role="alert"></div>
+                    <!-- Duplicate Account Conflict Banner -->
+                    <div id="conflict-alert" class="alert alert-warning border-warning shadow-sm d-none py-3 px-3 small mb-3" role="alert">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-person-exclamation fs-4 text-warning me-2 mt-1"></i>
+                            <div class="w-100">
+                                <div class="fw-semibold text-white mb-1">Looks like you already have a DriveSphere account</div>
+                                <div id="conflict-message" class="text-light mb-3">An account is already associated with this phone number. Please log in using your existing credentials.</div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a id="conflict-login-btn" href="login.html" class="btn btn-primary btn-sm fw-semibold">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i> Log In to Existing Account
+                                    </a>
+                                    <a id="conflict-forgot-btn" href="forgot-password.html" class="btn btn-outline-light btn-sm">
+                                        <i class="bi bi-key me-1"></i> Forgot Password?
+                                    </a>
+                                    <button type="button" id="conflict-dismiss-btn" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-arrow-left me-1"></i> Back to Registration
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="reg-alert" class="alert alert-danger d-none py-2 px-3 small mb-3" role="alert"></div>
 
                     <!-- Role Selection Toggle -->
                     <div class="btn-group w-100 mb-4 p-1 bg-dark rounded-3 border border-secondary" role="group">
@@ -82,36 +105,42 @@
                             </div>
                             <div class="col-sm-6">
                                 <label for="password" class="form-label text-light small fw-medium">Password</label>
-                                <input type="password" class="form-control bg-dark text-white border-secondary" id="password" placeholder="Min. 6 characters" minlength="6" required>
+                                <div class="input-group">
+                                    <input type="password" class="form-control bg-dark text-white border-secondary" id="password" placeholder="Min. 8 chars (A-Z, a-z, 0-9, #)" minlength="8" required>
+                                    <button class="btn btn-outline-secondary border-secondary text-secondary toggle-password-btn" type="button" data-target="password" aria-label="Show password" title="Show password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text text-muted" style="font-size: 0.75rem;">Must contain uppercase, lowercase, digit, and special char.</div>
                             </div>
                         </div>
 
                         <!-- Driver Specific Additional Fields -->
                         <div id="driver-fields" class="p-3 bg-dark rounded-3 border border-secondary mb-3 d-none">
-                            <div class="fw-semibold text-info small mb-2"><i class="bi bi-shield-check me-1"></i> Driver License & Verification Information</div>
+                            <div class="fw-semibold text-info small mb-2"><i class="bi bi-shield-check me-1"></i> Driver License &amp; Verification Information</div>
                             <div class="row g-2 mb-2">
                                 <div class="col-sm-6">
-                                    <label class="form-label text-muted small">Driving License Number</label>
-                                    <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="licenseNumber" placeholder="DL-0420220019283">
+                                    <label class="form-label text-muted small" for="licenseNumber">Driving License Number *</label>
+                                    <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="licenseNumber" placeholder="e.g. DL-0420220019283">
                                 </div>
                                 <div class="col-sm-6">
-                                    <label class="form-label text-muted small">License Expiry Date</label>
+                                    <label class="form-label text-muted small" for="licenseExpiryDate">License Expiry Date *</label>
                                     <input type="date" class="form-control form-control-sm bg-black text-white border-secondary" id="licenseExpiryDate">
                                 </div>
                             </div>
                             <div class="row g-2 mb-2">
                                 <div class="col-sm-6">
-                                    <label class="form-label text-muted small">Years of Driving Experience</label>
-                                    <input type="number" class="form-control form-control-sm bg-black text-white border-secondary" id="experienceYears" value="3" min="1" max="40">
+                                    <label class="form-label text-muted small" for="experienceYears">Years of Driving Experience *</label>
+                                    <input type="number" class="form-control form-control-sm bg-black text-white border-secondary" id="experienceYears" min="1" max="45" placeholder="Years">
                                 </div>
                                 <div class="col-sm-6">
-                                    <label class="form-label text-muted small">Languages Spoken</label>
-                                    <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="languages" placeholder="English, Hindi">
+                                    <label class="form-label text-muted small" for="languages">Languages Spoken *</label>
+                                    <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="languages" placeholder="e.g. English, Hindi, Tamil">
                                 </div>
                             </div>
                             <div>
-                                <label class="form-label text-muted small">Residential Address</label>
-                                <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="address" placeholder="Street, City, Postal Code">
+                                <label class="form-label text-muted small" for="address">Residential Address *</label>
+                                <input type="text" class="form-control form-control-sm bg-black text-white border-secondary" id="address" placeholder="Full residential street address">
                             </div>
                         </div>
 
@@ -132,15 +161,20 @@
 
     <!-- Footer -->
     <footer class="py-3 border-top border-secondary text-center text-muted small">
-        <div class="container">
-            DriveSphere – Smart Mobility & Fleet Intelligence Platform &copy; 2026
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div>DriveSphere – Smart Mobility &amp; Fleet Intelligence Platform &copy; 2026</div>
+            <div class="d-flex gap-3">
+                <a href="terms.html" class="text-muted text-decoration-none">Terms</a>
+                <a href="privacy.html" class="text-muted text-decoration-none">Privacy Policy</a>
+                <a href="refund-policy.html" class="text-muted text-decoration-none">Cancellation Policy</a>
+            </div>
         </div>
     </footer>
 
     <!-- Bootstrap JS & App Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/api.js"></script>
-    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/api.js?v=2.3"></script>
+    <script src="assets/js/auth.js?v=2.3"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const roleCustomer = document.getElementById('role-customer');
@@ -152,58 +186,159 @@
             const spinner = document.getElementById('reg-spinner');
             const regBtn = document.getElementById('reg-btn');
 
+            const licenseNumInput = document.getElementById('licenseNumber');
+            const licenseExpiryInput = document.getElementById('licenseExpiryDate');
+            const expInput = document.getElementById('experienceYears');
+            const langInput = document.getElementById('languages');
+            const addrInput = document.getElementById('address');
+
             roleCustomer.addEventListener('change', () => {
                 driverFields.classList.add('d-none');
+                licenseNumInput.required = false;
+                licenseExpiryInput.required = false;
+                expInput.required = false;
+                langInput.required = false;
+                addrInput.required = false;
             });
 
             roleDriver.addEventListener('change', () => {
                 driverFields.classList.remove('d-none');
+                licenseNumInput.required = true;
+                licenseExpiryInput.required = true;
+                expInput.required = true;
+                langInput.required = true;
+                addrInput.required = true;
             });
+
+            const conflictAlert = document.getElementById('conflict-alert');
+            const conflictMessage = document.getElementById('conflict-message');
+            const conflictLoginBtn = document.getElementById('conflict-login-btn');
+            const conflictForgotBtn = document.getElementById('conflict-forgot-btn');
+            const conflictDismissBtn = document.getElementById('conflict-dismiss-btn');
+
+            if (conflictDismissBtn) {
+                conflictDismissBtn.addEventListener('click', () => {
+                    conflictAlert.classList.add('d-none');
+                    document.getElementById('phoneNumber').focus();
+                });
+            }
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 alertBox.classList.add('d-none');
+                conflictAlert.classList.add('d-none');
                 btnText.classList.add('d-none');
                 spinner.classList.remove('d-none');
                 regBtn.disabled = true;
 
                 try {
                     const isDriver = roleDriver.checked;
+                    const rawPassword = document.getElementById('password').value;
+
+                    // Client-side password validation
+                    const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+                    if (!passwordRegex.test(rawPassword)) {
+                        throw new Error('Please choose a password that meets all the requirements shown below.');
+                    }
+
                     const payload = {
                         firstName: document.getElementById('firstName').value.trim(),
                         lastName: document.getElementById('lastName').value.trim(),
                         email: document.getElementById('email').value.trim(),
                         phoneNumber: document.getElementById('phoneNumber').value.trim(),
-                        password: document.getElementById('password').value,
+                        password: rawPassword,
                         role: isDriver ? 'ROLE_DRIVER' : 'ROLE_CUSTOMER'
                     };
 
                     if (isDriver) {
-                        payload.licenseNumber = document.getElementById('licenseNumber').value.trim() || 'DL-' + Date.now();
-                        payload.licenseExpiryDate = document.getElementById('licenseExpiryDate').value || '2030-12-31';
-                        payload.experienceYears = parseInt(document.getElementById('experienceYears').value || '2', 10);
-                        payload.languages = document.getElementById('languages').value.trim() || 'English';
-                        payload.address = document.getElementById('address').value.trim() || 'City Center';
+                        const lic = licenseNumInput.value.trim();
+                        const expDate = licenseExpiryInput.value;
+                        const expYrs = parseInt(expInput.value, 10);
+                        const langs = langInput.value.trim();
+                        const address = addrInput.value.trim();
+
+                        if (!lic || lic.length < 5) {
+                            throw new Error('Please enter a valid government-issued Driving License number.');
+                        }
+                        if (!expDate) {
+                            throw new Error('Driving License expiry date is mandatory.');
+                        }
+                        if (isNaN(expYrs) || expYrs < 1) {
+                            throw new Error('Please enter valid years of driving experience (min. 1).');
+                        }
+                        if (!langs) {
+                            throw new Error('Please specify languages you speak for customer communication.');
+                        }
+                        if (!address || address.length < 5) {
+                            throw new Error('Please enter your full residential address for KYC verification.');
+                        }
+
+                        payload.licenseNumber = lic;
+                        payload.licenseExpiryDate = expDate;
+                        payload.experienceYears = expYrs;
+                        payload.languages = langs;
+                        payload.address = address;
                     }
 
                     const res = await API.post('/auth/register', payload);
 
-                    if (res && res.data && res.data.token) {
-                        API.setToken(res.data.token);
-                        API.setUser(res.data.user);
-                        API.showToast('Account created successfully!', 'success');
-                        setTimeout(() => {
-                            Auth.redirectToDashboard();
-                        }, 500);
-                    } else {
-                        throw new Error('Registration failed');
-                    }
+                    API.showToast('Registration successful! You may now sign in.', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html?message=' + encodeURIComponent('Your account has been created successfully. You can now sign in with your credentials.');
+                    }, 1500);
                 } catch (err) {
-                    alertBox.innerText = err.message || 'Registration failed. Please check form inputs.';
-                    alertBox.classList.remove('d-none');
                     btnText.classList.remove('d-none');
                     spinner.classList.add('d-none');
                     regBtn.disabled = false;
+
+                    const code = err.code || (err.data && err.data.code);
+                    const msg = err.message || '';
+
+                    const isDuplicate = code === 'PHONE_ALREADY_REGISTERED' ||
+                                        code === 'EMAIL_ALREADY_REGISTERED' ||
+                                        code === 'ACCOUNT_CONFLICT' ||
+                                        code === 'ACCOUNT_ALREADY_EXISTS' ||
+                                        code === 'DATA_CONFLICT' ||
+                                        msg.toLowerCase().includes('duplicate') ||
+                                        msg.toLowerCase().includes('already associated') ||
+                                        msg.toLowerCase().includes('already in use') ||
+                                        msg.toLowerCase().includes('already exists');
+
+                    if (isDuplicate) {
+                        alertBox.classList.add('d-none');
+                        const enteredEmail = document.getElementById('email').value.trim();
+
+                        let displayMsg = msg;
+                        if (code === 'PHONE_ALREADY_REGISTERED' || msg.toLowerCase().includes('phone')) {
+                            displayMsg = 'An account is already associated with this phone number. Please log in using your existing credentials.';
+                        } else if (code === 'EMAIL_ALREADY_REGISTERED' || msg.toLowerCase().includes('email')) {
+                            displayMsg = 'An account with this email address already exists. Please log in or recover your account.';
+                        } else if (code === 'ACCOUNT_CONFLICT') {
+                            displayMsg = 'The email and phone number provided belong to different registered accounts. Please log in using the correct account or contact support.';
+                        } else if (code === 'ACCOUNT_ALREADY_EXISTS') {
+                            displayMsg = 'An account with this email address and phone number already exists. Please log in using your existing credentials.';
+                        }
+
+                        conflictMessage.textContent = displayMsg;
+                        conflictLoginBtn.href = 'login.html' + (enteredEmail ? '?email=' + encodeURIComponent(enteredEmail) : '');
+                        conflictForgotBtn.href = 'forgot-password.html' + (enteredEmail ? '?email=' + encodeURIComponent(enteredEmail) : '');
+                        conflictAlert.classList.remove('d-none');
+                        conflictAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                        // Preserve non-sensitive form inputs; only clear password for security
+                        document.getElementById('password').value = '';
+                    } else {
+                        conflictAlert.classList.add('d-none');
+                        let cleanMsg = msg;
+                        if (cleanMsg.includes('SQL') || cleanMsg.includes('constraint') || cleanMsg.includes('Duplicate entry')) {
+                            cleanMsg = 'An account with these credentials already exists. Please log in or reset your password.';
+                        } else if (cleanMsg.toLowerCase().includes('password')) {
+                            cleanMsg = 'Please choose a password that meets all the requirements shown below.';
+                        }
+                        alertBox.innerText = cleanMsg || "We couldn't complete your request right now. Please try again in a moment.";
+                        alertBox.classList.remove('d-none');
+                        alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 }
             });
         });

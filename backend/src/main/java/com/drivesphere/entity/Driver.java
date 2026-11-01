@@ -46,6 +46,13 @@ public class Driver extends BaseEntity {
     private boolean available = true;
 
     @Builder.Default
+    @Column(name = "is_online", nullable = false)
+    private boolean online = false;
+
+    @Column(name = "last_seen_at")
+    private java.time.LocalDateTime lastSeenAt;
+
+    @Builder.Default
     @Column(name = "daily_rate", precision = 10, scale = 2, nullable = false)
     private BigDecimal dailyRate = BigDecimal.valueOf(800.00);
 

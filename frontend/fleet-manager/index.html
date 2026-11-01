@@ -15,8 +15,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <!-- Chart.js for Fleet Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Custom Theme CSS -->
+    <!-- Custom Theme CSS & Manager -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/theme.js"></script>
     <style>
         #fleet-telemetry-map {
             height: 380px;
@@ -300,8 +301,8 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js?v=2.3"></script>
+    <script src="../assets/js/auth.js?v=2.3"></script>
     <script>
         let telemetryMap = null;
         let vehicleMarkers = [];
@@ -389,16 +390,34 @@
                         <td><span class="badge bg-secondary">${v.vehicleType}</span></td>
                         <td><span class="badge bg-dark border border-secondary">${v.fuelType}</span></td>
                         <td class="text-white fw-bold">₹${v.rentalPricePerDay}</td>
-                        <td class="small text-muted">${v.currentOdometerKm || 0} km</td>
+                        <td class="small text-muted">
+                            ${v.currentOdometerKm || 0} km
+                            <button class="btn btn-sm btn-link text-info p-0 ms-1" onclick="promptUpdateOdometer(${v.id}, ${v.currentOdometerKm || 0})" title="Update Odometer">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                        </td>
                         <td>
                             <span class="badge ${v.status === 'AVAILABLE' ? 'bg-success' : v.status === 'RENTED' || v.status === 'BOOKED' ? 'bg-primary' : v.status === 'MAINTENANCE' ? 'bg-warning text-dark' : 'bg-danger'}">
                                 ${v.status}
                             </span>
+                            ${v.serviceStatus ? `
+                                <div class="mt-1">
+                                    <span class="badge ${v.serviceStatus === 'SERVICE_UP_TO_DATE' ? 'bg-success-subtle text-success border border-success' : v.serviceStatus === 'SERVICE_DUE_SOON' ? 'bg-warning-subtle text-warning border border-warning' : v.serviceStatus === 'SERVICE_DUE' ? 'bg-danger-subtle text-danger border border-danger' : v.serviceStatus === 'OVERDUE' ? 'bg-danger text-white' : 'bg-secondary text-white'}" style="font-size: 0.68rem;" title="${v.kmUntilNextService != null ? v.kmUntilNextService + ' km to service' : ''}">
+                                        ${v.serviceStatus.replace('SERVICE_', '')}
+                                    </span>
+                                </div>
+                            ` : ''}
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deactivateVehicle(${v.id})">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            ${v.status === 'INACTIVE' ? `
+                                <button class="btn btn-sm btn-outline-success py-0 px-2" onclick="toggleVehicleStatus(${v.id})" title="Activate Vehicle">
+                                    <i class="bi bi-play-circle me-1"></i>Activate
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deactivateVehicle(${v.id})" title="Deactivate Vehicle">
+                                    <i class="bi bi-pause-circle"></i>
+                                </button>
+                            `}
                         </td>
                     </tr>
                 `).join('');
@@ -517,7 +536,7 @@
 
                     await API.post('/maintenance', payload);
                     bootstrap.Modal.getInstance(document.getElementById('scheduleMaintModal')).hide();
-                    API.showToast('Maintenance scheduled! Vehicle locked as MAINTENANCE.', 'warning');
+                    API.showToast('Maintenance scheduled successfully!', 'success');
                     await loadFleetDashboard();
                     await loadInventory();
                     await loadMaintenance();
@@ -527,13 +546,47 @@
             });
         }
 
+        async function promptUpdateOdometer(vehicleId, currentKm) {
+            const input = prompt(`Enter new odometer reading in km for this vehicle (must be >= ${currentKm} km):`, currentKm);
+            if (input === null) return;
+            const newKm = parseFloat(input.trim());
+            if (isNaN(newKm) || newKm < 0) {
+                API.showToast('Please enter a valid non-negative number.', 'warning');
+                return;
+            }
+            if (newKm < currentKm) {
+                API.showToast(`New odometer reading (${newKm} km) cannot be less than current reading (${currentKm} km).`, 'danger');
+                return;
+            }
+
+            try {
+                await API.put(`/maintenance/vehicle/${vehicleId}/odometer`, { odometerKm: newKm });
+                API.showToast(`Odometer updated to ${newKm} km. Servicing intervals recalculated.`, 'success');
+                await loadInventory();
+            } catch (err) {
+                API.showToast('Odometer update failed: ' + err.message, 'danger');
+            }
+        }
+        window.promptUpdateOdometer = promptUpdateOdometer;
+
         async function completeMaintenance(maintId) {
             try {
                 await API.put(`/maintenance/${maintId}/status?status=COMPLETED`);
-                API.showToast('Maintenance marked completed! Vehicle restored to AVAILABLE status.', 'success');
+                API.showToast('Maintenance marked completed!', 'success');
                 await loadFleetDashboard();
                 await loadInventory();
                 await loadMaintenance();
+            } catch (err) {
+                API.showToast(err.message, 'danger');
+            }
+        }
+
+        async function toggleVehicleStatus(id) {
+            try {
+                await API.put('/vehicles/' + id + '/toggle-status');
+                API.showToast('Vehicle operational status updated', 'success');
+                await loadFleetDashboard();
+                await loadInventory();
             } catch (err) {
                 API.showToast(err.message, 'danger');
             }

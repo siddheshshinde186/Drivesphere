@@ -19,11 +19,28 @@ import java.time.Duration;
 @Component
 public class WeatherClient {
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(6))
-            .build();
+    private HttpClient httpClient;
+
+    private synchronized HttpClient getHttpClient() {
+        if (this.httpClient == null) {
+            this.httpClient = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(6))
+                    .build();
+        }
+        return this.httpClient;
+    }
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public WeatherClient() {}
+
+    public WeatherClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    public void setHttpClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
     public WeatherSummaryDto getWeather(double latitude, double longitude) {
         try {
@@ -38,7 +55,7 @@ public class WeatherClient {
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
                 JsonNode root = objectMapper.readTree(response.body());

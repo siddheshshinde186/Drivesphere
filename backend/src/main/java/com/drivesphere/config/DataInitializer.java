@@ -16,14 +16,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.drivesphere.service.AuditLogService;
+import com.drivesphere.service.EmailService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 /**
- * Automatically seeds the database with roles, categories, demo accounts,
- * and realistic fleet vehicles on first startup (both MySQL and H2).
+ * Initializes foundational platform configuration (roles, vehicle categories)
+ * and optionally seeds development demo accounts when explicitly enabled via
+ * drivesphere.demo-data.enabled=true (default: false).
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
+
+    @Value("${drivesphere.demo-data.enabled:false}")
+    private boolean demoDataEnabled;
+
+    @Value("${drivesphere.admin.bootstrap-email:${ADMIN_BOOTSTRAP_EMAIL:}}")
+    private String bootstrapAdminEmail;
+
+    @Value("${drivesphere.admin.bootstrap-password:${ADMIN_BOOTSTRAP_PASSWORD:}}")
+    private String bootstrapAdminPassword;
 
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
@@ -38,54 +53,81 @@ public class DataInitializer implements CommandLineRunner {
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired(required = false)
+    private AuditLogService auditLogService;
+
     @Override
     @Transactional
     public void run(String... args) {
-        if (roleRepository.count() > 0 && userRepository.count() > 0) {
-            log.info("DriveSphere database already initialized. Skipping seed data.");
+        // 1. Seed Roles if not present (Foundational)
+        Role adminRole;
+        Role fleetRole;
+        Role driverRole;
+        Role customerRole;
+
+        if (roleRepository.count() == 0) {
+            log.info("Seeding foundational platform roles...");
+            adminRole = roleRepository.save(Role.builder().name(RoleType.ROLE_ADMIN).description("Platform Administrator").build());
+            fleetRole = roleRepository.save(Role.builder().name(RoleType.ROLE_FLEET_MANAGER).description("Fleet Operations Manager").build());
+            driverRole = roleRepository.save(Role.builder().name(RoleType.ROLE_DRIVER).description("Professional Verified Driver").build());
+            customerRole = roleRepository.save(Role.builder().name(RoleType.ROLE_CUSTOMER).description("Mobility Customer").build());
+        } else {
+            adminRole = roleRepository.findByName(RoleType.ROLE_ADMIN).orElse(null);
+            fleetRole = roleRepository.findByName(RoleType.ROLE_FLEET_MANAGER).orElse(null);
+            driverRole = roleRepository.findByName(RoleType.ROLE_DRIVER).orElse(null);
+            customerRole = roleRepository.findByName(RoleType.ROLE_CUSTOMER).orElse(null);
+        }
+
+        // 2. Seed Categories if not present (Foundational)
+        if (categoryRepository.count() == 0) {
+            log.info("Seeding foundational vehicle categories...");
+            categoryRepository.save(VehicleCategory.builder()
+                    .name("Electric Mobility").slug("electric-mobility")
+                    .description("Zero-emission high-efficiency electric vehicles with smart telemetry")
+                    .baseRatePerKm(BigDecimal.valueOf(14.0)).baseFare(BigDecimal.valueOf(60.0)).build());
+
+            categoryRepository.save(VehicleCategory.builder()
+                    .name("Executive Sedan").slug("executive-sedan")
+                    .description("Premium comfortable sedans for business commutes and highway travel")
+                    .baseRatePerKm(BigDecimal.valueOf(16.0)).baseFare(BigDecimal.valueOf(80.0)).build());
+
+            categoryRepository.save(VehicleCategory.builder()
+                    .name("Adventure SUV").slug("adventure-suv")
+                    .description("Spacious 7-seater and rugged all-wheel drive SUVs for families and expeditions")
+                    .baseRatePerKm(BigDecimal.valueOf(22.0)).baseFare(BigDecimal.valueOf(120.0)).build());
+
+            categoryRepository.save(VehicleCategory.builder()
+                    .name("Luxury Elite").slug("luxury-elite")
+                    .description("Top-tier luxury vehicles with prestige cabin appointments and VIP styling")
+                    .baseRatePerKm(BigDecimal.valueOf(38.0)).baseFare(BigDecimal.valueOf(250.0)).build());
+
+            categoryRepository.save(VehicleCategory.builder()
+                    .name("Urban Hatchback").slug("urban-hatchback")
+                    .description("Compact, fuel-sipping vehicles engineered for nimble city navigation")
+                    .baseRatePerKm(BigDecimal.valueOf(11.0)).baseFare(BigDecimal.valueOf(40.0)).build());
+
+            categoryRepository.save(VehicleCategory.builder()
+                    .name("Commercial Logistics & Shuttle").slug("commercial-van")
+                    .description("High-payload vans and passenger transit shuttles for corporate groups")
+                    .baseRatePerKm(BigDecimal.valueOf(20.0)).baseFare(BigDecimal.valueOf(150.0)).build());
+        }
+
+        // 3. Demo Data Guard (Production safety)
+        if (!demoDataEnabled) {
+            log.info("Production mode active: drivesphere.demo-data.enabled=false. Demo users, vehicles, and bookings will NOT be seeded.");
+            provisionInitialAdminIfRequested(adminRole);
+            synchronizeVehicleRatings();
             return;
         }
 
-        log.info("Initializing foundational seed data for DriveSphere platform...");
+        if (userRepository.count() > 0) {
+            log.info("User accounts already exist in database. Skipping demo data creation.");
+            return;
+        }
 
-        // 1. Seed Roles
-        Role adminRole = roleRepository.save(Role.builder().name(RoleType.ROLE_ADMIN).description("Platform Administrator").build());
-        Role fleetRole = roleRepository.save(Role.builder().name(RoleType.ROLE_FLEET_MANAGER).description("Fleet Operations Manager").build());
-        Role driverRole = roleRepository.save(Role.builder().name(RoleType.ROLE_DRIVER).description("Professional Verified Driver").build());
-        Role customerRole = roleRepository.save(Role.builder().name(RoleType.ROLE_CUSTOMER).description("Mobility Customer").build());
+        log.info("Initializing development demo accounts and sample fleet data...");
 
-        // 2. Seed Categories
-        VehicleCategory catEv = categoryRepository.save(VehicleCategory.builder()
-                .name("Electric Mobility").slug("electric-mobility")
-                .description("Zero-emission high-efficiency electric vehicles with smart telemetry")
-                .baseRatePerKm(BigDecimal.valueOf(14.0)).baseFare(BigDecimal.valueOf(60.0)).build());
-
-        VehicleCategory catSedan = categoryRepository.save(VehicleCategory.builder()
-                .name("Executive Sedan").slug("executive-sedan")
-                .description("Premium comfortable sedans for business commutes and highway travel")
-                .baseRatePerKm(BigDecimal.valueOf(16.0)).baseFare(BigDecimal.valueOf(80.0)).build());
-
-        VehicleCategory catSuv = categoryRepository.save(VehicleCategory.builder()
-                .name("Adventure SUV").slug("adventure-suv")
-                .description("Spacious 7-seater and rugged all-wheel drive SUVs for families and expeditions")
-                .baseRatePerKm(BigDecimal.valueOf(22.0)).baseFare(BigDecimal.valueOf(120.0)).build());
-
-        VehicleCategory catLux = categoryRepository.save(VehicleCategory.builder()
-                .name("Luxury Elite").slug("luxury-elite")
-                .description("Top-tier luxury vehicles with prestige cabin appointments and VIP styling")
-                .baseRatePerKm(BigDecimal.valueOf(38.0)).baseFare(BigDecimal.valueOf(250.0)).build());
-
-        VehicleCategory catHatch = categoryRepository.save(VehicleCategory.builder()
-                .name("Urban Hatchback").slug("urban-hatchback")
-                .description("Compact, fuel-sipping vehicles engineered for nimble city navigation")
-                .baseRatePerKm(BigDecimal.valueOf(11.0)).baseFare(BigDecimal.valueOf(40.0)).build());
-
-        VehicleCategory catVan = categoryRepository.save(VehicleCategory.builder()
-                .name("Commercial Logistics & Shuttle").slug("commercial-van")
-                .description("High-payload vans and passenger transit shuttles for corporate groups")
-                .baseRatePerKm(BigDecimal.valueOf(20.0)).baseFare(BigDecimal.valueOf(150.0)).build());
-
-        // 3. Seed Demo Users (Password: Password@123)
+        // 3. Seed Demo Users
         String hash = passwordEncoder.encode("Password@123");
 
         User adminUser = userRepository.save(User.builder()
@@ -134,18 +176,23 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         trustScoreRepository.save(DriverTrustScore.builder()
-                .driver(driver).overallScore(BigDecimal.valueOf(92.50))
+                .driver(driver).overallScore(BigDecimal.valueOf(88.90))
                 .trustLevel(TrustLevel.EXCELLENT)
                 .verificationFactor(BigDecimal.valueOf(25.0))
                 .experienceFactor(BigDecimal.valueOf(20.0))
                 .ratingFactor(BigDecimal.valueOf(24.5))
-                .completionFactor(BigDecimal.valueOf(24.0))
-                .incidentPenalty(BigDecimal.valueOf(1.0))
-                .explanation("Driver Trust Score: 92.5/100 (EXCELLENT). Document verification: 25/25, Experience: 20/20 (7+ yrs), Customer rating: 24.5/25 (4.90★), Trip completion: 24/20. High reliability recommended.")
+                .completionFactor(BigDecimal.valueOf(20.0))
+                .incidentPenalty(BigDecimal.valueOf(0.60))
+                .explanation("Driver Trust Score: 88.9/100 (EXCELLENT). Breakdown: Document Verification (25.0/25), Professional Experience (20.0/20), Customer Feedback Rating (24.5/25), Trip Completion (20.0/20), Cancellation Deduction (-0.6). Note: Algorithmic academic reliability metric, not an official government license certification.")
                 .lastCalculatedAt(java.time.Instant.now())
                 .build());
 
         // 5. Seed Vehicles
+        VehicleCategory catEv = categoryRepository.findBySlug("electric-mobility").orElse(null);
+        VehicleCategory catSedan = categoryRepository.findBySlug("executive-sedan").orElse(null);
+        VehicleCategory catSuv = categoryRepository.findBySlug("adventure-suv").orElse(null);
+        VehicleCategory catLux = categoryRepository.findBySlug("luxury-elite").orElse(null);
+
         Vehicle v1 = vehicleRepository.save(Vehicle.builder()
                 .registrationNumber("KA-01-EV-2024").vin("VIN-TAT-NEXON-001")
                 .brand("Tata").model("Nexon EV Empowered").year(2024)
@@ -254,5 +301,98 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         log.info("DriveSphere foundational seed data successfully populated!");
+    }
+
+    private void provisionInitialAdminIfRequested(Role adminRole) {
+        if (bootstrapAdminEmail == null || bootstrapAdminEmail.isBlank()
+                || bootstrapAdminPassword == null || bootstrapAdminPassword.isBlank()) {
+            log.info("No initial admin bootstrap credentials provided in environment. Skipping admin provisioning.");
+            return;
+        }
+
+        String cleanEmail = bootstrapAdminEmail.trim().toLowerCase();
+        boolean adminExists = userRepository.findAll().stream().anyMatch(u -> u.hasRole(RoleType.ROLE_ADMIN));
+        if (adminExists) {
+            log.info("An administrator account already exists in the database. Initial bootstrap skipped.");
+            return;
+        }
+
+        if (bootstrapAdminPassword.trim().length() < 8) {
+            log.error("CRITICAL: ADMIN_BOOTSTRAP_PASSWORD must be at least 8 characters. Admin provisioning aborted.");
+            return;
+        }
+
+        if (userRepository.findByEmail(cleanEmail).isPresent()) {
+            log.warn("User with email {} already exists. Assigning ROLE_ADMIN...", EmailService.maskEmail(cleanEmail));
+            User existing = userRepository.findByEmail(cleanEmail).get();
+            if (adminRole != null) {
+                existing.getRoles().add(adminRole);
+            }
+            existing.setActive(true);
+            existing.setVerified(true);
+            existing.setEmailVerified(true);
+            userRepository.save(existing);
+            if (auditLogService != null) {
+                auditLogService.logAction("ADMIN_BOOTSTRAP_ROLE_ASSIGNED", "USER", existing.getId().toString(),
+                        "Promoted existing user to Administrator via one-time environment bootstrap", "127.0.0.1");
+            }
+            return;
+        }
+
+        User adminUser = User.builder()
+                .email(cleanEmail)
+                .passwordHash(passwordEncoder.encode(bootstrapAdminPassword.trim()))
+                .firstName("Platform")
+                .lastName("Administrator")
+                .phoneNumber("+91 9999999999")
+                .active(true)
+                .verified(true)
+                .emailVerified(true)
+                .roles(adminRole != null ? new HashSet<>(Set.of(adminRole)) : new HashSet<>())
+                .build();
+
+        User saved = userRepository.save(adminUser);
+        log.info("Successfully provisioned initial Platform Administrator: {}", EmailService.maskEmail(cleanEmail));
+
+        if (auditLogService != null) {
+            auditLogService.logAction("ADMIN_BOOTSTRAP_CREATED", "USER", saved.getId().toString(),
+                    "Initial platform administrator created via one-time secure environment bootstrap", "127.0.0.1");
+        }
+    }
+
+    public void setBootstrapAdminEmail(String email) {
+        this.bootstrapAdminEmail = email;
+    }
+
+    public void setBootstrapAdminPassword(String password) {
+        this.bootstrapAdminPassword = password;
+    }
+
+    public void setDemoDataEnabled(boolean enabled) {
+        this.demoDataEnabled = enabled;
+    }
+
+    public void setAuditLogService(AuditLogService auditLogService) {
+        this.auditLogService = auditLogService;
+    }
+
+    private void synchronizeVehicleRatings() {
+        for (Vehicle vehicle : vehicleRepository.findAll()) {
+            List<Review> vehicleReviews = reviewRepository.findByVehicleIdOrderByCreatedAtDesc(vehicle.getId());
+            if (vehicleReviews.isEmpty()) {
+                if (vehicle.getTotalRatings() != null && vehicle.getTotalRatings() > 0) {
+                    vehicle.setAverageRating(null);
+                    vehicle.setTotalRatings(0);
+                    vehicleRepository.save(vehicle);
+                }
+            } else {
+                double avg = vehicleReviews.stream()
+                        .mapToDouble(r -> (r.getVehicleRating() != null ? r.getVehicleRating() : r.getRating()).doubleValue())
+                        .average().orElse(0.0);
+                vehicle.setAverageRating(BigDecimal.valueOf(avg).setScale(2, java.math.RoundingMode.HALF_UP));
+                vehicle.setTotalRatings(vehicleReviews.size());
+                vehicleRepository.save(vehicle);
+            }
+        }
     }
 }

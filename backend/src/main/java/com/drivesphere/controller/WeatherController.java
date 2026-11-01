@@ -21,6 +21,12 @@ public class WeatherController {
     public ResponseEntity<ApiResponse<WeatherSummaryDto>> getWeather(
             @RequestParam double lat,
             @RequestParam double lng) {
+        if (lat < -90.0 || lat > 90.0) {
+            throw new IllegalArgumentException("Latitude must be between -90 and 90 degrees.");
+        }
+        if (lng < -180.0 || lng > 180.0) {
+            throw new IllegalArgumentException("Longitude must be between -180 and 180 degrees.");
+        }
         return ResponseEntity.ok(ApiResponse.success(
                 weatherClient.getWeather(lat, lng),
                 "Destination weather conditions retrieved via Open-Meteo"

@@ -13,8 +13,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Leaflet.js CSS for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <!-- Custom Theme CSS -->
+    <!-- Custom Theme CSS & Manager -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/theme.js"></script>
     <style>
         #trip-planner-map, #live-tracking-map {
             height: 380px;
@@ -71,19 +72,24 @@
                             <i class="bi bi-journal-check me-1"></i> My Bookings
                         </button>
                     </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" id="tab-profile-btn" data-bs-toggle="pill" data-bs-target="#tab-profile">
+                            <i class="bi bi-person-badge me-1"></i> Profile & Account
+                        </button>
+                    </li>
                 </ul>
 
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2 gap-sm-3 ms-auto">
                     <!-- Notifications Dropdown -->
                     <div class="dropdown">
-                        <button class="btn btn-outline-secondary btn-sm position-relative" type="button" id="notif-dropdown-btn" data-bs-toggle="dropdown">
-                            <i class="bi bi-bell"></i>
-                            <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+                        <button class="btn btn-outline-secondary btn-sm position-relative d-inline-flex align-items-center justify-content-center" type="button" id="notif-dropdown-btn" data-bs-toggle="dropdown" style="width: 38px; height: 38px; flex-shrink: 0;" aria-label="Notifications">
+                            <i class="bi bi-bell fs-6"></i>
+                            <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.68rem;">0</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark p-3 shadow-lg" style="width: 320px; max-height: 400px; overflow-y: auto;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0 text-white fw-bold">Notifications</h6>
-                                <button class="btn btn-link btn-sm text-info p-0" id="mark-all-read-btn">Mark all read</button>
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary">
+                                <h6 class="mb-0 text-white fw-bold"><i class="bi bi-bell-fill me-1 text-primary"></i>Notifications</h6>
+                                <button class="btn btn-link btn-sm text-info p-0 text-decoration-none" id="mark-all-read-btn">Mark all read</button>
                             </div>
                             <div id="notif-list" class="d-flex flex-column gap-2 small">
                                 <div class="text-muted text-center py-2">No new notifications</div>
@@ -93,11 +99,12 @@
 
                     <!-- User Profile Dropdown -->
                     <div class="dropdown">
-                        <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle fs-5 me-2 text-primary"></i>
-                            <span id="nav-user-name">Customer</span>
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" style="max-width: 220px;">
+                            <i class="bi bi-person-circle fs-5 me-2 text-primary flex-shrink-0"></i>
+                            <span id="nav-user-name" class="text-truncate" style="max-width: 140px; display: inline-block;">Customer</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="openProfileTab()"><i class="bi bi-person-gear me-2"></i>My Profile & Settings</a></li>
                             <li><a class="dropdown-item" href="../index.html"><i class="bi bi-globe me-2"></i>Public Landing Page</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="javascript:Auth.logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
@@ -153,7 +160,7 @@
                     <div class="col-lg-4">
                         <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm h-100">
                             <h5 class="brand-font text-white mb-2"><i class="bi bi-stars text-warning me-2"></i>AI Concierge Tips</h5>
-                            <p class="text-muted small mb-3">Powered by Google Gemini 2.5 Flash-Lite mobility intelligence.</p>
+                            <p class="text-muted small mb-3">Powered by Google Gemini 3.5 Flash-Lite mobility intelligence.</p>
                             <div class="p-3 bg-dark rounded-3 border border-secondary mb-3 small">
                                 <div class="fw-semibold text-info mb-1"><i class="bi bi-lightbulb me-1"></i> Smart Trip Tip</div>
                                 <div id="ai-quick-tip">Planning highway travel? Hiring our verified drivers boosts your journey safety with an average 92+ Driver Trust Score.</div>
@@ -180,7 +187,7 @@
             <!-- 2. EXPLORE FLEET TAB -->
             <div class="tab-pane fade" id="tab-vehicles" role="tabpanel">
                 <div class="card bg-surface border-secondary p-4 rounded-4 shadow-sm mb-4">
-                    <div class="row g-3 align-items-end">
+                    <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label text-muted small fw-medium">Vehicle Category</label>
                             <select id="filter-type" class="form-select bg-dark text-white border-secondary form-select-sm">
@@ -203,7 +210,7 @@
                                 <option value="DIESEL">Diesel</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label text-muted small fw-medium">Min Seats</label>
                             <select id="filter-seats" class="form-select bg-dark text-white border-secondary form-select-sm">
                                 <option value="">Any Seating</option>
@@ -212,7 +219,7 @@
                                 <option value="12">12 Seater</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label text-muted small fw-medium">Transmission</label>
                             <select id="filter-trans" class="form-select bg-dark text-white border-secondary form-select-sm">
                                 <option value="">Any</option>
@@ -220,9 +227,22 @@
                                 <option value="MANUAL">Manual</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <button id="apply-filters-btn" class="btn btn-primary btn-sm w-100 py-2">
+                        
+                        <!-- Date-Wise Rental Period Filters -->
+                        <div class="col-md-4">
+                            <label class="form-label text-info small fw-medium"><i class="bi bi-calendar-event me-1"></i>Pickup Date & Time</label>
+                            <input type="datetime-local" id="filter-start-date" class="form-control form-control-sm bg-dark text-white border-secondary">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-info small fw-medium"><i class="bi bi-calendar-check me-1"></i>Return Date & Time</label>
+                            <input type="datetime-local" id="filter-end-date" class="form-control form-control-sm bg-dark text-white border-secondary">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end gap-2">
+                            <button id="apply-filters-btn" class="btn btn-primary btn-sm flex-grow-1 py-2 fw-semibold">
                                 <i class="bi bi-funnel me-1"></i> Apply Filter
+                            </button>
+                            <button id="reset-filters-btn" class="btn btn-outline-secondary btn-sm py-2 px-3 fw-semibold" title="Reset all filters and view operational fleet">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                             </button>
                         </div>
                     </div>
@@ -242,7 +262,7 @@
                                 <i class="bi bi-stars fs-3 text-warning me-2"></i>
                                 <div>
                                     <h5 class="brand-font text-white mb-0">AI Fleet Matcher</h5>
-                                    <small class="text-muted">Gemini 2.5 Flash-Lite Engine</small>
+                                    <small class="text-muted">Gemini 3.5 Flash-Lite Engine</small>
                                 </div>
                             </div>
                             <form id="ai-recommender-form">
@@ -273,8 +293,18 @@
                                         <option value="PETROL">Petrol</option>
                                     </select>
                                 </div>
-                                <button type="submit" id="ai-find-btn" class="btn btn-primary w-100 py-2">
-                                    <i class="bi bi-magic me-1"></i> Generate AI Recommendations
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted">Start Date (Optional)</label>
+                                        <input type="datetime-local" id="ai-start-date" class="form-control form-control-sm bg-dark text-white border-secondary">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted">End Date (Optional)</label>
+                                        <input type="datetime-local" id="ai-end-date" class="form-control form-control-sm bg-dark text-white border-secondary">
+                                    </div>
+                                </div>
+                                <button type="submit" id="ai-find-btn" class="btn btn-primary w-100 py-2 fw-semibold">
+                                    <i class="bi bi-stars me-1"></i> Match Optimal Fleet
                                 </button>
                             </form>
                         </div>
@@ -409,14 +439,19 @@
                 <div class="row g-4">
                     <div class="col-lg-8">
                         <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm">
-                            <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 px-2">
                                 <div>
                                     <h5 class="brand-font text-white mb-0"><i class="bi bi-broadcast text-danger me-2"></i>Live Telemetry & GPS Tracking</h5>
                                     <small class="text-muted" id="tracking-booking-ref">Booking Ref: Select active rental</small>
                                 </div>
-                                <button id="simulate-step-btn" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-play-circle me-1"></i> Simulate GPS Step
-                                </button>
+                                <div class="d-flex align-items-center gap-2">
+                                    <select id="tracker-rental-select" class="form-select form-select-sm bg-dark border-secondary text-white" style="min-width: 190px;" onchange="onTrackerRentalSelected(this.value)">
+                                        <option value="">Select active rental...</option>
+                                    </select>
+                                    <button id="simulate-step-btn" class="btn btn-outline-primary btn-sm flex-shrink-0" title="Simulate GPS waypoint along route">
+                                        <i class="bi bi-play-circle me-1"></i> Simulate Step
+                                    </button>
+                                </div>
                             </div>
                             <div id="live-tracking-map" class="mb-3"></div>
                         </div>
@@ -429,31 +464,31 @@
                                 <div class="p-3 bg-dark rounded-3 border border-secondary">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <span class="small text-muted">Trip Status</span>
-                                        <span id="tracker-status" class="badge bg-success">IN_PROGRESS</span>
+                                        <span id="tracker-status" class="badge bg-secondary">Awaiting Trip Selection</span>
                                     </div>
-                                    <div id="tracker-veh-name" class="fw-bold text-white">Tata Nexon EV</div>
+                                    <div id="tracker-veh-name" class="fw-bold text-white">Select a trip to track</div>
                                 </div>
                                 <div class="p-3 bg-dark rounded-3 border border-secondary">
                                     <div class="small text-muted mb-1">Traveled vs Remaining Distance</div>
                                     <div class="progress bg-secondary" style="height: 10px;">
-                                        <div id="tracker-progress-bar" class="progress-bar bg-info" role="progressbar" style="width: 35%;"></div>
+                                        <div id="tracker-progress-bar" class="progress-bar bg-info" role="progressbar" style="width: 0%;"></div>
                                     </div>
                                     <div class="d-flex justify-content-between small text-muted mt-2">
-                                        <span>Traveled: <strong id="tracker-traveled" class="text-white">45 km</strong></span>
-                                        <span>Remaining: <strong id="tracker-remaining" class="text-white">100 km</strong></span>
+                                        <span>Traveled: <strong id="tracker-traveled" class="text-white">--</strong></span>
+                                        <span>Remaining: <strong id="tracker-remaining" class="text-white">--</strong></span>
                                     </div>
                                 </div>
                                 <div class="row g-2">
                                     <div class="col-6">
                                         <div class="p-2 bg-dark rounded-3 border border-secondary text-center">
                                             <div class="text-muted" style="font-size: 0.72rem;">CURRENT SPEED</div>
-                                            <div id="tracker-speed" class="fw-bold text-white fs-5">54 km/h</div>
+                                            <div id="tracker-speed" class="fw-bold text-white fs-5">--</div>
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="p-2 bg-dark rounded-3 border border-secondary text-center">
                                             <div class="text-muted" style="font-size: 0.72rem;">BATTERY / FUEL</div>
-                                            <div id="tracker-energy" class="fw-bold text-success fs-5">78%</div>
+                                            <div id="tracker-energy" class="fw-bold text-success fs-5">--</div>
                                         </div>
                                     </div>
                                 </div>
@@ -487,6 +522,190 @@
                                 <tr><td colspan="10" class="text-center py-4 text-muted">Loading your bookings...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. CUSTOMER PROFILE & ACCOUNT MANAGEMENT TAB -->
+            <div class="tab-pane fade" id="tab-profile" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Profile Header / Overview Banner -->
+                    <div class="col-12">
+                        <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="position-relative">
+                                        <img id="profile-banner-avatar" src="https://ui-avatars.com/api/?name=Customer&background=0d6efd&color=fff" 
+                                             class="rounded-circle border border-2 border-primary object-fit-cover shadow" width="75" height="75" alt="Avatar">
+                                        <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle"></span>
+                                    </div>
+                                    <div>
+                                        <h4 class="brand-font text-white mb-1" id="profile-banner-name">Customer Profile</h4>
+                                        <div class="d-flex flex-wrap align-items-center gap-2 small">
+                                            <span class="text-muted"><i class="bi bi-envelope me-1"></i><span id="profile-banner-email">customer@drivesphere.com</span></span>
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle" id="profile-banner-role">Customer</span>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle" id="profile-banner-email-verified"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                                            <button class="btn btn-outline-warning btn-sm py-0 px-2 d-none" id="profile-btn-verify-email" onclick="resendEmailVerification()" style="font-size:0.75rem;">
+                                                <i class="bi bi-send me-1"></i>Verify Email
+                                            </button>
+                                            <span class="text-secondary">|</span>
+                                            <span class="text-muted"><i class="bi bi-calendar3 me-1"></i>Member Since: <span id="profile-banner-joined">--</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="loadUserProfile()">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Customer Activity Stats Row -->
+                            <div class="row g-3 mt-3 pt-3 border-top border-secondary">
+                                <div class="col-6 col-md-3">
+                                    <div class="p-3 bg-dark rounded-3 border border-secondary text-center">
+                                        <div class="fs-4 fw-bold text-white mb-0" id="profile-stat-bookings">0</div>
+                                        <div class="text-secondary small fw-semibold" style="letter-spacing: 0.05em;">TOTAL BOOKINGS</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="p-3 bg-dark rounded-3 border border-secondary text-center">
+                                        <div class="fs-4 fw-bold text-info mb-0" id="profile-stat-active">0</div>
+                                        <div class="text-secondary small fw-semibold" style="letter-spacing: 0.05em;">ACTIVE RENTALS</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="p-3 bg-dark rounded-3 border border-secondary text-center">
+                                        <div class="fs-4 fw-bold text-success mb-0" id="profile-stat-trips">0</div>
+                                        <div class="text-secondary small fw-semibold" style="letter-spacing: 0.05em;">COMPLETED TRIPS</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="p-3 bg-dark rounded-3 border border-secondary text-center">
+                                        <div class="fs-4 fw-bold text-warning mb-0" id="profile-stat-spent">₹0.00</div>
+                                        <div class="text-secondary small fw-semibold" style="letter-spacing: 0.05em;">TOTAL SPENT</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information Form -->
+                    <div class="col-lg-6">
+                        <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4 h-100">
+                            <h5 class="brand-font text-white mb-3">
+                                <i class="bi bi-person-lines-fill text-primary me-2"></i>Personal Details
+                            </h5>
+                            <form id="profile-personal-form">
+                                <div class="row g-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-muted small">First Name</label>
+                                        <input type="text" class="form-control bg-dark border-secondary text-white" id="profile-first-name" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-muted small">Last Name</label>
+                                        <input type="text" class="form-control bg-dark border-secondary text-white" id="profile-last-name" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-muted small">Email Address</label>
+                                        <input type="email" class="form-control bg-dark border-secondary text-white-50" id="profile-email" readonly disabled>
+                                        <div class="form-text text-secondary small">Email cannot be changed directly to preserve account security.</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-muted small">Phone Number</label>
+                                        <input type="tel" class="form-control bg-dark border-secondary text-white" id="profile-phone" placeholder="+91 98765 43210">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-muted small">Upload Profile Avatar (Max 5MB: JPG, PNG, WEBP)</label>
+                                        <div class="input-group">
+                                            <input type="file" class="form-control bg-dark border-secondary text-white" id="profile-avatar-file" accept="image/png,image/jpeg,image/webp">
+                                            <button class="btn btn-outline-primary" type="button" id="profile-avatar-upload-btn" onclick="uploadCustomerAvatar()">
+                                                <i class="bi bi-cloud-arrow-up me-1"></i> Upload
+                                            </button>
+                                        </div>
+                                        <div id="avatar-upload-status" class="small mt-1 text-muted"></div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-muted small">Or Direct Avatar Image URL</label>
+                                        <input type="url" class="form-control bg-dark border-secondary text-white" id="profile-avatar-url" placeholder="https://images.unsplash.com/...">
+                                    </div>
+                                </div>
+                                <div class="mt-4 pt-2">
+                                    <button type="submit" id="profile-save-btn" class="btn btn-primary px-4 py-2 fw-semibold">
+                                        <i class="bi bi-check2-circle me-1"></i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Security & Travel Preferences -->
+                    <div class="col-lg-6 d-flex flex-column gap-4">
+                        <!-- Travel Preferences Card -->
+                        <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4">
+                            <h5 class="brand-font text-white mb-3">
+                                <i class="bi bi-sliders text-info me-2"></i>Travel & Booking Preferences
+                            </h5>
+                            <form id="profile-preferences-form">
+                                <div class="row g-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-muted small">Preferred Vehicle Type</label>
+                                        <select class="form-select bg-dark border-secondary text-white" id="pref-vehicle-type">
+                                            <option value="">Any Category</option>
+                                            <option value="ELECTRIC">Electric (EV)</option>
+                                            <option value="SUV">SUV</option>
+                                            <option value="SEDAN">Sedan</option>
+                                            <option value="LUXURY">Luxury</option>
+                                            <option value="HATCHBACK">Hatchback</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-muted small">Chauffeur Preference</label>
+                                        <select class="form-select bg-dark border-secondary text-white" id="pref-driver-mode">
+                                            <option value="SELF_DRIVE">Self-Drive</option>
+                                            <option value="WITH_DRIVER">With Verified Driver</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-outline-info btn-sm px-3 py-2 fw-semibold">
+                                        <i class="bi bi-bookmark-check me-1"></i> Save Preferences
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Security & Password Card -->
+                        <div class="card bg-surface border-secondary rounded-4 shadow-sm p-4">
+                            <h5 class="brand-font text-white mb-3">
+                                <i class="bi bi-shield-lock text-warning me-2"></i>Security & Password
+                            </h5>
+                            <form id="profile-password-form">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label text-muted small">Current Password</label>
+                                        <input type="password" class="form-control bg-dark border-secondary text-white" id="pwd-current" required autocomplete="current-password">
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-muted small">New Password</label>
+                                        <input type="password" class="form-control bg-dark border-secondary text-white" id="pwd-new" minlength="6" required autocomplete="new-password">
+                                        <div class="form-text text-secondary small">Minimum 6 characters.</div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-muted small">Confirm New Password</label>
+                                        <input type="password" class="form-control bg-dark border-secondary text-white" id="pwd-confirm" minlength="6" required autocomplete="new-password">
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-2 gap-2">
+                                    <button type="submit" id="pwd-submit-btn" class="btn btn-warning px-4 py-2 fw-semibold text-dark">
+                                        <i class="bi bi-key-fill me-1"></i> Update Password
+                                    </button>
+                                    <a href="../forgot-password.html" class="text-info small text-decoration-none">
+                                        <i class="bi bi-question-circle me-1"></i>Forgot password?
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -594,6 +813,25 @@
         </div>
     </div>
 
+    <!-- TAX INVOICE MODAL -->
+    <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary no-print">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-file-earmark-ruled text-primary me-2"></i>Official GST Tax Invoice</h5>
+                    <div>
+                        <button type="button" class="btn btn-outline-info btn-sm me-2" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print / PDF</button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-4" id="invoice-modal-body">
+                    <!-- Dynamic Invoice Content -->
+                    <div class="text-center py-5"><span class="spinner-border text-primary"></span><div class="mt-2 text-muted">Generating invoice...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- RAZORPAY TEST PAYMENT MODAL -->
     <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -619,66 +857,154 @@
                             <span id="pay-modal-order-id" class="text-info font-monospace">order_mock_123</span>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <span class="text-muted">Environment:</span>
-                            <span class="badge bg-success">Sandbox Verified</span>
+                            <span class="text-muted">Payment Mode:</span>
+                            <span class="badge bg-secondary" id="pay-modal-mode-badge">Development Test Mode</span>
                         </div>
                     </div>
 
-                    <button id="pay-simulate-btn" class="btn btn-success w-100 py-3 fw-bold fs-6 shadow">
-                        <i class="bi bi-check-circle-fill me-2"></i>Simulate Successful Payment
+                    <div class="d-grid gap-2">
+                        <button id="pay-razorpay-btn" class="btn btn-primary w-100 py-3 fw-bold fs-6 shadow d-none">
+                            <i class="bi bi-wallet2 me-2"></i>Pay via Razorpay Gateway
+                        </button>
+                        <button id="pay-simulate-btn" class="btn btn-outline-info w-100 py-3 fw-bold fs-6 shadow">
+                            <i class="bi bi-flask me-2"></i>Development / Test Payment (Sandbox Mock)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPLETE TRIP CONFIRMATION MODAL -->
+    <div class="modal fade" id="completeTripModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-font text-white"><i class="bi bi-check2-circle text-success me-2"></i>Confirm Vehicle Return</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="complete-modal-booking-id">
+                    <p class="text-white-50 mb-3">
+                        Are you ready to return <strong class="text-white" id="complete-modal-vehicle">Vehicle</strong> and complete your trip?
+                    </p>
+                    <div class="alert alert-dark border-secondary p-3 mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Booking Reference:</span>
+                            <span class="text-info font-monospace small" id="complete-modal-ref">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Operational Status:</span>
+                            <span class="text-success small fw-semibold">Return & Availability Restoration</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Final Odometer Reading (Optional, km)</label>
+                        <input type="number" id="complete-modal-odometer" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 15420" min="0">
+                    </div>
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="complete-modal-confirm" required>
+                        <label class="form-check-label small text-white-50" for="complete-modal-confirm">
+                            I confirm that the vehicle has been parked at the return hub and all keys and items have been returned.
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-success w-100 py-2 fw-semibold" id="confirm-complete-trip-btn">
+                        <i class="bi bi-check-lg me-1"></i>Confirm Return & Complete Rental
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- REVIEW MODAL -->
+    <!-- REVIEW & RATING MODAL -->
     <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-surface border-secondary text-light">
                 <div class="modal-header border-secondary">
-                    <h5 class="modal-title brand-font text-white"><i class="bi bi-star-half text-warning me-2"></i>Rate Your Experience</h5>
+                    <h5 class="modal-title brand-font text-white" id="review-modal-title">
+                        <i class="bi bi-star-half text-warning me-2"></i>Rate Your Experience
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="review-form">
                         <input type="hidden" id="review-booking-id">
+                        <input type="hidden" id="review-existing-id">
                         
+                        <div id="review-vehicle-display" class="p-2 mb-3 bg-dark rounded border border-secondary text-center small text-info fw-semibold">
+                        </div>
+
+                        <div id="review-existing-alert" class="alert alert-info py-2 small d-none">
+                            <i class="bi bi-info-circle me-1"></i>You have already submitted feedback for this trip. You can update your review below.
+                        </div>
+
+                        <!-- 1. Overall Vehicle Rating -->
                         <div class="mb-3">
-                            <label class="form-label small text-muted">Overall Trip Rating (1 to 5 Stars)</label>
-                            <select id="review-rating" class="form-select bg-dark text-white border-secondary">
+                            <label class="form-label small text-muted">Overall Vehicle Rating (1 to 5 Stars) <span class="text-danger">*</span></label>
+                            <select id="review-rating" class="form-select bg-dark text-white border-secondary" required>
                                 <option value="5">⭐⭐⭐⭐⭐ 5 - Exceptional</option>
-                                <option value="4">⭐⭐⭐⭐ 4 - Good</option>
-                                <option value="3">⭐⭐⭐ 3 - Average</option>
-                                <option value="2">⭐⭐ 2 - Poor</option>
-                                <option value="1">⭐ 1 - Very Poor</option>
+                                <option value="4">⭐⭐⭐⭐ 4 - Very Good</option>
+                                <option value="3">⭐⭐⭐ 3 - Good</option>
+                                <option value="2">⭐⭐ 2 - Fair</option>
+                                <option value="1">⭐ 1 - Poor</option>
                             </select>
                         </div>
 
+                        <!-- 2. Vehicle Condition -->
                         <div class="mb-3">
-                            <label class="form-label small text-muted">Vehicle Condition & Cleanliness</label>
-                            <select id="review-veh-rating" class="form-select bg-dark text-white border-secondary">
-                                <option value="5">5 - Spotless & High Performance</option>
-                                <option value="4">4 - Clean & Reliable</option>
-                                <option value="3">3 - Satisfactory</option>
+                            <label class="form-label small text-muted">Vehicle Condition</label>
+                            <select id="review-condition" class="form-select bg-dark text-white border-secondary">
+                                <option value="5">⭐⭐⭐⭐⭐ 5 - Mint / Excellent</option>
+                                <option value="4">⭐⭐⭐⭐ 4 - Good Condition</option>
+                                <option value="3">⭐⭐⭐ 3 - Moderate / Normal Wear</option>
+                                <option value="2">⭐⭐ 2 - Minor Issues</option>
+                                <option value="1">⭐ 1 - Poor Condition</option>
                             </select>
                         </div>
 
-                        <div class="mb-3" id="driver-review-group">
+                        <!-- 3. Cleanliness -->
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Cleanliness</label>
+                            <select id="review-cleanliness" class="form-select bg-dark text-white border-secondary">
+                                <option value="5">⭐⭐⭐⭐⭐ 5 - Spotless & Sanitized</option>
+                                <option value="4">⭐⭐⭐⭐ 4 - Clean & Fresh</option>
+                                <option value="3">⭐⭐⭐ 3 - Acceptable</option>
+                                <option value="2">⭐⭐ 2 - Needed Cleaning</option>
+                                <option value="1">⭐ 1 - Dirty</option>
+                            </select>
+                        </div>
+
+                        <!-- 4. Comfort -->
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Comfort & Driving Experience</label>
+                            <select id="review-comfort" class="form-select bg-dark text-white border-secondary">
+                                <option value="5">⭐⭐⭐⭐⭐ 5 - Ultra Comfortable & Smooth</option>
+                                <option value="4">⭐⭐⭐⭐ 4 - Comfortable Ride</option>
+                                <option value="3">⭐⭐⭐ 3 - Standard Comfort</option>
+                                <option value="2">⭐⭐ 2 - Uncomfortable</option>
+                                <option value="1">⭐ 1 - Very Uncomfortable</option>
+                            </select>
+                        </div>
+
+                        <!-- Driver Courtesy (if chauffeur hired) -->
+                        <div class="mb-3 d-none" id="driver-review-group">
                             <label class="form-label small text-muted">Driver Courtesy & Safety Rating</label>
                             <select id="review-driver-rating" class="form-select bg-dark text-white border-secondary">
-                                <option value="5">5 - Highly Professional & Punctual</option>
-                                <option value="4">4 - Good Safe Driving</option>
-                                <option value="3">3 - Average</option>
+                                <option value="5">⭐⭐⭐⭐⭐ 5 - Highly Professional & Punctual</option>
+                                <option value="4">⭐⭐⭐⭐ 4 - Good Safe Driving</option>
+                                <option value="3">⭐⭐⭐ 3 - Satisfactory</option>
+                                <option value="2">⭐⭐ 2 - Needs Improvement</option>
+                                <option value="1">⭐ 1 - Unprofessional</option>
                             </select>
                         </div>
 
+                        <!-- 5. Optional Written Review -->
                         <div class="mb-3">
-                            <label class="form-label small text-muted">Your Written Review</label>
-                            <textarea id="review-comment" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Share details of your journey..." required></textarea>
+                            <label class="form-label small text-muted">Written Review (Optional)</label>
+                            <textarea id="review-comment" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Share details of your journey (optional)..."></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <button type="submit" id="review-submit-btn" class="btn btn-primary w-100 py-2 fw-semibold">
                             <i class="bi bi-send me-2"></i>Submit Feedback
                         </button>
                     </form>
@@ -690,10 +1016,32 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/auth.js"></script>
-    <script src="../assets/js/chatbot.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="../assets/js/api.js?v=2.3"></script>
+    <script src="../assets/js/auth.js?v=2.3"></script>
+    <script src="../assets/js/chatbot.js?v=2.3"></script>
     <script>
+        // Media URL resolution helper with resilient fallback in case of cached assets
+        function resolveMediaUrl(url) {
+            if (!url || typeof url !== 'string') return '';
+            let cleanUrl = url.trim();
+            if (cleanUrl.includes('/api/documents/download/') && 
+                (cleanUrl.endsWith('.jpg') || cleanUrl.endsWith('.jpeg') || cleanUrl.endsWith('.png') || cleanUrl.endsWith('.webp'))) {
+                cleanUrl = cleanUrl.replace('/api/documents/download/', '/api/documents/public/');
+            }
+            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('data:') || cleanUrl.startsWith('blob:')) {
+                return cleanUrl;
+            }
+            const base = (typeof API !== 'undefined' && API && API.BASE_URL) ? API.BASE_URL : 'http://localhost:8080/api';
+            const origin = base.replace(/\/api$/, '');
+            return origin + (cleanUrl.startsWith('/') ? cleanUrl : '/' + cleanUrl);
+        }
+
+        // Ensure API.resolveMediaUrl is always attached and available globally
+        if (typeof API !== 'undefined') {
+            API.resolveMediaUrl = resolveMediaUrl;
+        }
+
         // State variables
         let currentVehicles = [];
         let availableDrivers = [];
@@ -703,6 +1051,25 @@
         let plannerRouteLayer = null;
         let trackerMarker = null;
         let pendingBookingId = null;
+        let currentOrder = null;
+
+        function showPaymentModal(order, bookingId) {
+            currentOrder = order;
+            pendingBookingId = bookingId;
+
+            document.getElementById('pay-modal-amount').innerText = '₹' + Number(order.amount).toLocaleString('en-IN', {minimumFractionDigits: 2});
+            document.getElementById('pay-modal-ref').innerText = 'Booking Ref: ' + (order.bookingReference || ('#' + bookingId));
+            document.getElementById('pay-modal-order-id').innerText = order.orderId;
+
+            const rzpBtn = document.getElementById('pay-razorpay-btn');
+            if (order.keyId && !order.keyId.includes('placeholder') && typeof Razorpay !== 'undefined') {
+                rzpBtn.classList.remove('d-none');
+            } else {
+                rzpBtn.classList.add('d-none');
+            }
+
+            new bootstrap.Modal(document.getElementById('paymentModal')).show();
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             // Require Customer Auth
@@ -725,8 +1092,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const targetVehId = urlParams.get('vehicleId');
             const targetAction = urlParams.get('action');
+            const targetTab = urlParams.get('tab');
 
-            if (targetVehId && targetAction === 'book') {
+            if (targetTab === 'profile') {
+                openProfileTab();
+            } else if (targetVehId && targetAction === 'book') {
                 const vid = parseInt(targetVehId, 10);
                 setTimeout(() => {
                     openBookingModal(vid);
@@ -813,10 +1183,7 @@
 
                 renderRecentBookings(bookings.slice(0, 3));
                 renderBookingsTable(bookings);
-
-                if (active.length > 0) {
-                    loadLiveTrip(active[0].id);
-                }
+                populateTrackerRentalSelect(bookings);
             } catch (err) {
                 console.error('Error loading bookings:', err);
             }
@@ -842,6 +1209,39 @@
             }
         }
 
+        function getBookingStatusBadge(status) {
+            switch (status) {
+                case 'ACTIVE':
+                    return '<span class="badge bg-success px-2 py-1"><i class="bi bi-play-circle me-1"></i>In Progress</span>';
+                case 'CONFIRMED':
+                    return '<span class="badge bg-primary px-2 py-1"><i class="bi bi-check-circle me-1"></i>Confirmed</span>';
+                case 'COMPLETED':
+                    return '<span class="badge bg-secondary px-2 py-1"><i class="bi bi-flag me-1"></i>Completed</span>';
+                case 'CANCELLED':
+                    return '<span class="badge bg-danger px-2 py-1"><i class="bi bi-x-circle me-1"></i>Cancelled</span>';
+                case 'PENDING':
+                    return '<span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-clock me-1"></i>Pending</span>';
+                default:
+                    return `<span class="badge bg-secondary px-2 py-1">${status}</span>`;
+            }
+        }
+
+        function isPickupEligible(b) {
+            if (!b || b.bookingStatus !== 'CONFIRMED' || b.paymentStatus !== 'PAID') return false;
+            if (b.pickupEligible === true) return true;
+            if (!b.startDateTime) return false;
+            try {
+                const startDate = new Date(b.startDateTime);
+                const endDate = b.endDateTime ? new Date(b.endDateTime) : null;
+                const now = new Date();
+                // Permitted pickup window: eligible 2 hours prior to scheduled start time up until end time
+                const twoHoursBefore = new Date(startDate.getTime() - (2 * 60 * 60 * 1000));
+                return (now >= twoHoursBefore) && (!endDate || now < endDate);
+            } catch (e) {
+                return false;
+            }
+        }
+
         function renderRecentBookings(bookings) {
             const container = document.getElementById('recent-bookings-list');
             if (!bookings || bookings.length === 0) {
@@ -849,25 +1249,58 @@
                 return;
             }
 
-            container.innerHTML = bookings.map(b => `
+            container.innerHTML = bookings.map(b => {
+                const vehicleName = b.vehicle ? b.vehicle.displayName : 'Vehicle';
+                const safeVehicleName = vehicleName.replace(/'/g, "\\'");
+                const driverId = b.driver ? b.driver.id : null;
+                const vehicleId = b.vehicle ? b.vehicle.id : null;
+                const eligible = isPickupEligible(b);
+
+                let actionsHtml = `<button class="btn btn-outline-light btn-sm py-0 px-2" onclick="viewInvoice(${b.id})" title="Tax Invoice (GST)"><i class="bi bi-file-earmark-text"></i></button>`;
+
+                if (b.bookingStatus === 'CONFIRMED') {
+                    if (b.paymentStatus === 'PAID') {
+                        if (eligible) {
+                            actionsHtml += ` <button class="btn btn-outline-primary btn-sm py-0 px-2" onclick="startTrip(${b.id})" title="Start Trip"><i class="bi bi-play-circle me-1"></i>Start</button>`;
+                        } else {
+                            actionsHtml += ` <button class="btn btn-outline-secondary btn-sm py-0 px-2" disabled title="Pickup scheduled for ${formatDateTime(b.startDateTime)}"><i class="bi bi-clock-history me-1"></i>Upcoming</button>`;
+                        }
+                    } else if (b.paymentStatus === 'PENDING') {
+                        actionsHtml += ` <button class="btn btn-outline-success btn-sm py-0 px-2" onclick="openPaymentForBooking(${b.id}, ${b.totalAmount})">Pay</button>`;
+                    }
+                } else if (b.bookingStatus === 'ACTIVE') {
+                    actionsHtml += `
+                        <button class="btn btn-outline-success btn-sm py-0 px-2" onclick="openCompleteTripModal(${b.id}, '${b.bookingReference}', '${safeVehicleName}', ${driverId}, ${vehicleId})" title="Return vehicle and complete trip"><i class="bi bi-check2-circle me-1"></i>Complete</button>
+                        <button class="btn btn-outline-info btn-sm py-0 px-2" onclick="document.getElementById('tab-tracker-btn').click(); loadLiveTrip(${b.id});" title="Live GPS Tracking"><i class="bi bi-broadcast"></i></button>
+                    `;
+                } else if (b.bookingStatus === 'COMPLETED') {
+                    actionsHtml += `
+                        <button class="btn btn-outline-warning btn-sm py-0 px-2" onclick="openReviewModalForBooking(${b.id}, ${driverId}, ${vehicleId}, '${safeVehicleName}')" title="Rate your experience"><i class="bi bi-star me-1"></i>Rate</button>
+                    `;
+                }
+
+                return `
                 <div class="col-md-4">
                     <div class="p-3 bg-dark rounded-3 border border-secondary h-100 d-flex flex-column justify-content-between shadow-sm">
                         <div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge ${b.bookingStatus === 'ACTIVE' ? 'bg-success' : b.bookingStatus === 'CONFIRMED' ? 'bg-primary' : 'bg-secondary'} px-2 py-1">${b.bookingStatus}</span>
+                                ${getBookingStatusBadge(b.bookingStatus)}
                                 <span class="text-info font-monospace small">${b.bookingReference}</span>
                             </div>
-                            <h6 class="fw-bold text-white mb-1">${b.vehicle ? b.vehicle.displayName : 'Vehicle'}</h6>
+                            <h6 class="fw-bold text-white mb-1">${vehicleName}</h6>
                             <div class="small text-secondary mb-2"><i class="bi bi-geo-alt me-1 text-primary"></i>${b.pickupLocation} &rarr; ${b.dropLocation}</div>
                             <div class="small text-muted mb-2"><i class="bi bi-clock me-1"></i>${formatDateTime(b.startDateTime)}</div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-secondary">
+                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-secondary flex-wrap gap-1">
                             <span class="fw-bold text-success fs-6">₹${Number(b.totalAmount).toLocaleString('en-IN')}</span>
-                            ${b.bookingStatus === 'ACTIVE' ? `<button class="btn btn-outline-info btn-sm py-0 px-2" onclick="document.getElementById('tab-tracker-btn').click(); loadLiveTrip(${b.id});">Track Live</button>` : ''}
+                            <div class="btn-group btn-group-sm">
+                                ${actionsHtml}
+                            </div>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function renderBookingsTable(bookings) {
@@ -879,11 +1312,46 @@
 
             tbody.innerHTML = bookings.map(b => {
                 const duration = b.totalDays ? `${b.totalDays} Day${b.totalDays > 1 ? 's' : ''}` : '1 Day';
+                const vehicleName = b.vehicle ? b.vehicle.displayName : 'Vehicle';
+                const safeVehicleName = vehicleName.replace(/'/g, "\\'");
+                const driverId = b.driver ? b.driver.id : null;
+                const vehicleId = b.vehicle ? b.vehicle.id : null;
+                const eligible = isPickupEligible(b);
+
+                let tripActionsHtml = '';
+                if (b.bookingStatus === 'CONFIRMED') {
+                    if (b.paymentStatus === 'PAID') {
+                        if (eligible) {
+                            tripActionsHtml = `<button class="btn btn-outline-primary" onclick="startTrip(${b.id})" title="Begin rental and start trip"><i class="bi bi-play-circle me-1"></i>Start Trip</button>`;
+                        } else {
+                            tripActionsHtml = `<button class="btn btn-outline-secondary btn-sm" disabled title="Pickup scheduled for ${formatDateTime(b.startDateTime)}"><i class="bi bi-clock-history me-1"></i>Upcoming</button>`;
+                        }
+                    } else if (b.paymentStatus === 'PENDING') {
+                        tripActionsHtml = `<button class="btn btn-outline-success" onclick="openPaymentForBooking(${b.id}, ${b.totalAmount})"><i class="bi bi-credit-card me-1"></i>Pay</button>`;
+                    }
+                    tripActionsHtml += ` <button class="btn btn-outline-danger" onclick="cancelBooking(${b.id})">Cancel</button>`;
+                } else if (b.bookingStatus === 'ACTIVE') {
+                    tripActionsHtml = `
+                        <button class="btn btn-outline-success" onclick="openCompleteTripModal(${b.id}, '${b.bookingReference}', '${safeVehicleName}', ${driverId}, ${vehicleId})" title="Return vehicle and complete rental"><i class="bi bi-check2-circle me-1"></i>Complete Trip</button>
+                        <button class="btn btn-outline-info" onclick="document.getElementById('tab-tracker-btn').click(); loadLiveTrip(${b.id});"><i class="bi bi-broadcast me-1"></i>Track</button>
+                    `;
+                } else if (b.bookingStatus === 'COMPLETED') {
+                    tripActionsHtml = `
+                        <button class="btn btn-outline-warning" onclick="openReviewModalForBooking(${b.id}, ${driverId}, ${vehicleId}, '${safeVehicleName}')" title="Rate and review your trip experience"><i class="bi bi-star me-1"></i>Rate Vehicle</button>
+                    `;
+                } else if (b.bookingStatus === 'PENDING' || b.bookingStatus === 'HELD') {
+                    if (b.paymentStatus === 'PENDING') {
+                        tripActionsHtml = `<button class="btn btn-outline-success" onclick="openPaymentForBooking(${b.id}, ${b.totalAmount})"><i class="bi bi-credit-card me-1"></i>Pay</button> `;
+                    }
+                    tripActionsHtml += `<button class="btn btn-outline-danger" onclick="cancelBooking(${b.id})">Cancel</button>`;
+                }
+                // CANCELLED status has no trip action buttons.
+
                 return `
                 <tr>
                     <td><span class="font-monospace text-info fw-semibold">${b.bookingReference}</span></td>
                     <td>
-                        <div class="fw-semibold text-white">${b.vehicle ? b.vehicle.displayName : 'Vehicle'}</div>
+                        <div class="fw-semibold text-white">${vehicleName}</div>
                         <small class="text-secondary font-monospace" style="font-size:0.75rem;">${b.vehicle ? b.vehicle.registrationNumber : ''}</small>
                     </td>
                     <td>${b.driver ? `<span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-person-badge me-1"></i>${b.driver.fullName}</span>` : '<span class="badge bg-secondary-subtle text-light border border-secondary">Self-Drive</span>'}</td>
@@ -897,13 +1365,12 @@
                     </td>
                     <td class="text-white small fw-semibold">${duration}</td>
                     <td class="fw-bold text-success fs-6">₹${Number(b.totalAmount).toLocaleString('en-IN')}</td>
-                    <td><span class="badge ${b.bookingStatus === 'ACTIVE' ? 'bg-success' : b.bookingStatus === 'CONFIRMED' ? 'bg-primary' : b.bookingStatus === 'COMPLETED' ? 'bg-secondary' : 'bg-danger'} px-2 py-1">${b.bookingStatus}</span></td>
+                    <td>${getBookingStatusBadge(b.bookingStatus)}</td>
                     <td><span class="badge ${b.paymentStatus === 'PAID' ? 'bg-success' : 'bg-warning text-dark'} px-2 py-1">${b.paymentStatus}</span></td>
                     <td class="text-end">
                         <div class="btn-group btn-group-sm">
-                            ${b.bookingStatus === 'CONFIRMED' || b.bookingStatus === 'PENDING' ? `<button class="btn btn-outline-danger" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
-                            ${b.bookingStatus === 'ACTIVE' ? `<button class="btn btn-outline-info" onclick="document.getElementById('tab-tracker-btn').click(); loadLiveTrip(${b.id});"><i class="bi bi-broadcast me-1"></i>Track</button>` : ''}
-                            ${b.bookingStatus === 'COMPLETED' ? `<button class="btn btn-outline-warning" onclick="openReviewModal(${b.id}, ${b.driver ? b.driver.id : 'null'})"><i class="bi bi-star me-1"></i>Review</button>` : ''}
+                            <button class="btn btn-outline-light" onclick="viewInvoice(${b.id})" title="Tax Invoice (GST)"><i class="bi bi-file-earmark-text me-1"></i>Invoice</button>
+                            ${tripActionsHtml}
                         </div>
                     </td>
                 </tr>
@@ -923,7 +1390,12 @@
             }
 
             try {
-                const res = await API.get('/vehicles/available');
+                let res = null;
+                try {
+                    res = await API.get('/vehicles/fleet');
+                } catch (fleetErr) {
+                    res = await API.get('/vehicles/explore');
+                }
                 currentVehicles = res.data || [];
                 renderFleetGrid(currentVehicles);
 
@@ -959,24 +1431,72 @@
 
         function renderFleetGrid(vehicles) {
             const grid = document.getElementById('fleet-grid');
+            if (!grid) return;
+
             if (!vehicles || vehicles.length === 0) {
-                grid.innerHTML = `<div class="col-12 text-center text-secondary py-5">No available vehicles matching current filter.</div>`;
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="p-4 bg-dark rounded-4 border border-secondary d-inline-block shadow-sm" style="max-width: 480px;">
+                            <i class="bi bi-funnel text-secondary fs-1 d-block mb-2"></i>
+                            <h5 class="text-white mb-2">No Vehicles Match Your Filter</h5>
+                            <p class="text-secondary small mb-3">No operationally available vehicles found matching the selected criteria. Try adjusting or clearing your filters.</p>
+                            <button class="btn btn-outline-primary btn-sm px-4 py-2 fw-semibold" onclick="resetFleetFilters()">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                            </button>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
             grid.innerHTML = vehicles.map(v => {
                 const isEV = (v.fuelType || '').toUpperCase() === 'ELECTRIC';
                 const mileageLabel = isEV ? `${v.mileage || 312} km Range` : `${v.mileage || 'High'} km/l`;
+                const hasRating = v.totalRatings && Number(v.totalRatings) > 0 && v.averageRating && Number(v.averageRating) > 0;
+                const ratingBadge = hasRating
+                    ? `<span class="badge bg-warning-subtle text-warning border border-warning-subtle small fw-semibold"><i class="bi bi-star-fill me-1"></i>⭐ ${Number(v.averageRating).toFixed(1)} (${v.totalRatings} ${v.totalRatings === 1 ? 'Review' : 'Reviews'})</span>`
+                    : `<span class="badge bg-secondary-subtle text-secondary small border border-secondary-subtle">Not Rated Yet</span>`;
+
+                const isMaintenance = (v.status === 'MAINTENANCE');
+                const isBooked = (v.status === 'BOOKED' || v.status === 'RENTED');
+
+                let statusBadge = '';
+                let bookButtonHtml = '';
+
+                if (isMaintenance) {
+                    statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1"><i class="bi bi-tools me-1"></i>Under Maintenance</span>';
+                    bookButtonHtml = `
+                        <button class="btn btn-secondary btn-sm px-3 fw-semibold" disabled title="Vehicle temporarily undergoing maintenance">
+                            <i class="bi bi-slash-circle me-1"></i> Under Service
+                        </button>`;
+                } else if (isBooked) {
+                    statusBadge = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle ms-1"><i class="bi bi-calendar-event me-1"></i>Active Booking</span>';
+                    bookButtonHtml = `
+                        <button class="btn btn-outline-primary btn-sm px-3 fw-semibold" onclick="openBookingModal(${v.id})" title="Check and book for non-overlapping dates">
+                            <i class="bi bi-calendar-check me-1"></i> Check Dates
+                        </button>`;
+                } else {
+                    statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1"><i class="bi bi-check-circle me-1"></i>Available</span>';
+                    bookButtonHtml = `
+                        <button class="btn btn-primary btn-sm px-3 fw-semibold" onclick="openBookingModal(${v.id})">
+                            <i class="bi bi-calendar-check me-1"></i> Book Now
+                        </button>`;
+                }
+
+                const resolvedImg = resolveMediaUrl(v.primaryImageUrl) || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80';
 
                 return `
                 <div class="col-md-6 col-lg-4">
                     <div class="card bg-surface border-secondary h-100 rounded-4 overflow-hidden shadow-sm hover-elevate">
-                        <img src="${v.primaryImageUrl || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80'}" class="card-img-top" style="height: 190px; object-fit: cover;" alt="${v.displayName}">
+                        <img src="${resolvedImg}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80'" class="card-img-top" style="height: 190px; object-fit: cover;" alt="${v.displayName}">
                         <div class="card-body p-4 d-flex flex-column justify-content-between">
                             <div>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">${v.categoryName || v.vehicleType}</span>
-                                    <span class="text-warning small"><i class="bi bi-star-fill me-1"></i>${v.averageRating ? v.averageRating.toFixed(1) : '4.9'}★ (${v.totalRatings || 0})</span>
+                                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
+                                    <div class="d-flex align-items-center flex-wrap gap-1">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">${v.categoryName || v.vehicleType}</span>
+                                        ${statusBadge}
+                                    </div>
+                                    ${ratingBadge}
                                 </div>
                                 <h5 class="card-title text-white fw-bold mb-1">${v.displayName}</h5>
                                 <p class="card-text text-secondary small mb-3">${v.description || 'Premium rental vehicle with high mileage and advanced safety features.'}</p>
@@ -994,9 +1514,7 @@
                                     <span class="fs-5 fw-bold text-white">₹${Number(v.rentalPricePerDay).toLocaleString('en-IN')}</span>
                                     <span class="text-secondary small">/day</span>
                                 </div>
-                                <button class="btn btn-primary btn-sm px-3 fw-semibold" onclick="openBookingModal(${v.id})">
-                                    <i class="bi bi-calendar-check me-1"></i> Book Now
-                                </button>
+                                ${bookButtonHtml}
                             </div>
                         </div>
                     </div>
@@ -1011,13 +1529,19 @@
                 availableDrivers = res.data || [];
                 const select = document.getElementById('modal-driver-select');
                 if (availableDrivers.length === 0) {
-                    select.innerHTML = `<option value="">No verified drivers available right now</option>`;
+                    select.innerHTML = `<option value="">No verified online drivers available right now</option>`;
                 } else {
-                    select.innerHTML = availableDrivers.map(d => `
-                        <option value="${d.id}" data-rate="${d.dailyRate}">
-                            ${d.fullName} (Rating: ${d.rating}★ | Trust Score: ${d.trustScore ? d.trustScore.overallScore : 85}/100 [${d.trustScore ? d.trustScore.trustLevel : 'GOOD'}]) +₹${d.dailyRate}/day
-                        </option>
-                    `).join('');
+                    select.innerHTML = availableDrivers.map(d => {
+                        const ratingText = (d.rating && Number(d.rating) > 0) ? `${Number(d.rating).toFixed(1)}★` : 'No ratings yet';
+                        const trustText = (d.trustScore && d.trustScore.overallScore != null) 
+                            ? `Trust: ${d.trustScore.overallScore}/100 [${d.trustScore.trustLevel}]` 
+                            : 'Trust: Not available';
+                        return `
+                            <option value="${d.id}" data-rate="${d.dailyRate || 0}">
+                                ${d.fullName} (${ratingText} | ${trustText}) +₹${d.dailyRate || 0}/day
+                            </option>
+                        `;
+                    }).join('');
                 }
             } catch (err) {
                 console.error('Error loading drivers:', err);
@@ -1043,9 +1567,12 @@
                     list.innerHTML = `<div class="text-muted text-center py-2">No notifications</div>`;
                 } else {
                     list.innerHTML = notifs.map(n => `
-                        <div class="p-2 rounded-2 ${n.read ? 'bg-dark' : 'bg-primary-subtle text-white'} border border-secondary">
-                            <div class="fw-semibold">${n.title}</div>
-                            <div class="text-muted" style="font-size:0.75rem;">${n.message}</div>
+                        <div class="p-2 rounded-2 ${n.read ? 'bg-dark' : 'bg-primary-subtle text-white'} border border-secondary" style="cursor: pointer;" onclick="markNotificationRead(${n.id})" title="${n.read ? 'Notification read' : 'Click to mark as read'}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">${n.title}</span>
+                                ${!n.read ? '<span class="badge bg-primary" style="font-size:0.65rem;">New</span>' : ''}
+                            </div>
+                            <div class="text-secondary small mt-1" style="font-size:0.75rem;">${n.message}</div>
                         </div>
                     `).join('');
                 }
@@ -1054,27 +1581,128 @@
             }
         }
 
+        async function markNotificationRead(notifId) {
+            try {
+                await API.put(`/notifications/${notifId}/read`);
+                await loadNotifications();
+            } catch (err) {
+                console.warn('Failed to mark notification read:', err);
+            }
+        }
+        window.markNotificationRead = markNotificationRead;
+
+        // Filter handlers
+        async function applyFleetFilters() {
+            const type = document.getElementById('filter-type')?.value;
+            const fuel = document.getElementById('filter-fuel')?.value;
+            const seats = document.getElementById('filter-seats')?.value;
+            const trans = document.getElementById('filter-trans')?.value;
+            const startVal = document.getElementById('filter-start-date')?.value;
+            const endVal = document.getElementById('filter-end-date')?.value;
+
+            if ((startVal && !endVal) || (!startVal && endVal)) {
+                API.showToast('Please provide both Pickup and Return dates to filter by rental period.', 'warning');
+                return;
+            }
+
+            if (startVal && endVal) {
+                const startDate = new Date(startVal);
+                const endDate = new Date(endVal);
+                if (endDate <= startDate) {
+                    API.showToast('Return date & time must be strictly after pickup date & time.', 'warning');
+                    return;
+                }
+            }
+
+            const params = new URLSearchParams();
+            if (type) params.append('type', type);
+            if (fuel) params.append('fuel', fuel);
+            if (seats) params.append('minSeats', seats);
+            if (trans) params.append('transmission', trans);
+            if (startVal && endVal) {
+                params.append('startDateTime', startVal);
+                params.append('endDateTime', endVal);
+            }
+
+            const queryString = params.toString();
+            const url = queryString ? `/vehicles/filter?${queryString}` : '/vehicles/fleet';
+
+            const grid = document.getElementById('fleet-grid');
+            if (grid) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <span class="spinner-border text-primary spinner-border-sm me-2"></span>
+                        <span class="text-secondary">Filtering operational fleet...</span>
+                    </div>
+                `;
+            }
+
+            const applyBtn = document.getElementById('apply-filters-btn');
+            if (applyBtn) {
+                applyBtn.disabled = true;
+                applyBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Filtering...`;
+            }
+
+            try {
+                const res = await API.get(url);
+                currentVehicles = res.data || [];
+                renderFleetGrid(currentVehicles);
+            } catch (e) {
+                console.error('Filter search failed:', e);
+                API.showToast(e.message || 'Filter search failed', 'danger');
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="p-4 bg-dark rounded-4 border border-secondary d-inline-block shadow-sm" style="max-width: 480px;">
+                                <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-2"></i>
+                                <h5 class="text-white mb-2">Filtering Failed</h5>
+                                <p class="text-secondary small mb-3">Unable to retrieve filtered vehicles. Please try again.</p>
+                                <button class="btn btn-primary btn-sm px-4 py-2 fw-semibold" onclick="applyFleetFilters()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Retry Filter
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            } finally {
+                if (applyBtn) {
+                    applyBtn.disabled = false;
+                    applyBtn.innerHTML = `<i class="bi bi-funnel me-1"></i> Apply Filter`;
+                }
+            }
+        }
+
+        async function resetFleetFilters() {
+            const typeEl = document.getElementById('filter-type');
+            const fuelEl = document.getElementById('filter-fuel');
+            const seatsEl = document.getElementById('filter-seats');
+            const transEl = document.getElementById('filter-trans');
+            const startEl = document.getElementById('filter-start-date');
+            const endEl = document.getElementById('filter-end-date');
+            if (typeEl) typeEl.value = '';
+            if (fuelEl) fuelEl.value = '';
+            if (seatsEl) seatsEl.value = '';
+            if (transEl) transEl.value = '';
+            if (startEl) startEl.value = '';
+            if (endEl) endEl.value = '';
+
+            await loadFleet();
+            API.showToast('Fleet filters cleared. Showing all registered vehicles.', 'info');
+        }
+
+        window.resetFleetFilters = resetFleetFilters;
+        window.applyFleetFilters = applyFleetFilters;
+
         function setupFormListeners() {
             // Filter form
-            document.getElementById('apply-filters-btn').addEventListener('click', async () => {
-                const type = document.getElementById('filter-type').value;
-                const fuel = document.getElementById('filter-fuel').value;
-                const seats = document.getElementById('filter-seats').value;
-                const trans = document.getElementById('filter-trans').value;
-
-                let endpoint = '/vehicles/filter?';
-                if (type) endpoint += `type=${type}&`;
-                if (fuel) endpoint += `fuel=${fuel}&`;
-                if (seats) endpoint += `minSeats=${seats}&`;
-                if (trans) endpoint += `transmission=${trans}&`;
-
-                try {
-                    const res = await API.get(endpoint);
-                    renderFleetGrid(res.data || []);
-                } catch (e) {
-                    API.showToast('Filter search failed', 'danger');
-                }
-            });
+            const applyBtn = document.getElementById('apply-filters-btn');
+            if (applyBtn) {
+                applyBtn.addEventListener('click', applyFleetFilters);
+            }
+            const resetBtn = document.getElementById('reset-filters-btn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', resetFleetFilters);
+            }
 
             // AI Recommender Form
             document.getElementById('ai-recommender-form').addEventListener('submit', async (e) => {
@@ -1083,11 +1711,16 @@
                 container.innerHTML = `<div class="text-center py-5"><span class="spinner-border text-primary"></span><div class="mt-2 text-muted">DriveSphere Intelligence is evaluating fleet seating capacity & matching vehicles...</div></div>`;
 
                 try {
+                    const startVal = document.getElementById('ai-start-date') ? document.getElementById('ai-start-date').value : null;
+                    const endVal = document.getElementById('ai-end-date') ? document.getElementById('ai-end-date').value : null;
+
                     const payload = {
                         passengers: parseInt(document.getElementById('ai-passengers').value, 10),
                         maxBudgetPerDay: parseFloat(document.getElementById('ai-budget').value),
                         tripType: document.getElementById('ai-trip-type').value,
-                        fuelPreference: document.getElementById('ai-fuel-pref').value || null
+                        fuelPreference: document.getElementById('ai-fuel-pref').value || null,
+                        startDateTime: startVal || null,
+                        endDateTime: endVal || null
                     };
 
                     const res = await API.post('/ai/recommend-vehicles', payload);
@@ -1100,17 +1733,22 @@
                                     <i class="bi bi-exclamation-triangle-fill text-warning fs-4 me-2"></i>
                                     <h6 class="text-white fw-bold mb-0">No Suitable Fleet Available</h6>
                                 </div>
-                                <p class="mb-0 text-white-50">${rec.summaryExplanation || 'No single vehicle or fleet combination can accommodate the requested passenger count in our active operational fleet.'}</p>
+                                <p class="mb-0 text-white-50">${rec.summaryExplanation || 'No single vehicle or fleet combination can accommodate the requested passenger count within the specified budget and operational inventory.'}</p>
                             </div>
                         `;
                         return;
                     }
+
+                    const providerBadge = rec.generatedByGemini 
+                        ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-auto"><i class="bi bi-stars me-1"></i>Powered by Google Gemini</span>`
+                        : `<span class="badge bg-secondary-subtle text-light border border-secondary ms-auto"><i class="bi bi-cpu me-1"></i>Fleet Capacity Engine</span>`;
 
                     container.innerHTML = `
                         <div class="alert alert-info py-3 px-3 small mb-4 rounded-3 border-info border-opacity-25 bg-dark shadow-sm">
                             <div class="d-flex align-items-center mb-1">
                                 <i class="bi bi-stars text-info me-2 fs-5"></i>
                                 <strong class="text-info">AI Fleet Assessment (Passengers: ${rec.requestedPassengers}):</strong>
+                                ${providerBadge}
                             </div>
                             <div class="text-white-50 ps-4">${rec.summaryExplanation}</div>
                         </div>
@@ -1123,7 +1761,7 @@
                                         <div>
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <span class="badge bg-primary px-2 py-1"><i class="bi bi-stars me-1"></i>${r.matchPercentage || 90}% Match</span>
-                                                <span class="badge ${r.available ? 'bg-success' : 'bg-danger'} px-2 py-1">
+                                                <span class="badge ${r.available ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle'} px-2 py-1">
                                                     <i class="bi ${r.available ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-1"></i>${r.available ? 'Available' : 'Fleet Incomplete'}
                                                 </span>
                                             </div>
@@ -1140,19 +1778,19 @@
                                             <div class="p-3 bg-black rounded-3 border border-secondary mb-3">
                                                 <div class="d-flex justify-content-between align-items-baseline">
                                                     <span class="small text-secondary fw-semibold">TOTAL DAILY RENTAL</span>
-                                                    <span class="fs-5 fw-bold text-success">₹${Number(r.totalDailyRental || r.estimatedCost).toLocaleString('en-IN')}<span class="fs-7 text-muted fw-normal">/day</span></span>
+                                                    <span class="fs-5 fw-bold text-success font-monospace">₹${Number(r.totalDailyRental || r.estimatedCost).toLocaleString('en-IN')}<span class="fs-7 text-muted fw-normal">/day</span></span>
                                                 </div>
                                                 ${isMulti ? `
                                                 <div class="d-flex justify-content-between align-items-center small text-secondary pt-2 mt-2 border-top border-secondary">
                                                     <span>Per Vehicle Daily Rate</span>
-                                                    <span class="text-white fw-semibold">₹${Number(r.perVehicleDailyRate).toLocaleString('en-IN')}/day avg</span>
+                                                    <span class="text-white fw-semibold font-monospace">₹${Number(r.perVehicleDailyRate).toLocaleString('en-IN')}/day avg</span>
                                                 </div>
                                                 ` : ''}
                                             </div>
 
                                             ${r.fleetItems && r.fleetItems.length > 1 ? `
                                             <div class="mb-3 p-2 bg-dark rounded-2 border border-secondary small">
-                                                <div class="fw-semibold text-secondary mb-1" style="font-size: 0.76rem;"><i class="bi bi-layers-fill me-1 text-primary"></i>VEHICLE CONVOY BREAKDOWN:</div>
+                                                <div class="fw-semibold text-secondary mb-1" style="font-size: 0.76rem;"><i class="bi bi-layers-fill me-1 text-primary"></i>CONVOY BREAKDOWN:</div>
                                                 ${r.fleetItems.map(item => `
                                                     <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-secondary border-opacity-25" style="font-size: 0.78rem;">
                                                         <span class="text-white">${item.quantity} × ${item.vehicle.displayName} (${item.seatsPerVehicle} seats)</span>
@@ -1171,9 +1809,20 @@
                                             <p class="small text-secondary mb-3">${r.matchReason}</p>
                                         </div>
 
+                                        ${isMulti ? `
+                                        <div class="mt-2">
+                                            <div class="p-2 mb-2 rounded-2 border border-info border-opacity-25 bg-black" style="font-size: 0.74rem;">
+                                                <i class="bi bi-info-circle text-info me-1"></i>Multi-vehicle convoys reserve vehicles individually; starting reservation for lead vehicle.
+                                            </div>
+                                            <button class="btn btn-outline-primary btn-sm w-100 py-2 fw-semibold" onclick="openBookingModal(${r.vehicle.id})" ${!r.available ? 'disabled' : ''}>
+                                                <i class="bi bi-calendar-plus me-1"></i>Reserve Lead Vehicle (${r.vehicle.displayName})
+                                            </button>
+                                        </div>
+                                        ` : `
                                         <button class="btn btn-outline-primary btn-sm w-100 py-2 fw-semibold" onclick="openBookingModal(${r.vehicle.id})" ${!r.available ? 'disabled' : ''}>
                                             <i class="bi bi-calendar-check me-1"></i>${r.available ? 'Book This Match' : 'Fleet Unavailable'}
                                         </button>
+                                        `}
                                     </div>
                                 </div>
                                 `;
@@ -1320,9 +1969,19 @@
             document.getElementById('modal-start-date').addEventListener('change', recalcModalTotal);
             document.getElementById('modal-end-date').addEventListener('change', recalcModalTotal);
 
+            let isSubmittingReservation = false;
+
             // Reservation Submission
             document.getElementById('reservation-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                if (isSubmittingReservation) return;
+
+                const confirmBtn = document.getElementById('modal-confirm-btn');
+                const origBtnHtml = confirmBtn.innerHTML;
+                isSubmittingReservation = true;
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing Reservation...';
+
                 const vehId = document.getElementById('modal-vehicle-id').value;
                 const startDate = document.getElementById('modal-start-date').value;
                 const endDate = document.getElementById('modal-end-date').value;
@@ -1330,36 +1989,124 @@
                 const dropLoc = document.getElementById('modal-drop-loc').value;
                 const driverId = hireToggle.checked ? document.getElementById('modal-driver-select').value : null;
 
+                const KNOWN_HUBS = {
+                    'downtown hub': { lat: 12.9716, lng: 77.5946 },
+                    'airport terminal': { lat: 13.1986, lng: 77.7066 },
+                    'mg road terminal': { lat: 12.9756, lng: 77.6066 },
+                    'koramangala hub': { lat: 12.9352, lng: 77.6245 },
+                    'indiranagar hub': { lat: 12.9784, lng: 77.6408 },
+                    'whitefield station': { lat: 12.9698, lng: 77.7500 }
+                };
+                const resolveHub = (name) => {
+                    if (!name) return null;
+                    const clean = name.trim().toLowerCase();
+                    if (KNOWN_HUBS[clean]) return KNOWN_HUBS[clean];
+                    for (const [k, v] of Object.entries(KNOWN_HUBS)) {
+                        if (clean.includes(k) || k.includes(clean)) return v;
+                    }
+                    return null;
+                };
+
+                const pGeo = resolveHub(pickupLoc);
+                const dGeo = resolveHub(dropLoc);
+
+                const bookingPayload = {
+                    vehicleId: vehId,
+                    driverId: driverId ? parseInt(driverId, 10) : null,
+                    startDateTime: startDate,
+                    endDateTime: endDate,
+                    pickupLocation: pickupLoc,
+                    dropLocation: dropLoc
+                };
+                if (pGeo) {
+                    bookingPayload.pickupLatitude = pGeo.lat;
+                    bookingPayload.pickupLongitude = pGeo.lng;
+                }
+                if (dGeo) {
+                    bookingPayload.dropLatitude = dGeo.lat;
+                    bookingPayload.dropLongitude = dGeo.lng;
+                }
+
                 try {
-                    const res = await API.post('/bookings', {
-                        vehicleId: vehId,
-                        driverId: driverId ? parseInt(driverId, 10) : null,
-                        startDateTime: startDate,
-                        endDateTime: endDate,
-                        pickupLocation: pickupLoc,
-                        dropLocation: dropLoc
-                    });
+                    const res = await API.post('/bookings', bookingPayload);
 
                     const booking = res.data;
                     pendingBookingId = booking.id;
 
-                    // Close Booking modal and open Razorpay Sandbox modal
-                    bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+                    // Close Booking modal and open Payment modal
+                    const bookingModalEl = document.getElementById('bookingModal');
+                    const modalInst = bootstrap.Modal.getInstance(bookingModalEl);
+                    if (modalInst) {
+                        modalInst.hide();
+                    }
 
                     const payRes = await API.post('/payments/create-order', { bookingId: booking.id });
-                    const order = payRes.data;
-
-                    document.getElementById('pay-modal-amount').innerText = '₹' + order.amount;
-                    document.getElementById('pay-modal-ref').innerText = 'Booking Ref: ' + order.bookingReference;
-                    document.getElementById('pay-modal-order-id').innerText = order.orderId;
-
-                    new bootstrap.Modal(document.getElementById('paymentModal')).show();
+                    showPaymentModal(payRes.data, booking.id);
                 } catch (err) {
-                    API.showToast(err.message, 'danger');
+                    API.showToast(err.message || 'Booking submission failed.', 'danger');
+                    // In case of 409 Conflict (e.g. driver or vehicle no longer available)
+                    await loadDrivers();
+                    await loadFleet();
+                } finally {
+                    isSubmittingReservation = false;
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = origBtnHtml;
                 }
             });
 
-            // Simulate Razorpay Sandbox Payment
+            // Razorpay Standard Gateway Flow
+            const payRzpBtn = document.getElementById('pay-razorpay-btn');
+            if (payRzpBtn) {
+                payRzpBtn.addEventListener('click', () => {
+                    if (!currentOrder || typeof Razorpay === 'undefined') return;
+
+                    const user = API.getUser() || {};
+                    const options = {
+                        key: currentOrder.keyId,
+                        amount: Math.round(currentOrder.amount * 100),
+                        currency: currentOrder.currency || 'INR',
+                        name: 'DriveSphere Mobility',
+                        description: 'Booking ' + (currentOrder.bookingReference || ''),
+                        order_id: currentOrder.orderId,
+                        prefill: {
+                            name: currentOrder.customerName || user.fullName || '',
+                            email: currentOrder.customerEmail || user.email || '',
+                            contact: currentOrder.customerPhone || ''
+                        },
+                        theme: {
+                            color: '#0EA5E9'
+                        },
+                        handler: async function (response) {
+                            try {
+                                await API.post('/payments/verify', {
+                                    bookingId: pendingBookingId,
+                                    orderId: response.razorpay_order_id || currentOrder.orderId,
+                                    paymentId: response.razorpay_payment_id,
+                                    signature: response.razorpay_signature,
+                                    mockApproval: false
+                                });
+
+                                bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                                API.showToast('Payment verified successfully via Razorpay! Booking confirmed.', 'success');
+                                await loadDashboardData();
+                                document.getElementById('tab-bookings-btn').click();
+                            } catch (err) {
+                                API.showToast('Payment verification error: ' + err.message, 'danger');
+                            }
+                        },
+                        modal: {
+                            ondismiss: function () {
+                                API.showToast('Razorpay checkout was dismissed.', 'info');
+                            }
+                        }
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                });
+            }
+
+            // Simulate Razorpay Sandbox Payment (Development Mode Only)
             document.getElementById('pay-simulate-btn').addEventListener('click', async () => {
                 try {
                     const orderId = document.getElementById('pay-modal-order-id').innerText;
@@ -1372,7 +2119,7 @@
                     });
 
                     bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
-                    API.showToast('Payment verified successfully! Booking confirmed.', 'success');
+                    API.showToast('Development test payment approved. Booking confirmed.', 'info');
                     await loadDashboardData();
                     document.getElementById('tab-bookings-btn').click();
                 } catch (err) {
@@ -1380,62 +2127,181 @@
                 }
             });
 
-            // Review submission
-            document.getElementById('review-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const bookingId = document.getElementById('review-booking-id').value;
-                const rating = parseFloat(document.getElementById('review-rating').value);
-                const vehRating = parseFloat(document.getElementById('review-veh-rating').value);
-                const driverRatingEl = document.getElementById('review-driver-rating');
-                const driverRating = driverRatingEl ? parseFloat(driverRatingEl.value) : null;
-                const comment = document.getElementById('review-comment').value;
+            // Complete Trip confirmation
+            const confirmCompleteBtn = document.getElementById('confirm-complete-trip-btn');
+            if (confirmCompleteBtn) {
+                confirmCompleteBtn.addEventListener('click', async () => {
+                    const confirmCheck = document.getElementById('complete-modal-confirm');
+                    if (!confirmCheck.checked) {
+                        API.showToast('Please check the confirmation box to verify vehicle return.', 'warning');
+                        return;
+                    }
+                    const bookingId = document.getElementById('complete-modal-booking-id').value;
+                    const odoVal = document.getElementById('complete-modal-odometer').value;
+                    const odoKm = odoVal ? parseInt(odoVal, 10) : null;
 
-                try {
-                    await API.post('/reviews', {
-                        bookingId: parseInt(bookingId, 10),
-                        rating,
-                        vehicleRating: vehRating,
-                        driverRating,
-                        comment
-                    });
+                    const btn = document.getElementById('confirm-complete-trip-btn');
+                    const origHtml = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Completing return...';
 
-                    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
-                    API.showToast('Review submitted! Thank you for rating.', 'success');
-                    await loadDashboardData();
-                } catch (err) {
-                    API.showToast(err.message, 'danger');
-                }
-            });
+                    const modalEl = document.getElementById('completeTripModal');
+                    const driverId = modalEl.dataset.driverId;
+                    const vehicleId = modalEl.dataset.vehicleId;
+                    const vehicleName = modalEl.dataset.vehicleName;
+
+                    try {
+                        await API.post('/bookings/' + bookingId + '/return', {
+                            odometerKm: odoKm
+                        });
+                        bootstrap.Modal.getInstance(modalEl).hide();
+                        API.showToast('Vehicle returned and trip completed successfully! Availability restored.', 'success');
+                        await loadDashboardData();
+                        await loadFleet();
+
+                        // Automatically prompt the user to rate and review their completed trip
+                        setTimeout(() => {
+                            openReviewModalForBooking(bookingId, driverId ? parseInt(driverId, 10) : null, vehicleId ? parseInt(vehicleId, 10) : null, vehicleName);
+                        }, 500);
+                    } catch (err) {
+                        API.showToast('Return confirmation failed: ' + err.message, 'danger');
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = origHtml;
+                    }
+                });
+            }
+
+            // Review submission (new or edit)
+            const reviewForm = document.getElementById('review-form');
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const bookingId = document.getElementById('review-booking-id').value;
+                    const existingId = document.getElementById('review-existing-id').value;
+                    const rating = parseFloat(document.getElementById('review-rating').value);
+                    const conditionRating = parseFloat(document.getElementById('review-condition').value);
+                    const cleanlinessRating = parseFloat(document.getElementById('review-cleanliness').value);
+                    const comfortRating = parseFloat(document.getElementById('review-comfort').value);
+                    const driverRatingEl = document.getElementById('review-driver-rating');
+                    const driverRating = (driverRatingEl && !driverRatingEl.closest('.d-none')) ? parseFloat(driverRatingEl.value) : null;
+                    const comment = document.getElementById('review-comment').value.trim();
+
+                    const submitBtn = document.getElementById('review-submit-btn');
+                    const origHtml = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving feedback...';
+
+                    try {
+                        const payload = {
+                            bookingId: parseInt(bookingId, 10),
+                            rating: rating,
+                            vehicleRating: rating,
+                            conditionRating: conditionRating,
+                            cleanlinessRating: cleanlinessRating,
+                            comfortRating: comfortRating,
+                            driverRating: driverRating,
+                            comment: comment || null
+                        };
+
+                        if (existingId) {
+                            await API.put('/reviews/' + existingId, payload);
+                            API.showToast('Trip feedback updated successfully!', 'success');
+                        } else {
+                            await API.post('/reviews', payload);
+                            API.showToast('Thank you! Your feedback has been submitted.', 'success');
+                        }
+
+                        bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+                        await loadDashboardData();
+                        await loadFleet();
+                    } catch (err) {
+                        API.showToast(err.message || 'Failed to submit review', 'danger');
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = origHtml;
+                    }
+                });
+            }
 
             // Mark all read
             document.getElementById('mark-all-read-btn').addEventListener('click', async () => {
                 await API.put('/notifications/read-all');
                 await loadNotifications();
             });
+
+            // Profile Form Listeners
+            const personalForm = document.getElementById('profile-personal-form');
+            if (personalForm) personalForm.addEventListener('submit', saveUserProfile);
+
+            const prefForm = document.getElementById('profile-preferences-form');
+            if (prefForm) prefForm.addEventListener('submit', saveUserPreferences);
+
+            const pwdForm = document.getElementById('profile-password-form');
+            if (pwdForm) pwdForm.addEventListener('submit', changeUserPassword);
+
+            const profileTabBtn = document.getElementById('tab-profile-btn');
+            if (profileTabBtn) {
+                profileTabBtn.addEventListener('shown.bs.tab', () => loadUserProfile());
+            }
+
+            const trackerTabBtn = document.getElementById('tab-tracker-btn');
+            if (trackerTabBtn) {
+                trackerTabBtn.addEventListener('shown.bs.tab', () => {
+                    if (trackerMap) setTimeout(() => trackerMap.invalidateSize(), 200);
+                    startTrackerPolling();
+                });
+                trackerTabBtn.addEventListener('hidden.bs.tab', () => {
+                    stopTrackerPolling();
+                });
+            }
         }
 
-        function openBookingModal(vehicleId) {
-            const v = currentVehicles.find(x => x.id === vehicleId);
-            if (!v) return;
+        async function openBookingModal(vehicleId) {
+            let v = currentVehicles.find(x => x.id === vehicleId);
+            if (!v) {
+                try {
+                    const res = await API.get('/vehicles/' + vehicleId);
+                    if (res && res.data) {
+                        v = res.data;
+                        currentVehicles.push(v);
+                    }
+                } catch (e) {
+                    console.error('Failed to load vehicle details for booking modal:', e);
+                }
+            }
+
+            if (!v) {
+                API.showToast('Vehicle details could not be loaded. Please refresh or try another vehicle.', 'warning');
+                return;
+            }
 
             document.getElementById('modal-vehicle-id').value = v.id;
-            document.getElementById('modal-veh-img').src = v.primaryImageUrl || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=300&q=80';
+            document.getElementById('modal-veh-img').src = resolveMediaUrl(v.primaryImageUrl) || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=300&q=80';
             document.getElementById('modal-veh-title').innerText = v.displayName;
             document.getElementById('modal-veh-rate').innerText = '₹' + v.rentalPricePerDay + '/day';
             document.getElementById('modal-veh-seats').innerText = v.seatingCapacity;
             document.getElementById('modal-veh-fuel').innerText = v.fuelType;
 
-            // Prepopulate start (tomorrow 9am) and end (3 days later 9am)
-            const now = new Date();
-            now.setDate(now.getDate() + 1);
-            now.setHours(9, 0, 0, 0);
-            const startStr = now.toISOString().slice(0, 16);
+            // Prepopulate dates from filter if provided, else tomorrow 9am to 3 days later 9am
+            const filterStart = document.getElementById('filter-start-date')?.value;
+            const filterEnd = document.getElementById('filter-end-date')?.value;
 
-            now.setDate(now.getDate() + 2);
-            const endStr = now.toISOString().slice(0, 16);
+            if (filterStart && filterEnd) {
+                document.getElementById('modal-start-date').value = filterStart;
+                document.getElementById('modal-end-date').value = filterEnd;
+            } else {
+                const now = new Date();
+                now.setDate(now.getDate() + 1);
+                now.setHours(9, 0, 0, 0);
+                const startStr = now.toISOString().slice(0, 16);
 
-            document.getElementById('modal-start-date').value = startStr;
-            document.getElementById('modal-end-date').value = endStr;
+                now.setDate(now.getDate() + 2);
+                const endStr = now.toISOString().slice(0, 16);
+
+                document.getElementById('modal-start-date').value = startStr;
+                document.getElementById('modal-end-date').value = endStr;
+            }
 
             recalcModalTotal();
             new bootstrap.Modal(document.getElementById('bookingModal')).show();
@@ -1463,9 +2329,9 @@
                 const select = document.getElementById('modal-driver-select');
                 const selectedOpt = select.options[select.selectedIndex];
                 if (selectedOpt && selectedOpt.getAttribute('data-rate')) {
-                    driverDaily = parseFloat(selectedOpt.getAttribute('data-rate'));
+                    driverDaily = parseFloat(selectedOpt.getAttribute('data-rate')) || 0;
                 } else {
-                    driverDaily = 850;
+                    driverDaily = 0;
                 }
             }
             const driverTotal = driverDaily * diffDays;
@@ -1480,29 +2346,122 @@
             document.getElementById('modal-calc-total').innerText = '₹' + grandTotal.toFixed(2);
         }
 
+        let activeBookingsForTracker = [];
+        let trackerPollInterval = null;
+
+        function populateTrackerRentalSelect(bookings) {
+            const select = document.getElementById('tracker-rental-select');
+            if (!select) return;
+
+            activeBookingsForTracker = (bookings || []).filter(b => b.bookingStatus === 'ACTIVE' || b.bookingStatus === 'CONFIRMED');
+            if (activeBookingsForTracker.length === 0) {
+                select.innerHTML = '<option value="">No active rentals to track</option>';
+                select.disabled = true;
+                return;
+            }
+
+            select.disabled = false;
+            select.innerHTML = activeBookingsForTracker.map((b, idx) => `
+                <option value="${b.id}" ${idx === 0 ? 'selected' : ''}>
+                    ${b.bookingReference} - ${b.vehicle ? (b.vehicle.displayName || b.vehicle.brand + ' ' + b.vehicle.model) : 'Rental'}
+                </option>
+            `).join('');
+
+            // Automatically load first active rental if not yet loaded
+            if (!activeTrip && activeBookingsForTracker.length > 0) {
+                loadLiveTrip(activeBookingsForTracker[0].id);
+            }
+        }
+        window.populateTrackerRentalSelect = populateTrackerRentalSelect;
+
+        function onTrackerRentalSelected(bookingId) {
+            if (!bookingId) return;
+            loadLiveTrip(bookingId);
+        }
+        window.onTrackerRentalSelected = onTrackerRentalSelected;
+
+        function startTrackerPolling() {
+            stopTrackerPolling();
+            trackerPollInterval = setInterval(() => {
+                if (activeTrip && activeTrip.bookingId) {
+                    loadLiveTrip(activeTrip.bookingId);
+                }
+            }, 6000);
+        }
+
+        function stopTrackerPolling() {
+            if (trackerPollInterval) {
+                clearInterval(trackerPollInterval);
+                trackerPollInterval = null;
+            }
+        }
+
         async function loadLiveTrip(bookingId) {
             try {
                 const res = await API.get('/trips/booking/' + bookingId);
                 activeTrip = res.data;
 
                 document.getElementById('tracking-booking-ref').innerText = 'Booking Ref: ' + activeTrip.bookingReference;
-                document.getElementById('tracker-status').innerText = activeTrip.status;
-                document.getElementById('tracker-veh-name').innerText = activeTrip.vehicleName;
-                document.getElementById('tracker-traveled').innerText = activeTrip.distanceTraveledKm + ' km';
-                document.getElementById('tracker-remaining').innerText = activeTrip.remainingDistanceKm + ' km';
 
-                const total = activeTrip.distanceKm || 100;
-                const progress = Math.min(100, Math.round((activeTrip.distanceTraveledKm / total) * 100));
+                // Sync select dropdown if different
+                const select = document.getElementById('tracker-rental-select');
+                if (select && select.value !== String(bookingId)) {
+                    select.value = String(bookingId);
+                }
+
+                // Honest Telemetry Indicators: Live vs Simulated
+                const statusBadge = document.getElementById('tracker-status');
+                if (activeTrip.isSimulatedTelemetry === true) {
+                    statusBadge.className = 'badge bg-warning text-dark';
+                    statusBadge.innerText = 'Development GPS Simulation';
+                } else if (activeTrip.lastUpdated) {
+                    const dt = new Date(activeTrip.lastUpdated);
+                    statusBadge.className = 'badge bg-success';
+                    statusBadge.innerText = 'Live Location (Updated ' + dt.toLocaleTimeString() + ')';
+                } else if (activeTrip.currentLatitude != null) {
+                    statusBadge.className = 'badge bg-info text-white';
+                    statusBadge.innerText = 'Hardware Telemetry Active';
+                } else {
+                    statusBadge.className = 'badge bg-secondary';
+                    statusBadge.innerText = 'Live Location Unavailable';
+                }
+
+                document.getElementById('tracker-veh-name').innerText = activeTrip.vehicleName || 'Active Rental';
+                document.getElementById('tracker-traveled').innerText = (activeTrip.distanceTraveledKm != null ? activeTrip.distanceTraveledKm : 0) + ' km';
+                document.getElementById('tracker-remaining').innerText = (activeTrip.remainingDistanceKm != null ? activeTrip.remainingDistanceKm : 0) + ' km';
+
+                const total = Number(activeTrip.distanceKm) || 100;
+                const progress = Math.min(100, Math.round(((activeTrip.distanceTraveledKm || 0) / total) * 100));
                 document.getElementById('tracker-progress-bar').style.width = progress + '%';
+
+                // Real telemetry speed & battery/fuel indicators
+                const speedEl = document.getElementById('tracker-speed');
+                if (activeTrip.speedKmh != null) {
+                    speedEl.innerText = Number(activeTrip.speedKmh).toFixed(1) + ' km/h';
+                } else {
+                    speedEl.innerText = 'Not Available';
+                }
+
+                const energyEl = document.getElementById('tracker-energy');
+                if (activeTrip.batteryLevelPercent != null) {
+                    energyEl.innerText = Number(activeTrip.batteryLevelPercent).toFixed(0) + '% Battery';
+                } else if (activeTrip.fuelLevelPercent != null) {
+                    energyEl.innerText = Number(activeTrip.fuelLevelPercent).toFixed(0) + '% Fuel';
+                } else {
+                    energyEl.innerText = 'Not Available';
+                }
 
                 const lat = activeTrip.currentLatitude || activeTrip.startLatitude;
                 const lng = activeTrip.currentLongitude || activeTrip.startLongitude;
 
-                trackerMap.setView([lat, lng], 13);
-                if (trackerMarker) trackerMap.removeLayer(trackerMarker);
-                trackerMarker = L.marker([lat, lng]).addTo(trackerMap)
-                    .bindPopup(`<strong>${activeTrip.vehicleName}</strong><br>Status: ${activeTrip.status}`)
-                    .openPopup();
+                if (lat != null && lng != null) {
+                    trackerMap.setView([lat, lng], 13);
+                    if (trackerMarker) trackerMap.removeLayer(trackerMarker);
+                    const modeLabel = activeTrip.isSimulatedTelemetry ? 'Simulated Telemetry' : 'Live Device Location';
+                    trackerMarker = L.marker([lat, lng]).addTo(trackerMap)
+                        .bindPopup(`<strong>${activeTrip.vehicleName}</strong><br>Mode: ${modeLabel}<br>Status: ${activeTrip.status}`)
+                        .openPopup();
+                }
             } catch (err) {
                 console.warn('No active trip for tracking:', err.message);
             }
@@ -1517,7 +2476,7 @@
                 const res = await API.post('/trips/' + activeTrip.id + '/simulate');
                 activeTrip = res.data;
                 loadLiveTrip(activeTrip.bookingId);
-                API.showToast('Simulated GPS waypoint advanced along route', 'info');
+                API.showToast('Development GPS waypoint advanced along route [Simulation Mode]', 'info');
             } catch (e) {
                 API.showToast(e.message, 'danger');
             }
@@ -1534,11 +2493,545 @@
             }
         }
 
-        function openReviewModal(bookingId, driverId) {
-            document.getElementById('review-booking-id').value = bookingId;
-            document.getElementById('driver-review-group').classList.toggle('d-none', !driverId);
-            new bootstrap.Modal(document.getElementById('reviewModal')).show();
+        async function startTrip(bookingId) {
+            if (!confirm('Start your rental trip now? The vehicle status will become In Progress.')) return;
+            try {
+                await API.post('/bookings/' + bookingId + '/pickup', {});
+                API.showToast('Trip started successfully! Have a safe journey.', 'success');
+                await loadDashboardData();
+            } catch (e) {
+                API.showToast('Unable to start trip: ' + e.message, 'danger');
+            }
         }
+
+        function openCompleteTripModal(bookingId, bookingRef, vehicleName, driverId, vehicleId) {
+            document.getElementById('complete-modal-booking-id').value = bookingId;
+            document.getElementById('complete-modal-vehicle').textContent = vehicleName || 'Vehicle';
+            document.getElementById('complete-modal-ref').textContent = bookingRef || ('#' + bookingId);
+            document.getElementById('complete-modal-odometer').value = '';
+            document.getElementById('complete-modal-confirm').checked = false;
+
+            const modalEl = document.getElementById('completeTripModal');
+            modalEl.dataset.driverId = driverId != null ? String(driverId) : '';
+            modalEl.dataset.vehicleId = vehicleId != null ? String(vehicleId) : '';
+            modalEl.dataset.vehicleName = vehicleName || 'Vehicle';
+
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        }
+
+        async function openReviewModalForBooking(bookingId, driverId, vehicleId, vehicleName) {
+            document.getElementById('review-booking-id').value = bookingId;
+            document.getElementById('review-existing-id').value = '';
+
+            const vehicleDisplay = document.getElementById('review-vehicle-display');
+            if (vehicleDisplay) {
+                vehicleDisplay.textContent = vehicleName ? `Vehicle: ${vehicleName}` : 'Vehicle Rating & Feedback';
+            }
+
+            const driverGroup = document.getElementById('driver-review-group');
+            if (driverGroup) {
+                driverGroup.classList.toggle('d-none', !driverId);
+            }
+
+            // Reset fields
+            document.getElementById('review-rating').value = '5';
+            document.getElementById('review-condition').value = '5';
+            document.getElementById('review-cleanliness').value = '5';
+            document.getElementById('review-comfort').value = '5';
+            if (document.getElementById('review-driver-rating')) {
+                document.getElementById('review-driver-rating').value = '5';
+            }
+            document.getElementById('review-comment').value = '';
+
+            const alertBox = document.getElementById('review-existing-alert');
+            const submitBtn = document.getElementById('review-submit-btn');
+            if (alertBox) alertBox.classList.add('d-none');
+            if (submitBtn) submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Submit Feedback';
+
+            // Check if existing review exists for this booking
+            try {
+                const res = await API.get('/reviews/booking/' + bookingId);
+                if (res && res.data) {
+                    const rev = res.data;
+                    document.getElementById('review-existing-id').value = rev.id;
+                    if (rev.vehicleRating != null) document.getElementById('review-rating').value = String(Math.round(rev.vehicleRating));
+                    else if (rev.rating != null) document.getElementById('review-rating').value = String(Math.round(rev.rating));
+
+                    if (rev.conditionRating != null) document.getElementById('review-condition').value = String(Math.round(rev.conditionRating));
+                    if (rev.cleanlinessRating != null) document.getElementById('review-cleanliness').value = String(Math.round(rev.cleanlinessRating));
+                    if (rev.comfortRating != null) document.getElementById('review-comfort').value = String(Math.round(rev.comfortRating));
+                    if (rev.driverRating != null && document.getElementById('review-driver-rating')) {
+                        document.getElementById('review-driver-rating').value = String(Math.round(rev.driverRating));
+                    }
+                    if (rev.comment) document.getElementById('review-comment').value = rev.comment;
+
+                    if (alertBox) alertBox.classList.remove('d-none');
+                    if (submitBtn) submitBtn.innerHTML = '<i class="bi bi-pencil-square me-2"></i>Update Feedback';
+                }
+            } catch (e) {
+                // No existing review yet
+            }
+
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('reviewModal')).show();
+        }
+
+        function openReviewModal(bookingId, driverId) {
+            openReviewModalForBooking(bookingId, driverId, null, 'Vehicle');
+        }
+
+        async function openPaymentForBooking(bookingId, amount) {
+            try {
+                const payRes = await API.post('/payments/create-order', { bookingId });
+                showPaymentModal(payRes.data, bookingId);
+            } catch (err) {
+                API.showToast('Unable to initiate payment: ' + err.message, 'danger');
+            }
+        }
+
+        async function viewInvoice(bookingId) {
+            const modalEl = document.getElementById('invoiceModal');
+            const modal = new bootstrap.Modal(modalEl);
+            const bodyEl = document.getElementById('invoice-modal-body');
+            bodyEl.innerHTML = `<div class="text-center py-5"><span class="spinner-border text-primary"></span><div class="mt-2 text-muted">Generating official GST invoice...</div></div>`;
+            modal.show();
+
+            try {
+                const res = await API.get(`/bookings/${bookingId}/invoice`);
+                const inv = res.data;
+
+                bodyEl.innerHTML = `
+                    <div class="invoice-sheet">
+                        <div class="d-flex justify-content-between align-items-start border-bottom border-secondary pb-3 mb-4">
+                            <div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-compass-fill text-primary fs-3 me-2"></i>
+                                    <span class="fs-4 fw-bold brand-font text-white">DRIVE<span class="text-primary">SPHERE</span></span>
+                                </div>
+                                <div class="text-muted small">DriveSphere Mobility Solutions Pvt. Ltd.</div>
+                                <div class="text-muted small">GSTIN: <span class="font-monospace text-warning">29AAACD1234F1Z5</span> (Karnataka, India)</div>
+                                <div class="text-muted small">Indiranagar 100ft Road, Bangalore, KA 560038</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 fs-6 mb-2">TAX INVOICE</span>
+                                <div class="fw-bold font-monospace text-white">${inv.invoiceNumber}</div>
+                                <div class="text-muted small">Date: ${inv.invoiceDate ? inv.invoiceDate.replace('T', ' ').substring(0, 16) : ''}</div>
+                                <div class="text-info small">Booking Ref: <strong class="font-monospace">${inv.bookingReference}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4 small">
+                            <div class="col-sm-6">
+                                <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Billed To (Customer)</div>
+                                <div class="fw-bold text-white fs-6">${inv.customerName}</div>
+                                <div class="text-muted">${inv.customerEmail}</div>
+                                <div class="text-muted">Phone: ${inv.customerPhone || 'N/A'}</div>
+                            </div>
+                            <div class="col-sm-6 text-sm-end">
+                                <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Journey & Vehicle Itinerary</div>
+                                <div class="fw-semibold text-white">${inv.vehicleName} <span class="font-monospace text-secondary">(${inv.vehicleRegistrationNumber})</span></div>
+                                <div class="text-muted">${inv.pickupLocation} &rarr; ${inv.dropLocation}</div>
+                                <div class="text-muted">${inv.totalDays} Day(s) • Driver: ${inv.driverName ? inv.driverName : 'Self-Drive'}</div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mb-4">
+                            <table class="invoice-table">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th class="text-center">Rate / Day</th>
+                                        <th class="text-center">Qty / Days</th>
+                                        <th class="text-end">Amount (₹)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-white">Vehicle Rental - ${inv.vehicleName}</div>
+                                            <div class="text-muted small">Category: ${inv.vehicleCategory || 'Standard'} • SAC Code: 996601</div>
+                                        </td>
+                                        <td class="text-center">₹${Number(inv.dailyRentalRate).toLocaleString('en-IN')}</td>
+                                        <td class="text-center">${inv.totalDays}</td>
+                                        <td class="text-end font-monospace text-white">₹${Number(inv.rentalSubtotal).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                    </tr>
+                                    ${inv.driverSubtotal && inv.driverSubtotal > 0 ? `
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-white">Chauffeur / Driver Service (${inv.driverName})</div>
+                                            <div class="text-muted small">Verified Professional Driver • SAC Code: 996602</div>
+                                        </td>
+                                        <td class="text-center">₹${Number(inv.driverDailyRate).toLocaleString('en-IN')}</td>
+                                        <td class="text-center">${inv.totalDays}</td>
+                                        <td class="text-end font-monospace text-white">₹${Number(inv.driverSubtotal).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                    </tr>
+                                    ` : ''}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row justify-content-end mb-4">
+                            <div class="col-md-6 col-lg-5">
+                                <div class="p-3 bg-dark rounded-3 border border-secondary small">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted">Taxable Subtotal:</span>
+                                        <span class="text-white font-monospace">₹${Number(inv.subtotal).toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted">CGST (${inv.cgstRate}%):</span>
+                                        <span class="text-white font-monospace">₹${Number(inv.cgstAmount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted">SGST (${inv.sgstRate}%):</span>
+                                        <span class="text-white font-monospace">₹${Number(inv.sgstAmount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between border-top border-secondary pt-2 mt-1">
+                                        <span class="fw-bold text-white">Total Amount (Inc. GST):</span>
+                                        <span class="fw-bold text-success fs-5 font-monospace">₹${Number(inv.totalAmount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-3 border ${inv.paymentStatus === 'PAID' ? 'border-success bg-success-subtle text-success' : 'border-warning bg-warning-subtle text-warning'} small">
+                            <div>
+                                <i class="bi ${inv.paymentStatus === 'PAID' ? 'bi-check-circle-fill' : 'bi-clock-fill'} me-1"></i>
+                                <strong>Payment Status: ${inv.paymentStatus}</strong>
+                                ${inv.gatewayPaymentId ? `<span class="ms-2 font-monospace text-muted">ID: ${inv.gatewayPaymentId}</span>` : ''}
+                            </div>
+                            <div class="font-monospace text-muted">
+                                ${inv.paidAt ? 'Paid on: ' + inv.paidAt.replace('T', ' ').substring(0, 16) : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                bodyEl.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Failed to generate invoice: ${err.message}
+                    </div>
+                `;
+            }
+        }
+
+        // ==========================================
+        // CUSTOMER PROFILE & ACCOUNT MANAGEMENT
+        // ==========================================
+
+        function openProfileTab() {
+            const profileBtn = document.getElementById('tab-profile-btn');
+            if (profileBtn) {
+                const tab = new bootstrap.Tab(profileBtn);
+                tab.show();
+            }
+            loadUserProfile();
+        }
+
+        async function loadUserProfile() {
+            try {
+                let profRes = null, statsRes = null, statsError = false;
+                try {
+                    profRes = await API.get('/users/profile');
+                    if (profRes && profRes.data) {
+                        API.setUser(Object.assign({}, API.getUser() || {}, profRes.data));
+                    }
+                } catch (pErr) {
+                    console.error('Failed to load profile from server:', pErr);
+                    API.showToast('Could not load profile details: ' + (pErr.message || 'Error'), 'warning');
+                }
+
+                try {
+                    statsRes = await API.get('/users/stats');
+                } catch (sErr) {
+                    console.warn('Failed to load user stats:', sErr);
+                    statsError = true;
+                }
+
+                const user = (profRes && profRes.data) ? profRes.data : (API.getUser() || {});
+                const stats = (!statsError && statsRes && statsRes.data) ? statsRes.data : null;
+
+                // Populate Header & Overview
+                const fullName = ((user.firstName || '') + ' ' + (user.lastName || '')).trim();
+                document.getElementById('profile-banner-name').innerText = fullName || 'Customer Profile';
+                document.getElementById('profile-banner-email').innerText = user.email || '--';
+
+                const roleBadge = document.getElementById('profile-banner-role');
+                if (roleBadge) {
+                    roleBadge.innerText = (user.primaryRole || 'ROLE_CUSTOMER').replace('ROLE_', '');
+                }
+
+                const emailBadge = document.getElementById('profile-banner-email-verified');
+                const verifyBtn = document.getElementById('profile-btn-verify-email');
+                if (emailBadge) {
+                    if (user.emailVerified) {
+                        emailBadge.className = 'badge bg-success-subtle text-success border border-success-subtle';
+                        emailBadge.innerHTML = '<i class="bi bi-patch-check-fill me-1"></i>Verified Email';
+                        if (verifyBtn) verifyBtn.classList.add('d-none');
+                    } else {
+                        emailBadge.className = 'badge bg-warning-subtle text-warning border border-warning-subtle';
+                        emailBadge.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i>Unverified Email';
+                        if (verifyBtn) verifyBtn.classList.remove('d-none');
+                    }
+                }
+
+                if (user.createdAt) {
+                    const joinedDate = new Date(user.createdAt).toLocaleDateString('en-IN', {
+                        year: 'numeric', month: 'short', day: 'numeric'
+                    });
+                    document.getElementById('profile-banner-joined').innerText = joinedDate;
+                } else {
+                    document.getElementById('profile-banner-joined').innerText = '--';
+                }
+
+                const avatarEl = document.getElementById('profile-banner-avatar');
+                if (avatarEl) {
+                    const fallbackSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName || 'Customer')}&background=0d6efd&color=fff`;
+                    avatarEl.onerror = function() {
+                        this.onerror = null;
+                        this.src = fallbackSrc;
+                    };
+                    if (user.avatarUrl && user.avatarUrl.trim().length > 0) {
+                        avatarEl.src = resolveMediaUrl(user.avatarUrl.trim());
+                    } else {
+                        avatarEl.src = fallbackSrc;
+                    }
+                }
+
+                // Populate Stats without fake zero fallback
+                if (stats) {
+                    document.getElementById('profile-stat-bookings').innerText = stats.totalBookings;
+                    document.getElementById('profile-stat-active').innerText = stats.activeRentals;
+                    document.getElementById('profile-stat-trips').innerText = stats.completedTrips;
+                    document.getElementById('profile-stat-spent').innerText = '₹' + Number(stats.totalSpent || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                } else {
+                    // Clearly indicate stats are temporarily unavailable
+                    document.getElementById('profile-stat-bookings').innerHTML = '<span class="text-secondary small">Unavailable</span>';
+                    document.getElementById('profile-stat-active').innerHTML = '<span class="text-secondary small">Unavailable</span>';
+                    document.getElementById('profile-stat-trips').innerHTML = '<span class="text-secondary small">Unavailable</span>';
+                    document.getElementById('profile-stat-spent').innerHTML = '<span class="text-secondary small">Unavailable</span>';
+                }
+
+                // Populate Personal Form
+                document.getElementById('profile-first-name').value = user.firstName || '';
+                document.getElementById('profile-last-name').value = user.lastName || '';
+                document.getElementById('profile-email').value = user.email || '';
+                document.getElementById('profile-phone').value = user.phoneNumber || '';
+                document.getElementById('profile-avatar-url').value = user.avatarUrl || '';
+
+                // Populate Travel Preferences directly from persisted database user entity
+                const prefVehicle = user.preferredVehicleType || localStorage.getItem('drivesphere_pref_vehicle') || '';
+                const prefDriver = user.driverPreference || localStorage.getItem('drivesphere_pref_driver') || 'SELF_DRIVE';
+                document.getElementById('pref-vehicle-type').value = prefVehicle;
+                document.getElementById('pref-driver-mode').value = prefDriver;
+
+            } catch (err) {
+                console.error('Failed to load customer profile:', err);
+                API.showToast('Could not load profile details: ' + (err.message || 'Error'), 'warning');
+            }
+        }
+
+        async function saveUserProfile(e) {
+            e.preventDefault();
+            const saveBtn = document.getElementById('profile-save-btn');
+            const originalHtml = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            const payload = {
+                firstName: document.getElementById('profile-first-name').value.trim(),
+                lastName: document.getElementById('profile-last-name').value.trim(),
+                phoneNumber: document.getElementById('profile-phone').value.trim(),
+                avatarUrl: document.getElementById('profile-avatar-url').value.trim()
+            };
+
+            try {
+                const res = await API.put('/users/profile', payload);
+                const updated = res.data;
+
+                // Sync with local session
+                const currentUser = API.getUser() || {};
+                const mergedUser = Object.assign({}, currentUser, updated);
+                localStorage.setItem('drivesphere_user', JSON.stringify(mergedUser));
+
+                // Update navbar display name
+                if (updated.firstName) {
+                    document.getElementById('nav-user-name').innerText = updated.firstName;
+                    const heroName = document.getElementById('hero-customer-name');
+                    if (heroName) heroName.innerText = updated.firstName;
+                }
+
+                API.showToast('Profile details updated successfully!', 'success');
+                await loadUserProfile();
+            } catch (err) {
+                API.showToast('Profile update failed: ' + err.message, 'danger');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalHtml;
+            }
+        }
+
+        async function uploadCustomerAvatar() {
+            const fileInput = document.getElementById('profile-avatar-file');
+            const statusDiv = document.getElementById('avatar-upload-status');
+            const uploadBtn = document.getElementById('profile-avatar-upload-btn');
+
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                API.showToast('Please select an image file to upload (JPG, PNG, WEBP).', 'warning');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                API.showToast('Image file size exceeds 5MB limit.', 'danger');
+                return;
+            }
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                API.showToast('Unsupported file type. Please upload a JPEG, PNG, or WEBP image.', 'danger');
+                return;
+            }
+
+            const origHtml = uploadBtn.innerHTML;
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Uploading...';
+            if (statusDiv) statusDiv.innerHTML = '<span class="text-info"><span class="spinner-border spinner-border-sm me-1"></span>Uploading avatar...</span>';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const res = await API.upload('/users/profile/avatar', formData);
+                const updatedUser = res.data;
+
+                if (updatedUser && updatedUser.avatarUrl) {
+                    document.getElementById('profile-avatar-url').value = updatedUser.avatarUrl;
+                    const avatarEl = document.getElementById('profile-banner-avatar');
+                    if (avatarEl) avatarEl.src = resolveMediaUrl(updatedUser.avatarUrl);
+                }
+
+                const currentUser = API.getUser() || {};
+                const merged = Object.assign({}, currentUser, updatedUser);
+                localStorage.setItem('drivesphere_user', JSON.stringify(merged));
+
+                if (statusDiv) statusDiv.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Avatar uploaded and saved!</span>';
+                API.showToast('Avatar uploaded successfully!', 'success');
+                fileInput.value = '';
+            } catch (err) {
+                console.error('Avatar upload failed:', err);
+                if (statusDiv) statusDiv.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>Upload failed: ${err.message}</span>`;
+                API.showToast('Avatar upload failed: ' + err.message, 'danger');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = origHtml;
+            }
+        }
+
+        async function saveUserPreferences(e) {
+            e.preventDefault();
+            const prefBtn = e.target.querySelector('button[type="submit"]');
+            const origHtml = prefBtn ? prefBtn.innerHTML : '';
+            if (prefBtn) {
+                prefBtn.disabled = true;
+                prefBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+            }
+
+            const preferredVehicleType = document.getElementById('pref-vehicle-type').value;
+            const driverPreference = document.getElementById('pref-driver-mode').value;
+
+            try {
+                await API.put('/users/profile', {
+                    preferredVehicleType,
+                    driverPreference
+                });
+
+                localStorage.setItem('drivesphere_pref_vehicle', preferredVehicleType);
+                localStorage.setItem('drivesphere_pref_driver', driverPreference);
+
+                API.showToast('Travel preferences persisted to your account successfully!', 'success');
+                await loadUserProfile();
+            } catch (err) {
+                API.showToast('Failed to save preferences: ' + err.message, 'danger');
+            } finally {
+                if (prefBtn) {
+                    prefBtn.disabled = false;
+                    prefBtn.innerHTML = origHtml;
+                }
+            }
+        }
+
+        async function changeUserPassword(e) {
+            e.preventDefault();
+            const currentPassword = document.getElementById('pwd-current').value;
+            const newPassword = document.getElementById('pwd-new').value;
+            const confirmPassword = document.getElementById('pwd-confirm').value;
+
+            if (newPassword !== confirmPassword) {
+                API.showToast('New password and confirmation do not match.', 'warning');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                API.showToast('New password must be at least 6 characters long.', 'warning');
+                return;
+            }
+
+            const pwdBtn = document.getElementById('pwd-submit-btn');
+            const origHtml = pwdBtn.innerHTML;
+            pwdBtn.disabled = true;
+            pwdBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+
+            try {
+                await API.post('/users/change-password', {
+                    currentPassword,
+                    newPassword
+                });
+
+                API.showToast('Password updated successfully! Please use your new password next time you sign in.', 'success');
+                document.getElementById('profile-password-form').reset();
+            } catch (err) {
+                API.showToast('Password update failed: ' + err.message, 'danger');
+            } finally {
+                pwdBtn.disabled = false;
+                pwdBtn.innerHTML = origHtml;
+            }
+        }
+
+        async function resendEmailVerification() {
+            const user = API.getUser() || {};
+            if (!user.email) {
+                API.showToast('Please sign in to request email verification.', 'warning');
+                return;
+            }
+            const btn = document.getElementById('profile-btn-verify-email');
+            const origText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sending...';
+            }
+            try {
+                await API.post('/auth/resend-verification', { email: user.email });
+                API.showToast('Verification email dispatched to ' + user.email + '! Please check your inbox.', 'success');
+            } catch (err) {
+                API.showToast('Verification request: ' + (err.message || 'Unable to dispatch email'), 'info');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                }
+            }
+        }
+
+        window.openProfileTab = openProfileTab;
+        window.loadUserProfile = loadUserProfile;
+        window.saveUserProfile = saveUserProfile;
+        window.uploadCustomerAvatar = uploadCustomerAvatar;
+        window.saveUserPreferences = saveUserPreferences;
+        window.changeUserPassword = changeUserPassword;
+        window.resendEmailVerification = resendEmailVerification;
+        window.openCompleteTripModal = openCompleteTripModal;
+        window.openReviewModalForBooking = openReviewModalForBooking;
+        window.openReviewModal = openReviewModal;
+        window.startTrip = startTrip;
     </script>
 </body>
 </html>

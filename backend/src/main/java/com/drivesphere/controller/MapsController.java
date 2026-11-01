@@ -23,6 +23,8 @@ public class MapsController {
             @RequestParam double startLng,
             @RequestParam double destLat,
             @RequestParam double destLng) {
+        validateCoordinates(startLat, startLng);
+        validateCoordinates(destLat, destLng);
         return ResponseEntity.ok(ApiResponse.success(
                 mapsClient.calculateRoute(startLat, startLng, destLat, destLng),
                 "Route calculation complete"
@@ -33,9 +35,19 @@ public class MapsController {
     public ResponseEntity<ApiResponse<List<PoiDto>>> getNearby(
             @RequestParam double lat,
             @RequestParam double lng) {
+        validateCoordinates(lat, lng);
         return ResponseEntity.ok(ApiResponse.success(
                 mapsClient.getNearbyPlaces(lat, lng),
                 "Nearby POI points of interest"
         ));
+    }
+
+    private void validateCoordinates(double lat, double lng) {
+        if (lat < -90.0 || lat > 90.0) {
+            throw new IllegalArgumentException("Latitude must be between -90 and 90 degrees.");
+        }
+        if (lng < -180.0 || lng > 180.0) {
+            throw new IllegalArgumentException("Longitude must be between -180 and 180 degrees.");
+        }
     }
 }

@@ -1,10 +1,12 @@
 /**
  * DriveSphere AI Concierge Chatbot Widget
  * Supports Google Gemini AI live responses, instant suggestion pills,
- * rich message formatting, and resilient fallback handling.
+ * rich message formatting, Enter to send / Shift+Enter for newline,
+ * duplicate submission prevention, accessible labels, and resilient honest fallback handling.
  */
 const Chatbot = {
     isOpen: false,
+    isSending: false,
 
     init() {
         this.renderWidget();
@@ -19,38 +21,62 @@ const Chatbot = {
         container.id = 'ds-chatbot-container';
         container.innerHTML = `
             <!-- Floating Trigger Button -->
-            <button id="ds-chat-trigger" class="btn btn-primary rounded-circle shadow-lg position-fixed bottom-0 end-0 m-4 d-flex align-items-center justify-content-center" 
-                    style="width: 60px; height: 60px; z-index: 1080; border: 2px solid rgba(0,242,254,0.6); box-shadow: 0 8px 24px rgba(0, 242, 254, 0.35);"
-                    title="Chat with AI Mobility Concierge">
+            <button id="ds-chat-trigger" 
+                    class="btn btn-primary rounded-circle shadow-lg position-fixed bottom-0 end-0 m-3 m-md-4 d-flex align-items-center justify-content-center" 
+                    style="width: 58px; height: 58px; z-index: 1080; border: 2px solid rgba(56, 189, 248, 0.7); box-shadow: 0 8px 24px rgba(56, 189, 248, 0.4);"
+                    aria-label="Open DriveSphere AI Concierge Chatbot"
+                    aria-expanded="false"
+                    aria-controls="ds-chat-window"
+                    title="Chat with DriveSphere AI Concierge">
                 <i class="bi bi-robot fs-4 text-white"></i>
-                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-dark rounded-circle" style="width: 12px; height: 12px;"></span>
+                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-dark rounded-circle" 
+                      style="width: 12px; height: 12px;" 
+                      title="AI Concierge Active"></span>
             </button>
 
             <!-- Chat Drawer Window -->
-            <div id="ds-chat-window" class="card shadow-lg position-fixed bottom-0 end-0 m-4 d-none" 
-                 style="width: 380px; max-width: calc(100vw - 32px); height: 520px; max-height: calc(100vh - 100px); z-index: 1085; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,242,254,0.3); background: #0b1120; box-shadow: 0 16px 40px rgba(0,0,0,0.8);">
+            <div id="ds-chat-window" 
+                 class="card shadow-lg position-fixed bottom-0 end-0 m-3 m-md-4 d-none" 
+                 role="dialog"
+                 aria-modal="false"
+                 aria-label="DriveSphere AI Concierge Chat"
+                 style="width: 380px; max-width: calc(100vw - 28px); height: 540px; max-height: calc(100vh - 90px); z-index: 1085; border-radius: 18px; overflow: hidden; border: 1px solid var(--border-color, #1e293b); background: var(--bg-modal, #0b0f17); box-shadow: 0 25px 60px -10px rgba(0,0,0,0.95), 0 0 35px rgba(56, 189, 248, 0.18);">
                 
                 <!-- Header -->
-                <div class="card-header bg-dark d-flex align-items-center justify-content-between p-3 border-bottom border-secondary" style="background: linear-gradient(135deg, #0f172a, #1e293b);">
+                <div class="card-header d-flex align-items-center justify-content-between p-3 border-bottom border-secondary border-opacity-25" 
+                     style="background: linear-gradient(135deg, rgba(14, 18, 28, 0.98), rgba(22, 28, 44, 0.98));">
                     <div class="d-flex align-items-center">
-                        <div class="bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
-                            <i class="bi bi-robot text-white fs-5"></i>
+                        <div class="brand-icon-wrapper p-2 me-2 d-flex align-items-center justify-content-center bg-dark border border-secondary border-opacity-50" 
+                             style="width: 38px; height: 38px; border-radius: 10px;">
+                            <i class="bi bi-robot text-info fs-5"></i>
                         </div>
                         <div>
                             <div class="fw-bold text-white fs-6">DriveSphere Concierge</div>
                             <small class="text-success d-flex align-items-center" style="font-size: 0.75rem;">
-                                <span class="badge bg-success p-1 rounded-circle me-1" style="width:6px;height:6px;"></span>
-                                Mobility Intelligence Ready
+                                <span class="badge bg-success rounded-circle p-1 me-1" style="width: 6px; height: 6px;"></span>
+                                Mobility Assistant Ready
                             </small>
                         </div>
                     </div>
-                    <button id="ds-chat-close" class="btn btn-sm btn-outline-secondary border-0 text-white fs-5 p-1" title="Close Chat"><i class="bi bi-x-lg"></i></button>
+                    <div class="d-flex align-items-center gap-1">
+                        <button id="ds-chat-close" 
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary border-0 text-white fs-5 p-1 px-2" 
+                                aria-label="Close Chat" 
+                                title="Close Chat (Esc)">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Messages Body -->
-                <div id="ds-chat-messages" class="card-body p-3 overflow-auto d-flex flex-column gap-2" style="font-size: 0.88rem; height: calc(100% - 130px); background: #080d18;">
-                    <div class="chat-msg ai bg-dark text-light p-3 rounded-3 border border-secondary shadow-sm" style="max-width: 90%;">
-                        Hello! 👋 I am the <strong>DriveSphere AI Concierge</strong>. Ask me about vehicle recommendations, verified drivers, fuel & EV electricity costs, or booking policies!
+                <div id="ds-chat-messages" 
+                     class="card-body p-3 overflow-auto d-flex flex-column gap-2" 
+                     style="font-size: 0.88rem; height: calc(100% - 135px); background: #050609;"
+                     aria-live="polite">
+                    <div class="chat-msg ai p-3 rounded-3 shadow-sm border border-secondary border-opacity-25 text-light" 
+                         style="max-width: 90%; background: #0f172a;">
+                        Hello! 👋 I am your <strong>DriveSphere AI Concierge</strong>. Ask me about vehicle recommendations, verified drivers, route fuel & EV energy costs, or booking policies!
                     </div>
                     <div class="d-flex flex-wrap gap-1 mt-1" id="ds-chat-suggestions">
                         <button type="button" class="btn btn-outline-info btn-sm py-1 px-2 text-start rounded-pill suggestion-btn" style="font-size: 0.75rem;">Which car is best for family?</button>
@@ -61,10 +87,21 @@ const Chatbot = {
                 </div>
 
                 <!-- Input Footer -->
-                <div class="card-footer bg-dark p-2 border-top border-secondary" style="background: #0f172a;">
-                    <form id="ds-chat-form" class="input-group">
-                        <input id="ds-chat-input" type="text" class="form-control form-control-sm bg-black text-white border-secondary" placeholder="Ask AI mobility concierge..." required autocomplete="off">
-                        <button class="btn btn-primary btn-sm px-3" type="submit" id="ds-chat-send-btn" title="Send message">
+                <div class="card-footer p-2 border-top border-secondary border-opacity-25" 
+                     style="background: rgba(10, 13, 20, 0.98);">
+                    <form id="ds-chat-form" class="input-group align-items-end">
+                        <textarea id="ds-chat-input" 
+                                  rows="1" 
+                                  class="form-control form-control-sm border-secondary text-light bg-dark" 
+                                  placeholder="Ask AI concierge... (Enter to send, Shift+Enter for line)" 
+                                  aria-label="Message to AI Concierge"
+                                  style="resize: none; font-size: 0.85rem; max-height: 80px;"
+                                  required></textarea>
+                        <button class="btn btn-primary btn-sm px-3" 
+                                type="submit" 
+                                id="ds-chat-send-btn" 
+                                aria-label="Send message" 
+                                title="Send message (Enter)">
                             <i class="bi bi-send-fill"></i>
                         </button>
                     </form>
@@ -82,20 +119,54 @@ const Chatbot = {
         const input = document.getElementById('ds-chat-input');
         const suggestionsBox = document.getElementById('ds-chat-suggestions');
 
-        if (trigger && chatWindow) {
-            trigger.addEventListener('click', () => {
-                chatWindow.classList.toggle('d-none');
-                this.isOpen = !chatWindow.classList.contains('d-none');
-                if (this.isOpen && input) {
+        const toggleChat = (open) => {
+            if (open === undefined) {
+                open = chatWindow.classList.contains('d-none');
+            }
+            if (open) {
+                chatWindow.classList.remove('d-none');
+                this.isOpen = true;
+                trigger.setAttribute('aria-expanded', 'true');
+                if (input) {
                     setTimeout(() => input.focus(), 100);
                 }
-            });
+            } else {
+                chatWindow.classList.add('d-none');
+                this.isOpen = false;
+                trigger.setAttribute('aria-expanded', 'false');
+                trigger.focus();
+            }
+        };
+
+        if (trigger && chatWindow) {
+            trigger.addEventListener('click', () => toggleChat());
         }
 
         if (closeBtn && chatWindow) {
-            closeBtn.addEventListener('click', () => {
-                chatWindow.classList.add('d-none');
-                this.isOpen = false;
+            closeBtn.addEventListener('click', () => toggleChat(false));
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isOpen) {
+                toggleChat(false);
+            }
+        });
+
+        // Auto-expand textarea & Enter to send / Shift+Enter for newline
+        if (input) {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!this.isSending) {
+                        form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true }));
+                    }
+                }
+            });
+
+            input.addEventListener('input', () => {
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 80) + 'px';
             });
         }
 
@@ -103,7 +174,7 @@ const Chatbot = {
         if (suggestionsBox) {
             suggestionsBox.addEventListener('click', (e) => {
                 const btn = e.target.closest('.suggestion-btn');
-                if (btn) {
+                if (btn && !this.isSending) {
                     const text = btn.innerText.trim();
                     this.sendMessage(text);
                 }
@@ -113,19 +184,31 @@ const Chatbot = {
         if (form) {
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
+                if (this.isSending) return;
                 const text = input.value.trim();
                 if (!text) return;
                 input.value = '';
+                input.style.height = 'auto';
                 this.sendMessage(text);
             });
         }
     },
 
     async sendMessage(text) {
-        if (!text) return;
+        if (!text || this.isSending) return;
         const messages = document.getElementById('ds-chat-messages');
         const input = document.getElementById('ds-chat-input');
+        const sendBtn = document.getElementById('ds-chat-send-btn');
         if (!messages) return;
+
+        this.isSending = true;
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        }
+        if (input) {
+            input.disabled = true;
+        }
 
         // 1. Append user message bubble
         const userMsgEl = document.createElement('div');
@@ -146,21 +229,25 @@ const Chatbot = {
         try {
             let replyText = '';
             let suggestions = [];
+            let modelProvider = 'Heuristic Mobility Engine [Offline Mode]';
+            let fallbackMode = true;
 
             // Attempt backend call
             try {
                 const isUserAuth = (typeof Auth !== 'undefined' && Auth.isAuthenticated) ? Auth.isAuthenticated() : false;
                 const res = await API.post('/ai/chat', { message: text, authenticated: isUserAuth });
-                if (res && res.data && res.data.reply) {
-                    replyText = res.data.reply;
-                    suggestions = res.data.suggestedQuestions || [];
-                } else if (res && res.reply) {
-                    replyText = res.reply;
-                    suggestions = res.suggestedQuestions || [];
+                const chatData = (res && res.data) ? res.data : res;
+                if (chatData && chatData.reply) {
+                    replyText = chatData.reply;
+                    suggestions = chatData.suggestedQuestions || [];
+                    modelProvider = chatData.modelProvider || (chatData.fallbackMode ? 'Heuristic Mobility Engine' : 'Google Gemini 3.5 Flash Lite');
+                    fallbackMode = Boolean(chatData.fallbackMode);
                 }
             } catch (backendErr) {
-                console.warn('Backend chat endpoint standby, utilizing intelligent local concierge engine:', backendErr);
+                console.warn('Backend chat standby, utilizing intelligent local concierge engine:', backendErr);
                 replyText = this.getLocalFallback(text);
+                modelProvider = 'Browser Local Heuristics [Offline Standby]';
+                fallbackMode = true;
                 suggestions = [
                     "Which car is best for family?",
                     "How does Driver Trust Score work?",
@@ -173,9 +260,9 @@ const Chatbot = {
                 replyText = this.getLocalFallback(text);
             }
 
-            // Render formatted reply
+            // Render formatted reply with honest attribution
             typingEl.className = 'chat-msg ai bg-dark text-light p-3 rounded-3 border border-secondary shadow-sm';
-            typingEl.innerHTML = this.formatReply(replyText);
+            typingEl.innerHTML = this.formatReply(replyText, modelProvider, fallbackMode);
 
             // Update suggestions
             if (suggestions && suggestions.length > 0) {
@@ -184,14 +271,22 @@ const Chatbot = {
         } catch (err) {
             console.error('Chat error:', err);
             typingEl.className = 'chat-msg ai bg-dark text-light p-3 rounded-3 border border-secondary';
-            typingEl.innerHTML = this.formatReply(this.getLocalFallback(text));
+            typingEl.innerHTML = this.formatReply(this.getLocalFallback(text), 'Browser Local Heuristics [Offline Standby]', true);
+        } finally {
+            this.isSending = false;
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="bi bi-send-fill"></i>';
+            }
+            if (input) {
+                input.disabled = false;
+                input.focus();
+            }
+            messages.scrollTop = messages.scrollHeight;
         }
-
-        messages.scrollTop = messages.scrollHeight;
-        if (input) input.focus();
     },
 
-    formatReply(text) {
+    formatReply(text, modelProvider, fallbackMode) {
         if (!text) return '';
         // Escape HTML
         let escaped = text
@@ -207,6 +302,15 @@ const Chatbot = {
         escaped = escaped.replace(/\*(.*?)\*/g, '<em>$1</em>');
         // Convert newlines to <br>
         escaped = escaped.replace(/\n/g, '<br>');
+
+        if (modelProvider) {
+            const isGemini = !fallbackMode && modelProvider.includes('Gemini');
+            const badgeIcon = isGemini ? 'bi-stars text-info' : 'bi-cpu text-secondary';
+            const badgeClass = isGemini ? 'text-info' : 'text-secondary';
+            escaped += `<div class="mt-2 pt-1 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between ${badgeClass}" style="font-size: 0.7rem;">
+                <span><i class="bi ${badgeIcon} me-1"></i>${modelProvider}</span>
+            </div>`;
+        }
 
         return escaped;
     },
@@ -227,7 +331,7 @@ const Chatbot = {
             return "For family roadtrips (5 to 7 passengers), our top recommendation is the **Mahindra XUV700 AX7 Luxury** (7 seats, Rs. 3,600/day) or the **Toyota Fortuner Legender 4x4** (7 seats, Rs. 4,800/day). Both feature 3-row comfort, ADAS safety, and expansive luggage space. For groups larger than 7, our AI Fleet Matcher schedules a multi-vehicle convoy!";
         }
         if (lower.indexOf('driver') !== -1 || lower.indexOf('trust score') !== -1 || lower.indexOf('chauffeur') !== -1) {
-            return "DriveSphere drivers are vetted through our 4-pillar **Driver Trust Score (0-100)**: Government License & Identity Verification (25%), Commercial Driving Skill Assessment (25%), Customer Ratings (25%), and On-Time Trip Records (25%). Only verified drivers with score &ge; 75 are dispatchable.";
+            return "DriveSphere drivers are evaluated through our **Driver Trust Score (0-100)**: Document Verification (up to 25 pts), Professional Experience (up to 20 pts), Customer Ratings (up to 25 pts), Trip Completion (up to 20 pts), and Cancellation Deductions (up to -10 pts). Only verified drivers with approved status can be assigned.";
         }
         if (lower.indexOf('ev') !== -1 || lower.indexOf('electric') !== -1 || lower.indexOf('charging') !== -1) {
             return "Yes! Our eco-fleet includes the **Tata Nexon EV Empowered** (312 km range) and **Hyundai Ioniq 5 EV** (400+ km range). We display energy consumption strictly in **kWh** (at Rs. 12/kWh) and highlight highway fast chargers on your route.";
@@ -237,7 +341,7 @@ const Chatbot = {
             if (!isUserAuth) {
                 return "To book a vehicle or access personal reservations, you must sign in to your DriveSphere customer account.\n\n👉 [Please sign in here](/login.html?returnTo=/customer/index.html&action=book) to continue with your booking.";
             }
-            return "Booking is instantaneous: Select your vehicle, pick rental dates, optionally add an approved driver, and checkout in our Razorpay sandbox test environment. You receive real-time booking confirmation and GPS telemetry.";
+            return "Booking is instantaneous: Select your vehicle, pick rental dates, optionally add an approved driver, and checkout in our test environment. You receive real-time booking confirmation and GPS telemetry.";
         }
         if (lower.indexOf('document') !== -1 || lower.indexOf('license') !== -1 || lower.indexOf('requirement') !== -1) {
             return "To rent a self-drive vehicle, you need: (1) A valid Government Driving License held for at least 1 year, (2) Government ID proof (Aadhaar or Passport), and (3) Minimum age of 21.";
@@ -246,6 +350,7 @@ const Chatbot = {
             return "Cancellations made 24 hours prior to the scheduled trip start time receive a 100% full refund to the original payment method.";
         }
         return "Hello! I am your **DriveSphere AI Concierge**. I can assist with personalized vehicle recommendations, hiring certified drivers with Driver Trust Scores, trip routing with fuel/kWh estimates, and reservation policies. How may I help you?";
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => Chatbot.init());

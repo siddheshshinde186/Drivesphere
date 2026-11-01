@@ -36,8 +36,14 @@ public class DriverVerificationController {
     @GetMapping("/driver/{driverId}")
     @PreAuthorize("hasAnyRole('DRIVER', 'ADMIN')")
     public ResponseEntity<ApiResponse<DriverVerificationDto>> getVerificationByDriverId(@PathVariable Long driverId) {
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+        boolean isAdmin = currentUser.isAdmin();
+
         return ResponseEntity.ok(ApiResponse.success(
-                verificationService.getVerificationByDriverId(driverId),
+                verificationService.getVerificationByDriverId(driverId, currentUser.getId(), isAdmin),
                 "Driver verification details"
         ));
     }
@@ -47,8 +53,14 @@ public class DriverVerificationController {
     public ResponseEntity<ApiResponse<DriverVerificationDto>> submitDocuments(
             @PathVariable Long driverId,
             @RequestBody DriverVerificationDto dto) {
+        UserDto currentUser = authService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+        boolean isAdmin = currentUser.isAdmin();
+
         return ResponseEntity.ok(ApiResponse.success(
-                verificationService.submitVerificationDocuments(driverId, dto),
+                verificationService.submitVerificationDocuments(driverId, dto, currentUser.getId(), isAdmin),
                 "Verification documents submitted for review"
         ));
     }

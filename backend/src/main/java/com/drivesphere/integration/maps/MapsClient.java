@@ -31,11 +31,37 @@ public class MapsClient {
     @Value("${drivesphere.openrouteservice.api-key:}")
     private String orsApiKey;
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
+    private HttpClient httpClient;
+
+    private synchronized HttpClient getHttpClient() {
+        if (this.httpClient == null) {
+            this.httpClient = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+        }
+        return this.httpClient;
+    }
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public MapsClient() {}
+
+    public MapsClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    public MapsClient(String orsApiKey, HttpClient httpClient) {
+        this.orsApiKey = orsApiKey;
+        this.httpClient = httpClient;
+    }
+
+    public void setHttpClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    public void setOrsApiKey(String orsApiKey) {
+        this.orsApiKey = orsApiKey;
+    }
 
     @Data
     @Builder
@@ -52,6 +78,7 @@ public class MapsClient {
         private int durationMinutes;
         private List<List<Double>> coordinates; // [[lat, lng], ...]
         private boolean isFallback;
+        private String provider;
     }
 
     // Static verified directory of major regional hubs for instant, zero-latency resolution
@@ -91,8 +118,32 @@ public class MapsClient {
         VERIFIED_CITIES.put("chikmagalur", GeocodeResult.builder().lat(13.3161).lng(75.7720).displayName("Chikkamagaluru, Karnataka, India").build());
         VERIFIED_CITIES.put("shimoga", GeocodeResult.builder().lat(13.9299).lng(75.5681).displayName("Shivamogga, Karnataka, India").build());
         VERIFIED_CITIES.put("ahmedabad", GeocodeResult.builder().lat(23.0225).lng(72.5714).displayName("Ahmedabad, Gujarat, India").build());
-        VERIFIED_CITIES.put("surat", GeocodeResult.builder().lat(21.1702).lng(72.8311).displayName("Surat, Gujarat, India").build());
-        VERIFIED_CITIES.put("jaipur", GeocodeResult.builder().lat(26.9124).lng(75.7873).displayName("Jaipur, Rajasthan, India").build());
+        // Platform Mobility Hubs & Airport Locations
+        VERIFIED_CITIES.put("downtown hub", GeocodeResult.builder().lat(12.9716).lng(77.5946).displayName("Downtown Hub, Bangalore").build());
+        VERIFIED_CITIES.put("downtown", GeocodeResult.builder().lat(12.9716).lng(77.5946).displayName("Downtown Hub, Bangalore").build());
+        VERIFIED_CITIES.put("airport terminal", GeocodeResult.builder().lat(13.1986).lng(77.7066).displayName("Kempegowda International Airport Terminal, Bangalore").build());
+        VERIFIED_CITIES.put("airport expressway hub", GeocodeResult.builder().lat(13.1986).lng(77.7066).displayName("Airport Expressway Hub, Bangalore").build());
+        VERIFIED_CITIES.put("airport", GeocodeResult.builder().lat(13.1986).lng(77.7066).displayName("Kempegowda International Airport Terminal, Bangalore").build());
+        VERIFIED_CITIES.put("mg road terminal", GeocodeResult.builder().lat(12.9756).lng(77.6066).displayName("MG Road Terminal, Bangalore").build());
+        VERIFIED_CITIES.put("mg road", GeocodeResult.builder().lat(12.9756).lng(77.6066).displayName("MG Road Terminal, Bangalore").build());
+        VERIFIED_CITIES.put("koramangala hub", GeocodeResult.builder().lat(12.9352).lng(77.6245).displayName("Koramangala Hub, Bangalore").build());
+        VERIFIED_CITIES.put("koramangala", GeocodeResult.builder().lat(12.9352).lng(77.6245).displayName("Koramangala Hub, Bangalore").build());
+        VERIFIED_CITIES.put("indiranagar hub", GeocodeResult.builder().lat(12.9784).lng(77.6408).displayName("Indiranagar Hub, Bangalore").build());
+        VERIFIED_CITIES.put("indiranagar", GeocodeResult.builder().lat(12.9784).lng(77.6408).displayName("Indiranagar Hub, Bangalore").build());
+        VERIFIED_CITIES.put("whitefield station", GeocodeResult.builder().lat(12.9698).lng(77.7499).displayName("Whitefield Station, Bangalore").build());
+        VERIFIED_CITIES.put("whitefield", GeocodeResult.builder().lat(12.9698).lng(77.7499).displayName("Whitefield Station, Bangalore").build());
+        VERIFIED_CITIES.put("jayanagar hub", GeocodeResult.builder().lat(12.9308).lng(77.5838).displayName("Jayanagar Hub, Bangalore").build());
+        VERIFIED_CITIES.put("jayanagar", GeocodeResult.builder().lat(12.9308).lng(77.5838).displayName("Jayanagar Hub, Bangalore").build());
+        VERIFIED_CITIES.put("malleshwaram hub", GeocodeResult.builder().lat(13.0031).lng(77.5643).displayName("Malleshwaram Hub, Bangalore").build());
+        VERIFIED_CITIES.put("malleshwaram", GeocodeResult.builder().lat(13.0031).lng(77.5643).displayName("Malleshwaram Hub, Bangalore").build());
+        VERIFIED_CITIES.put("ub city luxury concierge", GeocodeResult.builder().lat(12.9716).lng(77.5957).displayName("UB City Luxury Concierge, Bangalore").build());
+        VERIFIED_CITIES.put("ub city", GeocodeResult.builder().lat(12.9716).lng(77.5957).displayName("UB City Luxury Concierge, Bangalore").build());
+        VERIFIED_CITIES.put("hsr layout hub", GeocodeResult.builder().lat(12.9121).lng(77.6446).displayName("HSR Layout Hub, Bangalore").build());
+        VERIFIED_CITIES.put("hsr layout", GeocodeResult.builder().lat(12.9121).lng(77.6446).displayName("HSR Layout Hub, Bangalore").build());
+        VERIFIED_CITIES.put("electronic city terminal", GeocodeResult.builder().lat(12.8399).lng(77.6770).displayName("Electronic City Terminal, Bangalore").build());
+        VERIFIED_CITIES.put("electronic city", GeocodeResult.builder().lat(12.8399).lng(77.6770).displayName("Electronic City Terminal, Bangalore").build());
+        VERIFIED_CITIES.put("mysore palace road", GeocodeResult.builder().lat(12.3051).lng(76.6551).displayName("Mysore Palace Road, Mysuru").build());
+        VERIFIED_CITIES.put("mysore palace", GeocodeResult.builder().lat(12.3051).lng(76.6551).displayName("Mysore Palace Road, Mysuru").build());
     }
 
     public boolean isConfigured() {
@@ -111,10 +162,19 @@ public class MapsClient {
 
         String normalized = query.trim().toLowerCase();
         
-        // 1. Check verified city directory
-        for (Map.Entry<String, GeocodeResult> entry : VERIFIED_CITIES.entrySet()) {
-            if (normalized.contains(entry.getKey())) {
-                return entry.getValue();
+        // 1. Exact match check
+        if (VERIFIED_CITIES.containsKey(normalized)) {
+            return VERIFIED_CITIES.get(normalized);
+        }
+
+        // 2. Substring match against verified hubs (sorted by length descending to match specific hubs first)
+        List<String> sortedKeys = VERIFIED_CITIES.keySet().stream()
+                .sorted((a, b) -> Integer.compare(b.length(), a.length()))
+                .toList();
+
+        for (String key : sortedKeys) {
+            if (normalized.contains(key)) {
+                return VERIFIED_CITIES.get(key);
             }
         }
 
@@ -125,12 +185,12 @@ public class MapsClient {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("User-Agent", "DriveSphere-Mobility-Platform/1.0 (support@drivesphere.local)")
+                    .header("User-Agent", "DriveSphere-Mobility-Platform/1.0 (support@drivesphere.com)")
                     .timeout(Duration.ofSeconds(6))
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
                 JsonNode root = objectMapper.readTree(response.body());
@@ -169,7 +229,7 @@ public class MapsClient {
                         .GET()
                         .build();
 
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
                 if (response.statusCode() == 200) {
                     JsonNode root = objectMapper.readTree(response.body());
@@ -196,6 +256,7 @@ public class MapsClient {
                                     .durationMinutes(durMin)
                                     .coordinates(coords)
                                     .isFallback(false)
+                                    .provider("OPENROUTESERVICE")
                                     .build();
                         }
                     }
@@ -219,7 +280,7 @@ public class MapsClient {
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
                 JsonNode root = objectMapper.readTree(response.body());
@@ -246,6 +307,7 @@ public class MapsClient {
                                 .durationMinutes(durMin)
                                 .coordinates(coords)
                                 .isFallback(false)
+                                .provider("OSRM")
                                 .build();
                     }
                 }
@@ -296,38 +358,83 @@ public class MapsClient {
                 .durationMinutes(Math.max(10, durationMinutes))
                 .coordinates(coordinates)
                 .isFallback(true)
+                .provider("HAVERSINE_HIGHWAY_MODEL")
                 .build();
     }
 
+    private double calculateHaversineKm(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return 6371.0 * c;
+    }
+
+    /**
+     * Queries real live OpenStreetMap Overpass API for verified nearby POIs
+     * (Fuel, EV Chargers, Parking, Restaurants) within a 5 km radius.
+     * Returns a truthful empty list if no verified places are found.
+     */
     public List<PoiDto> getNearbyPlaces(double lat, double lng) {
         List<PoiDto> pois = new ArrayList<>();
 
-        pois.add(PoiDto.builder()
-                .name("Shell Fuel & EV Fast Hub")
-                .category("EV_CHARGER")
-                .latitude(lat + 0.008)
-                .longitude(lng + 0.006)
-                .address("Expressway Corridor KM 14")
-                .distanceKm(1.2)
-                .build());
+        try {
+            String query = String.format(Locale.US,
+                    "[out:json][timeout:5];(node[\"amenity\"~\"fuel|charging_station|parking|restaurant\"](around:5000,%.6f,%.6f););out 8;",
+                    lat, lng
+            );
+            String url = "https://overpass-api.de/api/interpreter?data=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
 
-        pois.add(PoiDto.builder()
-                .name("Indian Oil Supercharge Petrol Pump")
-                .category("PETROL_PUMP")
-                .latitude(lat - 0.005)
-                .longitude(lng + 0.009)
-                .address("Ring Road Highway Exit 4")
-                .distanceKm(1.8)
-                .build());
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", "DriveSphere-Mobility-Platform/1.0 (support@drivesphere.com)")
+                    .timeout(Duration.ofSeconds(6))
+                    .GET()
+                    .build();
 
-        pois.add(PoiDto.builder()
-                .name("Highway Bistro & Food Plaza")
-                .category("RESTAURANT")
-                .latitude(lat + 0.012)
-                .longitude(lng - 0.004)
-                .address("Service Road Oasis Plaza")
-                .distanceKm(2.4)
-                .build());
+            HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JsonNode root = objectMapper.readTree(response.body());
+                JsonNode elements = root.path("elements");
+                if (elements.isArray()) {
+                    for (JsonNode elem : elements) {
+                        double nodeLat = elem.path("lat").asDouble(0.0);
+                        double nodeLon = elem.path("lon").asDouble(0.0);
+                        JsonNode tags = elem.path("tags");
+                        String name = tags.path("name").asText(null);
+                        String amenity = tags.path("amenity").asText("");
+
+                        if (name == null || name.isBlank() || nodeLat == 0.0 || nodeLon == 0.0) {
+                            continue;
+                        }
+
+                        String category = switch (amenity) {
+                            case "fuel" -> "PETROL_PUMP";
+                            case "charging_station" -> "EV_CHARGER";
+                            case "parking" -> "PARKING";
+                            default -> "RESTAURANT";
+                        };
+
+                        double dist = calculateHaversineKm(lat, lng, nodeLat, nodeLon);
+                        String address = tags.has("addr:street") ? tags.path("addr:street").asText() : (tags.has("brand") ? tags.path("brand").asText() : "Verified POI");
+
+                        pois.add(PoiDto.builder()
+                                .name(name)
+                                .category(category)
+                                .latitude(nodeLat)
+                                .longitude(nodeLon)
+                                .address(address)
+                                .distanceKm(BigDecimal.valueOf(dist).setScale(1, RoundingMode.HALF_UP).doubleValue())
+                                .build());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.info("Live Overpass POI lookup returned: {}. Providing truthful empty verified place dataset.", e.getMessage());
+        }
 
         return pois;
     }

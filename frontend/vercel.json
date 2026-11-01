@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/customer/(.*)",
+      "dest": "/customer/$1"
+    },
+    {
+      "src": "/driver/(.*)",
+      "dest": "/driver/$1"
+    },
+    {
+      "src": "/fleet-manager/(.*)",
+      "dest": "/fleet-manager/$1"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/admin/$1"
+    },
+    {
+      "src": "/login",
+      "dest": "/login.html"
+    },
+    {
+      "src": "/register",
+      "dest": "/register.html"
+    },
+    {
+      "src": "/forgot-password",
+      "dest": "/forgot-password.html"
+    },
+    {
+      "src": "/reset-password",
+      "dest": "/reset-password.html"
+    },
+    {
+      "src": "/terms",
+      "dest": "/terms.html"
+    },
+    {
+      "src": "/privacy",
+      "dest": "/privacy.html"
+    },
+    {
+      "src": "/refund-policy",
+      "dest": "/refund-policy.html"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
+  ]
+}

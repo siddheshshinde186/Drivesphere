@@ -14,6 +14,7 @@ public class AiChatResponse {
     private String reply;
     private List<String> suggestedQuestions;
     private boolean fallbackMode;
+    private String modelProvider;
     @Builder.Default
     private Instant timestamp = Instant.now();
 }
