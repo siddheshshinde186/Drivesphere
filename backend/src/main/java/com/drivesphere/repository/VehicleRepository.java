@@ -57,18 +57,47 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
             "AND (:transmission IS NULL OR v.transmission = :transmission) " +
             "AND (:minSeats IS NULL OR v.seatingCapacity >= :minSeats) " +
             "AND (:maxPrice IS NULL OR v.rentalPricePerDay <= :maxPrice) " +
-            "AND (:brand IS NULL OR LOWER(v.brand) LIKE LOWER(CONCAT('%', :brand, '%'))) " +
-            "AND (:startDateTime IS NULL OR :endDateTime IS NULL OR v.id NOT IN (" +
-            "SELECT b.vehicle.id FROM Booking b WHERE " +
+            "AND (:brand IS NULL OR LOWER(v.brand) LIKE LOWER(CONCAT('%', :brand, '%')))")
+    List<Vehicle> filterVehiclesBase(@Param("vehicleType") VehicleType vehicleType,
+                                     @Param("fuelType") FuelType fuelType,
+                                     @Param("transmission") Transmission transmission,
+                                     @Param("minSeats") Integer minSeats,
+                                     @Param("maxPrice") BigDecimal maxPrice,
+                                     @Param("brand") String brand);
+
+    @Query("SELECT DISTINCT b.vehicle.id FROM Booking b WHERE " +
             "(b.bookingStatus IN (com.drivesphere.entity.BookingStatus.CONFIRMED, com.drivesphere.entity.BookingStatus.ACTIVE) OR " +
             "(b.bookingStatus IN (com.drivesphere.entity.BookingStatus.HELD, com.drivesphere.entity.BookingStatus.PENDING, com.drivesphere.entity.BookingStatus.PENDING_PAYMENT) AND b.holdExpiresAt > CURRENT_TIMESTAMP)) AND " +
-            "(b.startDateTime < :endDateTime AND b.endDateTime > :startDateTime)))")
-    List<Vehicle> filterVehicles(@Param("vehicleType") VehicleType vehicleType,
-                                 @Param("fuelType") FuelType fuelType,
-                                 @Param("transmission") Transmission transmission,
-                                 @Param("minSeats") Integer minSeats,
-                                 @Param("maxPrice") BigDecimal maxPrice,
-                                 @Param("brand") String brand,
-                                 @Param("startDateTime") LocalDateTime startDateTime,
-                                 @Param("endDateTime") LocalDateTime endDateTime);
+            "(b.startDateTime < :endDateTime AND b.endDateTime > :startDateTime)")
+    List<Long> findBookedVehicleIdsForPeriod(@Param("startDateTime") LocalDateTime startDateTime,
+                                             @Param("endDateTime") LocalDateTime endDateTime);
+
+    default List<Vehicle> filterVehicles(VehicleType vehicleType,
+                                         FuelType fuelType,
+                                         Transmission transmission,
+                                         Integer minSeats,
+                                         BigDecimal maxPrice,
+                                         String brand,
+                                         LocalDateTime startDateTime,
+                                         LocalDateTime endDateTime) {
+        List<Vehicle> vehicles = filterVehiclesBase(vehicleType, fuelType, transmission, minSeats, maxPrice, brand);
+        if (startDateTime != null && endDateTime != null) {
+            List<Long> bookedIds = findBookedVehicleIdsForPeriod(startDateTime, endDateTime);
+            if (!bookedIds.isEmpty()) {
+                return vehicles.stream()
+                        .filter(v -> !bookedIds.contains(v.getId()))
+                        .toList();
+            }
+        }
+        return vehicles;
+    }
+
+    default List<Vehicle> filterVehicles(VehicleType vehicleType,
+                                         FuelType fuelType,
+                                         Transmission transmission,
+                                         Integer minSeats,
+                                         BigDecimal maxPrice,
+                                         String brand) {
+        return filterVehicles(vehicleType, fuelType, transmission, minSeats, maxPrice, brand, null, null);
+    }
 }

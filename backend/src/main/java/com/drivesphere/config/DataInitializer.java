@@ -377,6 +377,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void synchronizeVehicleRatings() {
+        if (reviewRepository.count() == 0) {
+            log.info("No customer reviews in system; skipping vehicle rating synchronization.");
+            return;
+        }
         for (Vehicle vehicle : vehicleRepository.findAll()) {
             List<Review> vehicleReviews = reviewRepository.findByVehicleIdOrderByCreatedAtDesc(vehicle.getId());
             if (vehicleReviews.isEmpty()) {

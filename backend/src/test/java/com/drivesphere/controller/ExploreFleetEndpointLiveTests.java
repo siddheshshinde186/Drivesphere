@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -100,6 +101,15 @@ public class ExploreFleetEndpointLiveTests {
                 .andExpect(jsonPath("$.data[0].brand").isNotEmpty());
     }
 
+    @Autowired
+    private com.drivesphere.service.UserService userService;
+
+    @Autowired
+    private com.drivesphere.controller.AdminController adminController;
+
+    @Autowired
+    private org.springframework.context.ApplicationContext applicationContext;
+
     @Test
     @DisplayName("3. Verify GET /api/vehicles/available returns HTTP 200 with operational available vehicles")
     void testGetAvailableVehicles() throws Exception {
@@ -107,5 +117,17 @@ public class ExploreFleetEndpointLiveTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("4. Verify Spring ApplicationContext initializes UserService, AdminController, and UserDto")
+    void testApplicationContextInitializesUserServiceAndAdminController() {
+        assertNotNull(applicationContext, "ApplicationContext must be initialized");
+        assertNotNull(userService, "UserService must be initialized in context");
+        assertNotNull(adminController, "AdminController must be initialized in context");
+        assertDoesNotThrow(() -> {
+            Class<?> userDtoClass = Class.forName("com.drivesphere.dto.UserDto");
+            assertNotNull(userDtoClass);
+        });
     }
 }
