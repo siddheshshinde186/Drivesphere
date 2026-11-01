@@ -12,6 +12,8 @@ services:
         value: prod
       - key: SERVER_PORT
         value: "8080"
+      - key: JAVA_TOOL_OPTIONS
+        value: "-Xms192m -Xmx320m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=48m -Xss512k -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
       - key: DB_URL
         sync: false
       - key: DB_USERNAME
@@ -44,3 +46,4 @@ services:
         sync: false
       - key: SMTP_PASSWORD
         sync: false
+
