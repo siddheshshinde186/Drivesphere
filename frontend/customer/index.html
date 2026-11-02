@@ -133,7 +133,7 @@
                                     <i class="bi bi-search me-1"></i> Book a Ride
                                 </button>
                             </div>
-                            
+
                             <div class="row g-3 mt-2">
                                 <div class="col-sm-4">
                                     <div class="p-3 bg-dark rounded-3 border border-secondary text-center shadow-sm">
@@ -227,7 +227,7 @@
                                 <option value="MANUAL">Manual</option>
                             </select>
                         </div>
-                        
+
                         <!-- Date-Wise Rental Period Filters -->
                         <div class="col-md-4">
                             <label class="form-label text-info small fw-medium"><i class="bi bi-calendar-event me-1"></i>Pickup Date & Time</label>
@@ -369,7 +369,7 @@
                     <div class="col-lg-8">
                         <div class="card bg-surface border-secondary p-3 rounded-4 shadow-sm">
                             <div id="trip-planner-map" class="mb-3"></div>
-                            
+
                             <!-- Calculations Summary -->
                             <div class="row g-2 text-center mb-2" id="trip-stats-bar">
                                 <div class="col-3">
@@ -535,7 +535,7 @@
                             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="position-relative">
-                                        <img id="profile-banner-avatar" src="https://ui-avatars.com/api/?name=Customer&background=0d6efd&color=fff" 
+                                        <img id="profile-banner-avatar" src="https://ui-avatars.com/api/?name=Customer&background=0d6efd&color=fff"
                                              class="rounded-circle border border-2 border-primary object-fit-cover shadow" width="75" height="75" alt="Avatar">
                                         <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle"></span>
                                     </div>
@@ -724,15 +724,15 @@
                 <div class="modal-body p-4">
                     <form id="reservation-form">
                         <input type="hidden" id="modal-vehicle-id">
-                        
+
                         <!-- Selected Vehicle Header -->
                         <div class="d-flex align-items-center p-3 bg-dark rounded-3 border border-secondary mb-4">
                             <img id="modal-veh-img" src="" class="rounded-3 me-3" width="90" height="60" style="object-fit: cover;">
                             <div>
                                 <h6 id="modal-veh-title" class="fw-bold text-white mb-1">Vehicle Name</h6>
                                 <div class="small text-muted">
-                                    Rate: <strong id="modal-veh-rate" class="text-info">₹2,800/day</strong> | 
-                                    Seats: <span id="modal-veh-seats">5</span> | 
+                                    Rate: <strong id="modal-veh-rate" class="text-info">₹2,800/day</strong> |
+                                    Seats: <span id="modal-veh-seats">5</span> |
                                     Fuel: <span id="modal-veh-fuel">Electric</span>
                                 </div>
                             </div>
@@ -930,7 +930,7 @@
                     <form id="review-form">
                         <input type="hidden" id="review-booking-id">
                         <input type="hidden" id="review-existing-id">
-                        
+
                         <div id="review-vehicle-display" class="p-2 mb-3 bg-dark rounded border border-secondary text-center small text-info fw-semibold">
                         </div>
 
@@ -1024,15 +1024,22 @@
         // Media URL resolution helper with resilient fallback in case of cached assets
         function resolveMediaUrl(url) {
             if (!url || typeof url !== 'string') return '';
+            if (typeof API !== 'undefined' && typeof API.resolveMediaUrl === 'function') {
+                return API.resolveMediaUrl(url);
+            }
             let cleanUrl = url.trim();
-            if (cleanUrl.includes('/api/documents/download/') && 
+            if (cleanUrl.includes('/api/documents/download/') &&
                 (cleanUrl.endsWith('.jpg') || cleanUrl.endsWith('.jpeg') || cleanUrl.endsWith('.png') || cleanUrl.endsWith('.webp'))) {
                 cleanUrl = cleanUrl.replace('/api/documents/download/', '/api/documents/public/');
             }
             if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('data:') || cleanUrl.startsWith('blob:')) {
                 return cleanUrl;
             }
-            const base = (typeof API !== 'undefined' && API && API.BASE_URL) ? API.BASE_URL : 'http://localhost:8080/api';
+            const isLocal = typeof window !== 'undefined' && window.location &&
+                (!window.location.hostname || ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname) || window.location.hostname.endsWith('.local'));
+            const base = (typeof API !== 'undefined' && API && API.BASE_URL)
+                ? API.BASE_URL
+                : (isLocal ? 'http://localhost:8080/api' : 'https://drivesphere-backend.onrender.com/api');
             const origin = base.replace(/\/api$/, '');
             return origin + (cleanUrl.startsWith('/') ? cleanUrl : '/' + cleanUrl);
         }
@@ -1500,7 +1507,7 @@
                                 </div>
                                 <h5 class="card-title text-white fw-bold mb-1">${v.displayName}</h5>
                                 <p class="card-text text-secondary small mb-3">${v.description || 'Premium rental vehicle with high mileage and advanced safety features.'}</p>
-                                
+
                                 <div class="row g-2 mb-3 small text-secondary">
                                     <div class="col-6"><i class="bi bi-people me-1 text-info"></i> ${v.seatingCapacity} Seats</div>
                                     <div class="col-6"><i class="bi bi-fuel-pump me-1 text-warning"></i> ${v.fuelType}</div>
@@ -1508,7 +1515,7 @@
                                     <div class="col-6"><i class="bi bi-speedometer me-1 text-success"></i> ${mileageLabel}</div>
                                 </div>
                             </div>
-                            
+
                             <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary">
                                 <div>
                                     <span class="fs-5 fw-bold text-white">₹${Number(v.rentalPricePerDay).toLocaleString('en-IN')}</span>
@@ -1533,8 +1540,8 @@
                 } else {
                     select.innerHTML = availableDrivers.map(d => {
                         const ratingText = (d.rating && Number(d.rating) > 0) ? `${Number(d.rating).toFixed(1)}★` : 'No ratings yet';
-                        const trustText = (d.trustScore && d.trustScore.overallScore != null) 
-                            ? `Trust: ${d.trustScore.overallScore}/100 [${d.trustScore.trustLevel}]` 
+                        const trustText = (d.trustScore && d.trustScore.overallScore != null)
+                            ? `Trust: ${d.trustScore.overallScore}/100 [${d.trustScore.trustLevel}]`
                             : 'Trust: Not available';
                         return `
                             <option value="${d.id}" data-rate="${d.dailyRate || 0}">
@@ -1739,7 +1746,7 @@
                         return;
                     }
 
-                    const providerBadge = rec.generatedByGemini 
+                    const providerBadge = rec.generatedByGemini
                         ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-auto"><i class="bi bi-stars me-1"></i>Powered by Google Gemini</span>`
                         : `<span class="badge bg-secondary-subtle text-light border border-secondary ms-auto"><i class="bi bi-cpu me-1"></i>Fleet Capacity Engine</span>`;
 
@@ -1888,7 +1895,7 @@
 
                     document.getElementById('trip-dist').innerText = plan.distanceKm + ' km';
                     document.getElementById('trip-duration').innerText = plan.durationFormatted;
-                    
+
                     const unit = plan.energyUnit || (plan.electric ? 'kWh' : 'L');
                     if (custStatEnergyLabel) custStatEnergyLabel.innerText = unit === 'kWh' ? 'ENERGY USED' : 'FUEL USED';
                     if (custStatCostLabel) custStatCostLabel.innerText = unit === 'kWh' ? 'EST. ENERGY COST' : 'EST. FUEL COST';
@@ -2322,7 +2329,7 @@
             }
 
             const rentalTotal = v.rentalPricePerDay * diffDays;
-            
+
             let driverDaily = 0;
             const hireDriver = document.getElementById('modal-hire-driver-toggle').checked;
             if (hireDriver) {

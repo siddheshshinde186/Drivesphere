@@ -3,6 +3,15 @@
  * Customer-Facing Public Portal Application Logic
  */
 
+function getAppApiBaseUrl() {
+    if (typeof API !== 'undefined' && API && API.BASE_URL) {
+        return API.BASE_URL;
+    }
+    const isLocal = typeof window !== 'undefined' && window.location &&
+        (!window.location.hostname || ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname) || window.location.hostname.endsWith('.local'));
+    return isLocal ? 'http://localhost:8080/api' : 'https://drivesphere-backend.onrender.com/api';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initAuthNavbarState();
     initPublicVehicleCatalog();
@@ -19,7 +28,7 @@ function initAuthNavbarState() {
     if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
         const user = Auth.getUser();
         const role = user.primaryRole || (user.roles && user.roles[0]) || 'ROLE_CUSTOMER';
-        
+
         let portalUrl = 'customer/index.html';
         let portalLabel = 'My Workspace';
         let badgeColor = 'bg-info text-dark';
@@ -78,7 +87,7 @@ async function initPublicVehicleCatalog() {
     }
 
     try {
-        const baseUrl = (typeof API !== 'undefined' && API.BASE_URL) ? API.BASE_URL : '/api';
+        const baseUrl = getAppApiBaseUrl();
         const response = await fetch(`${baseUrl}/vehicles/available`, {
             headers: { 'Accept': 'application/json' }
         });
@@ -141,7 +150,7 @@ async function initPublicVehicleCatalog() {
                 e.preventDefault();
                 const category = document.getElementById('quick-search-category').value;
                 applyVehicleFilter(category);
-                
+
                 const vehiclesSection = document.getElementById('vehicles-section');
                 if (vehiclesSection) {
                     vehiclesSection.scrollIntoView({ behavior: 'smooth' });
@@ -196,7 +205,7 @@ function renderHeroCarousel(vehicles) {
         const ratingHtml = (v.averageRating && v.totalRatings > 0)
             ? `<span class="text-warning small"><i class="bi bi-star-fill me-1"></i>${Number(v.averageRating).toFixed(1)} (${v.totalRatings} Ratings)</span>`
             : `<span class="badge bg-secondary-subtle text-secondary border border-secondary" style="font-size: 0.72rem;">New Fleet Addition</span>`;
-        
+
         let rangeMileageHtml;
         if (isEV) {
             const range = v.rangeKm || v.mileage;
@@ -217,12 +226,12 @@ function renderHeroCarousel(vehicles) {
                     <span class="position-absolute top-0 end-0 m-3 badge bg-success px-3 py-2 shadow z-2">
                         <i class="bi bi-lightning-charge-fill me-1"></i> Available Now
                     </span>
-                    <img src="${imgSrc}" 
+                    <img src="${imgSrc}"
                          alt="${title}"
-                         class="hero-carousel-img rounded-4" 
+                         class="hero-carousel-img rounded-4"
                          onerror="this.onerror=null; this.src='${PLACEHOLDER_CAR_IMG}'">
                 </div>
-                
+
                 <div class="px-2">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="badge ${typeBadge}">${v.vehicleType || 'SEDAN'}</span>
@@ -230,7 +239,7 @@ function renderHeroCarousel(vehicles) {
                     </div>
                     <h4 class="fw-bold text-white mb-1">${title}</h4>
                     <p class="text-muted small mb-3" style="min-height: 2.4rem;">${description}</p>
-                    
+
                     <div class="row g-2 mb-3 small text-secondary">
                         <div class="col-6"><i class="bi bi-people text-info me-1"></i> ${v.seatingCapacity || 4} Passenger Seats</div>
                         <div class="col-6"><i class="bi bi-speedometer2 text-success me-1"></i> ${rangeMileageHtml}</div>
@@ -457,7 +466,7 @@ function renderVehicleCards(vehicles) {
         const imgUrl = v.primaryImageUrl || PLACEHOLDER_CAR_IMG;
         const isEV = (v.vehicleType || '').toUpperCase() === 'ELECTRIC' || (v.fuelType || '').toUpperCase() === 'ELECTRIC';
         const typeBadge = isEV ? 'bg-info bg-opacity-25 text-info' : 'bg-primary bg-opacity-25 text-primary';
-        
+
         let mileageLabel;
         if (isEV) {
             const range = v.rangeKm || v.mileage;
@@ -477,9 +486,9 @@ function renderVehicleCards(vehicles) {
             <div class="col-md-6 col-lg-4">
                 <div class="card bg-surface border-secondary rounded-4 overflow-hidden h-100 shadow-sm hover-elevate">
                     <div class="position-relative">
-                        <img src="${imgUrl}" 
-                             class="card-img-top" 
-                             style="height: 210px; object-fit: cover;" 
+                        <img src="${imgUrl}"
+                             class="card-img-top"
+                             style="height: 210px; object-fit: cover;"
                              alt="${title}"
                              onerror="this.onerror=null; this.src='${PLACEHOLDER_CAR_IMG}'">
                         <span class="position-absolute top-0 start-0 m-3 badge ${typeBadge} border border-secondary">
@@ -496,7 +505,7 @@ function renderVehicleCards(vehicles) {
                                 ${ratingHtml}
                             </div>
                             <h5 class="fw-bold text-white mb-2">${title}</h5>
-                            
+
                             <!-- Vehicle Specs Grid -->
                             <div class="row g-2 mb-3 text-secondary small">
                                 <div class="col-6"><i class="bi bi-people text-info me-1"></i> ${v.seatingCapacity || 4} Seats</div>
@@ -638,7 +647,7 @@ function initPublicTripPlanner() {
             if (!selectedOpt) return;
             const isEV = (selectedOpt.getAttribute('data-type') || '').toUpperCase() === 'ELECTRIC' ||
                          (selectedOpt.getAttribute('data-fuel') || '').toUpperCase() === 'ELECTRIC';
-            
+
             if (isEV) {
                 fuelLabelEl.innerText = 'Electricity Price (₹/kWh)';
                 fuelPriceEl.value = '12.0';
@@ -667,7 +676,7 @@ function initPublicTripPlanner() {
             const dest = document.getElementById('planner-dest').value.trim();
             const fuelPrice = parseFloat(document.getElementById('planner-fuel-price').value) || 12.0;
             const vehSelect = document.getElementById('planner-veh-select').value;
-            
+
             if (!vehSelect) {
                 alert('Please select a vehicle from our fleet before calculating route.');
                 return;
@@ -684,7 +693,7 @@ function initPublicTripPlanner() {
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Calculating Highway Route...';
 
             try {
-                const baseUrl = (typeof API !== 'undefined' && API.BASE_URL) ? API.BASE_URL : '/api';
+                const baseUrl = getAppApiBaseUrl();
                 const response = await fetch(`${baseUrl}/ai/trip-assistant`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -705,11 +714,11 @@ function initPublicTripPlanner() {
 
                 document.getElementById('pub-trip-dist').innerText = `${plan.distanceKm} km`;
                 document.getElementById('pub-trip-duration').innerText = plan.durationFormatted;
-                
+
                 const unit = plan.energyUnit || (plan.electric ? 'kWh' : 'L');
                 if (energyLabelEl) energyLabelEl.innerText = unit === 'kWh' ? 'ENERGY USED' : 'FUEL USED';
                 if (costLabelEl) costLabelEl.innerText = unit === 'kWh' ? 'EST. ENERGY COST' : 'EST. FUEL EXPENSE';
-                
+
                 document.getElementById('pub-trip-fuel').innerText = `${plan.fuelUsedUnits} ${unit}`;
                 document.getElementById('pub-trip-cost').innerText = `₹${Number(plan.estimatedFuelCost).toLocaleString('en-IN')}`;
 
@@ -718,7 +727,7 @@ function initPublicTripPlanner() {
                     evRangeCard.classList.remove('d-none');
                     const distKm = parseFloat(plan.distanceKm);
                     const remainingRange = Math.max(0, ratedRange - distKm);
-                    
+
                     document.getElementById('pub-ev-req').innerText = `${distKm.toFixed(1)} km`;
                     document.getElementById('pub-ev-total').innerText = `${ratedRange.toFixed(1)} km`;
                     document.getElementById('pub-ev-rem').innerText = `${remainingRange.toFixed(1)} km`;
@@ -782,7 +791,7 @@ function initPublicTripPlanner() {
 
 async function fetchDestinationWeather(lat, lng) {
     try {
-        const baseUrl = (typeof API !== 'undefined' && API.BASE_URL) ? API.BASE_URL : '/api';
+        const baseUrl = getAppApiBaseUrl();
         const res = await fetch(`${baseUrl}/weather?lat=${lat}&lng=${lng}`);
         if (res.ok) {
             const data = await res.json();

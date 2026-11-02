@@ -527,7 +527,7 @@
                 <div class="modal-body p-4">
                     <form id="verif-decision-form">
                         <input type="hidden" id="modal-verif-id">
-                        
+
                         <div class="mb-3">
                             <label class="form-label small text-muted">Verification Decision</label>
                             <select id="modal-verif-status" class="form-select bg-dark text-white border-secondary" required>
@@ -824,7 +824,11 @@
             const output = document.getElementById('adminHealthJsonOutput');
 
             try {
-                const baseUrl = (typeof API !== 'undefined' && API.BASE_URL) ? API.BASE_URL : '/api';
+                const isLocal = typeof window !== 'undefined' && window.location &&
+                    (!window.location.hostname || ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname) || window.location.hostname.endsWith('.local'));
+                const baseUrl = (typeof API !== 'undefined' && API && API.BASE_URL)
+                    ? API.BASE_URL
+                    : (isLocal ? 'http://localhost:8080/api' : 'https://drivesphere-backend.onrender.com/api');
                 const res = await fetch(`${baseUrl}/health`);
                 const duration = Math.round(performance.now() - start);
                 const data = await res.json();

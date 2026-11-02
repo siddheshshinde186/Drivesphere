@@ -8,16 +8,32 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/customer/?$",
+      "dest": "/customer/index.html"
+    },
+    {
       "src": "/customer/(.*)",
       "dest": "/customer/$1"
+    },
+    {
+      "src": "/driver/?$",
+      "dest": "/driver/index.html"
     },
     {
       "src": "/driver/(.*)",
       "dest": "/driver/$1"
     },
     {
+      "src": "/fleet-manager/?$",
+      "dest": "/fleet-manager/index.html"
+    },
+    {
       "src": "/fleet-manager/(.*)",
       "dest": "/fleet-manager/$1"
+    },
+    {
+      "src": "/admin/?$",
+      "dest": "/admin/index.html"
     },
     {
       "src": "/admin/(.*)",

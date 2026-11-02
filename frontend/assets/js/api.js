@@ -5,17 +5,38 @@
 const API = {
     BASE_URL: (() => {
         if (typeof window !== 'undefined') {
+            // 1. Explicit window runtime override (e.g. tests or dynamic config)
             if (window.__DRIVESPHERE_API_URL__) {
                 return window.__DRIVESPHERE_API_URL__;
             }
-            if (window.localStorage && window.localStorage.getItem('drivesphere_api_url')) {
-                return window.localStorage.getItem('drivesphere_api_url');
+            // 2. Local storage override (for developer debugging in browser console)
+            try {
+                if (window.localStorage && window.localStorage.getItem('drivesphere_api_url')) {
+                    return window.localStorage.getItem('drivesphere_api_url');
+                }
+            } catch (e) {
+                // Ignore localStorage errors (e.g. restricted iframe sandbox)
             }
-            if (window.location.protocol && window.location.protocol.startsWith('http')) {
-                if (window.location.port === '8080' || window.location.port === '') {
+
+            const hostname = (window.location && window.location.hostname) ? window.location.hostname.toLowerCase() : '';
+            const isLocal = !hostname ||
+                            hostname === 'localhost' ||
+                            hostname === '127.0.0.1' ||
+                            hostname === '0.0.0.0' ||
+                            hostname.endsWith('.local') ||
+                            (window.location.protocol && !window.location.protocol.startsWith('http'));
+
+            // 3. Local Development (VS Code Live Server :5500, file://, etc.)
+            if (isLocal) {
+                // If running directly on port 8080 (e.g. Spring Boot serving static assets directly)
+                if (window.location && window.location.port === '8080') {
                     return '/api';
                 }
+                return 'http://localhost:8080/api';
             }
+
+            // 4. Production Cloud Deployment (Vercel / Custom Production Domain)
+            return 'https://drivesphere-backend.onrender.com/api';
         }
         return 'http://localhost:8080/api';
     })(),
@@ -71,14 +92,19 @@ const API = {
         if (!url || typeof url !== 'string') return '';
         let cleanUrl = url.trim();
         // Transparently rewrite legacy download endpoints for images to public streaming endpoint
-        if (cleanUrl.includes('/api/documents/download/') && 
+        if (cleanUrl.includes('/api/documents/download/') &&
             (cleanUrl.endsWith('.jpg') || cleanUrl.endsWith('.jpeg') || cleanUrl.endsWith('.png') || cleanUrl.endsWith('.webp'))) {
             cleanUrl = cleanUrl.replace('/api/documents/download/', '/api/documents/public/');
         }
         if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://') || cleanUrl.startsWith('data:') || cleanUrl.startsWith('blob:')) {
             return cleanUrl;
         }
-        const origin = (typeof this.BASE_URL === 'string' ? this.BASE_URL : 'http://localhost:8080/api').replace(/\/api$/, '');
+        const base = (typeof this.BASE_URL === 'string' && this.BASE_URL)
+            ? this.BASE_URL
+            : ((typeof window !== 'undefined' && window.location && window.location.hostname && !['localhost', '127.0.0.1'].includes(window.location.hostname))
+                ? 'https://drivesphere-backend.onrender.com/api'
+                : 'http://localhost:8080/api');
+        const origin = base.replace(/\/api$/, '');
         return origin + (cleanUrl.startsWith('/') ? cleanUrl : '/' + cleanUrl);
     },
 
@@ -101,7 +127,7 @@ const API = {
 
         try {
             const response = await fetch(url, config);
-            
+
             // Handle HTTP 401 Unauthorized with automatic refresh token rotation
             if (response.status === 401 && !isRetry) {
                 if (!endpoint.includes('/auth/login') && !endpoint.includes('/auth/register') && !endpoint.includes('/auth/refresh')) {
