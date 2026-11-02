@@ -13,7 +13,7 @@ services:
       - key: SERVER_PORT
         value: "8080"
       - key: JAVA_TOOL_OPTIONS
-        value: "-Xms192m -Xmx320m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=48m -Xss512k -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
+        value: "-Xms128m -Xmx224m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=144m -XX:CompressedClassSpaceSize=32m -XX:ReservedCodeCacheSize=48m -Xss384k -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
       - key: DB_URL
         sync: false
       - key: DB_USERNAME

@@ -21,7 +21,15 @@ import java.time.Instant;
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
+    public AuthEntryPointJwt(@org.springframework.beans.factory.annotation.Autowired(required = false) ObjectMapper objectMapper) {
+        if (objectMapper != null) {
+            this.objectMapper = objectMapper;
+        } else {
+            this.objectMapper = new ObjectMapper().findAndRegisterModules();
+        }
+    }
 
     @Override
     public void commence(HttpServletRequest request,

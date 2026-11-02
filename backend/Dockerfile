@@ -30,7 +30,7 @@ COPY --from=builder --chown=drivesphere:drivesphere /build/target/*.jar app.jar
 USER drivesphere
 
 # Default container-aware memory allocation for 512MB RAM targets
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=65.0 -XX:InitialRAMPercentage=40.0 -XX:+UseG1GC -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=48m -Xss512k -XX:+ExitOnOutOfMemoryError"
+ENV JAVA_TOOL_OPTIONS="-Xms128m -Xmx224m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=144m -XX:CompressedClassSpaceSize=32m -XX:ReservedCodeCacheSize=48m -Xss384k -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
 
 EXPOSE 8080
 

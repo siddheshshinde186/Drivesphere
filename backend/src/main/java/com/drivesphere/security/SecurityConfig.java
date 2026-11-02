@@ -60,8 +60,9 @@ public class SecurityConfig {
                         // Public Actuator health vs protected internal metrics
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
-                        // Public APIs
-                        .requestMatchers("/api/health/**", "/api/documents/public/**").permitAll()
+                        // Diagnostics endpoint (ADMIN only) vs public health probe
+                        .requestMatchers("/api/health/diagnostics").hasRole("ADMIN")
+                        .requestMatchers("/api/health", "/api/documents/public/**").permitAll()
                         .requestMatchers(
                                 "/api/auth/register",
                                 "/api/auth/login",
